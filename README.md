@@ -42,6 +42,11 @@ Semestre: 2026/1
 
 ├── 📂 referências              
 │   └── 📄 bibliografia.bib
+
+## Protótipo
+- [Figma](https://www.figma.com/design/2WejxxUOh8pM9hdxt51dIR/vizinhan%C3%A7a?node-id=205-156&t=fvgEfNkgp7Rzg3vA-1)
+
+
 ## Contribuições
 
 Use mensagens claras e descritivas!
