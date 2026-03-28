@@ -1,1 +1,58 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/ae5Y1a3I)
+
+![Logo](https://i.ibb.co/TBK8cYz2/A4503b36dae1c4e0cb9eed3322e60a313u-1-Traced.png)
+
+
+# Template para TCC - Repositório Oficial
+
+Este repositório serve como modelo (template) para organização e versionamento do Trabalho de Conclusão de Curso. Utilize esta estrutura para manter seu projeto organizado e facilitar o acompanhamento do orientador.
+
+## Sobre este Template
+
+Este template foi desenvolvido para padronizar a organização dos TCCs das turmas de Desenvolvimento de Sistemas. 
+
+### Disciplina: Trabalho de Conclusão de Curso
+Semestre: 2026/1
+
+### Orientadores: 
+- [@Joao-Meyer](https://github.com/Joao-Meyer)
+- [@fernandoleonid](https://github.com/fernandoleonid)
+- [@marcelnt](https://github.com/marcelnt)
+- [@yurikomuta](https://github.com/yurikomuta)
+
+
+
+### Documentação
+
+├── 📂 docs              
+│   └── 📄 proposta.pptx    
+│   └── 📄 wireframes.md  
+│   └── 📄 TAP (formato WIKI)  
+│   └── 📄 LER.docx    
+│   └── 📄 apresentação_prévia.pptx     #apresentação prévia    
+│   └── 📄 apresentação.pptx            #apresentação final
+
+
+├── 📂 code
+│   └── 📂 banco   
+│   └── 📂 backend   
+│   └── 📂 frontend  
+│   └── 📂 mobile   
+│   └── 📂 tests
+
+
+├── 📂 referências              
+│   └── 📄 bibliografia.bib
+## Contribuições
+
+Use mensagens claras e descritivas!
+
+Commits pequenos e frequentes.
+
+Exemplo: git commit -m `Adiciona introdução com contexto do problema`
+
+## Authors
+
+- [@Giovana Souza](https://github.com/giovana-lua)
+- [@Leonardo Scotti](https://github.com/leonardo-scotti)
+- [@Breno Machado](https://github.com/brenex920)
+- [@Roger Ribeiro](https://www.github.com/rgrrb)
