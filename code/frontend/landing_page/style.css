@@ -3,6 +3,16 @@
     margin: 0;
     padding: 0;
     font-family: tbjRegular;
+    list-style: none;
+    padding: 0;    
+    margin: 0;
+    
+}
+button{
+    all: unset;
+}
+:root{
+    --cor-quartenária: #2600FF;
 }
 
 @font-face {
@@ -19,21 +29,77 @@ body {
 
 header{
     position: fixed;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 2;
+    width: 100vw;
     height: 180px;
+    padding-inline: 10.5%;
+}
+#logo{
+    width: 7rem;
 }
 nav{
-    height: 130px;
-    width: 900px;
+    display: flex;
+    margin-left: 10%;
+    height: 5vh;
+    width: 100%;
     background-color: white;
+    border-radius: 50px;
 }
 
+header button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10%;
+    height: 5vh;
+    width: 20vw;
+    background-color: white;
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: 0.5s;
+}
+header button:hover{
+    color: white;
+    background-color: var(--cor-quartenária);
+}
+nav ul{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+}
+nav ul li{
+    font-size: 1rem;
+}
+.bg-li{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40%;
+    width: calc(10% + 25px);
+    transition: 0.5s;
+    border-radius: 45px;
+}
+
+nav .bg-li:hover{
+    color: white;
+    background-color: var(--cor-quartenária);
+}
 main {
     display: flex;
     flex-grow: 1;
 }
 
 .hero {
+    padding-inline: 10.5%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
     position: relative;
     height: 900px;
     width: 100%;
@@ -43,6 +109,7 @@ main {
     backdrop-filter: blur(200px);
 }
 .gradient-hero:nth-child(3) {
+    z-index: -999;
     position: absolute;
     width: 9000px;
     height: 370px;
@@ -52,6 +119,7 @@ main {
     border-radius: 0px 0px 100px 100px;
 }
 .gradient-hero:nth-child(2) {
+    z-index: -999;
     position: absolute;
     width: 9000px;
     height: 213px;
@@ -62,12 +130,72 @@ main {
 }
 
 .gradient-hero:first-child {
+    z-index: -999;
     position: absolute;
     width: 9000px;
     height: 297px;
     top: 0px;
     background: #D0EDFF;
-    filter: blur(120px);
+    filter: blur(150px);
     border-radius: 0px;
 
+}
+.hero-content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    padding-inline: 5%;
+}
+.hero-left-content{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 50%;
+    height: 100%;
+    color: white;
+    gap: 36px;
+}
+h1{
+    font-size: 3rem;
+}
+p{
+    font-size: 1.6rem;
+    width: 100%;
+}
+.hero-left-content button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #a8a8a846;
+    height: 80px;
+    width: 404px;
+    border-radius: 20px;
+    font-size: 2rem;
+}
+.hero-right-content{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width: 50%;
+}
+#iphoneimg{ 
+    position: absolute;
+    height: 50%;
+    right: 65%;
+}
+#macbookimg{
+    position: absolute;
+    bottom: 6%;
+    height: 65%;
+}
+
+
+@media (min-width: 1024px) {
+    *{
+        font-size: 18px;
+    }
 }
