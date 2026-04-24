@@ -11,6 +11,7 @@
 
 html{
     font-size: clamp(14px, 1vw, 18px);
+    scroll-behavior: smooth;
 }
 
 button {
@@ -81,6 +82,11 @@ header button {
 header button:hover {
     color: white;
     background-color: var(--cor-quartenária);
+}
+.logo-vizinhanca{
+    position: relative;
+    height: 5rem;
+    display: flex;
 }
 
 nav ul {
