@@ -1,3 +1,10 @@
+/***********************************************************
+ * Objetivo: Arquivo responsável por toda a segurança da API
+ * Data: 22/04/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.04.26
+ * ********************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.security.config;
 
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtFilter;
