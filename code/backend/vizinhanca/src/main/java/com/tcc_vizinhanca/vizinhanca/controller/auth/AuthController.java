@@ -2,6 +2,9 @@ package com.tcc_vizinhanca.vizinhanca.controller.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
+import com.tcc_vizinhanca.vizinhanca.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,19 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final JwtService jwtService;
-
-    public AuthController(JwtService jwtService) {
-        this.jwtService = jwtService;
-    }
+    @Autowired
+    private AuthService authService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) {
-        // Aqui você valida no banco
-        if (!"admin".equals(loginRequest.login) || !"123".equals(loginRequest.password)) {
-            throw new RuntimeException("Credenciais inválidas");
-        }
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
 
-        return jwtService.gerarToken(loginRequest.login);
+        String token = authService.login(
+                loginRequest.getLogin(),
+                loginRequest.getPassword()
+        );
+
+        return ResponseEntity.ok(token);
     }
 }

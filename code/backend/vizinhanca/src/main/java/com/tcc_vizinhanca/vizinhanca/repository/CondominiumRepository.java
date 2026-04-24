@@ -11,5 +11,9 @@ package com.tcc_vizinhanca.vizinhanca.repository;
 import com.tcc_vizinhanca.vizinhanca.entity.Condominium;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface CondominiumRepository   extends JpaRepository<Condominium, Long> {
+
+    Optional<Condominium> findByEmail(String email);
 }
