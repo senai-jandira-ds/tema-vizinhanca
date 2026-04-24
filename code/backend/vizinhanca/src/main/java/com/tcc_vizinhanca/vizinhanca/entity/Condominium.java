@@ -45,7 +45,7 @@ public class Condominium {
     @Column(name = "senha", nullable = false)
     private String password;
 
-    @Column(name = "data_criação", insertable = false, updatable = false)
+    @Column(name = "data_criacao", insertable = false, updatable = false)
     private LocalDateTime creationDate;
 
 }

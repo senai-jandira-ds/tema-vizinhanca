@@ -1,3 +1,12 @@
+/***************************************************
+ * Objetivo: Entidade responsável por representar as conversas entre usuários,
+ * armazenando informações como data de criação, status de visualização
+ * e o relacionamento entre o iniciador e o receptor da conversa
+ * Data: 24/04/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.04.26
+ * *************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.entity;
 
 import jakarta.persistence.*;
