@@ -7,12 +7,12 @@
  * Versão: 1.0.04.26
  * *************************************************/
 
-package com.tcc_vizinhanca.vizinhanca.service;
+package com.tcc_vizinhanca.vizinhanca.service.auth;
 
-import com.tcc_vizinhanca.vizinhanca.entity.Condominium;
-import com.tcc_vizinhanca.vizinhanca.entity.Resident;
-import com.tcc_vizinhanca.vizinhanca.repository.CondominiumRepository;
-import com.tcc_vizinhanca.vizinhanca.repository.ResidentRepository;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
+import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

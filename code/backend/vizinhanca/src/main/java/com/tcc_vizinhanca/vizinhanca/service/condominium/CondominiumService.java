@@ -7,10 +7,10 @@
  * Versão: 1.0.04.26
  * *************************************************/
 
-package com.tcc_vizinhanca.vizinhanca.service;
+package com.tcc_vizinhanca.vizinhanca.service.condominium;
 
-import com.tcc_vizinhanca.vizinhanca.entity.Condominium;
-import com.tcc_vizinhanca.vizinhanca.repository.CondominiumRepository;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

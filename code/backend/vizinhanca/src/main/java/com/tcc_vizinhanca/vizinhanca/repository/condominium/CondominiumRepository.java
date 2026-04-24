@@ -6,9 +6,9 @@
  * Versão: 1.0.04.26
  * *************************************************/
 
-package com.tcc_vizinhanca.vizinhanca.repository;
+package com.tcc_vizinhanca.vizinhanca.repository.condominium;
 
-import com.tcc_vizinhanca.vizinhanca.entity.Condominium;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,8 +1,7 @@
 package com.tcc_vizinhanca.vizinhanca.controller.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
-import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
-import com.tcc_vizinhanca.vizinhanca.service.AuthService;
+import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

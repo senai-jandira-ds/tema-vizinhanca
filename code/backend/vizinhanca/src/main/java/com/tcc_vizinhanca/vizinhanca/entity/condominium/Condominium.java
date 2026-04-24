@@ -7,7 +7,7 @@
  * Versão: 1.0.04.26
  * *************************************************/
 
-package com.tcc_vizinhanca.vizinhanca.entity;
+package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

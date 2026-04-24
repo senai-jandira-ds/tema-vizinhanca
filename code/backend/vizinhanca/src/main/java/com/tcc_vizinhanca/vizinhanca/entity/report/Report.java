@@ -7,8 +7,12 @@
  * Versão: 1.0.04.26
  * *************************************************/
 
-package com.tcc_vizinhanca.vizinhanca.entity;
+package com.tcc_vizinhanca.vizinhanca.entity.report;
 
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
+import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
+import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
