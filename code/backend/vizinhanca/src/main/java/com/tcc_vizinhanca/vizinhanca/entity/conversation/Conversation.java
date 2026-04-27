@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tbl_conversa")
@@ -32,13 +33,16 @@ public class Conversation {
     private Long id;
 
     @Column(name = "data_criacao", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
 
-    @ManyToOne
-    @JoinColumn(name = "id_iniciador", nullable = false)
-    private Resident initiator;
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
+    private List<ConversationParticipant> participants;
 
-    @ManyToOne
-    @JoinColumn(name = "id_receptor", nullable = false)
-    private Resident receiver;
+    @OneToMany(mappedBy = "conversation")
+    private List<Message> messages;
+
+    @PrePersist
+    public void prePersist(){
+        this.createdDate = LocalDateTime.now();
+    }
 }

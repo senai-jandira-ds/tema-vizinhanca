@@ -33,13 +33,16 @@ public class Condominium {
     @Column(name = "nome", nullable = false)
     private String name;
 
+    @Column(name = "cnpj", nullable = false, unique = true)
+    private String cnpj;
+
     @Column(name = "qtd_blocos", nullable = false)
     private Integer amountBlocks;
 
     @Column(name = "qtd_apto", nullable = false)
     private Integer amountApartments;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "senha", nullable = false)

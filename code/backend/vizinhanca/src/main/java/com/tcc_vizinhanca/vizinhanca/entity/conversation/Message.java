@@ -10,6 +10,7 @@
 package com.tcc_vizinhanca.vizinhanca.entity.conversation;
 
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,20 +32,27 @@ public class Message {
     @Column(name = "id_mensagem")
     private Long id;
 
-    @Column(name = "texto", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "texto", columnDefinition = "TEXT", nullable = false)
     private String text;
 
-    @Column(name = "data_envio", nullable = false)
-    private LocalDateTime sendDate;
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDateTime createdDate;
 
-    @Column(name = "url_foto", nullable = false, columnDefinition = "TEXT")
-    private String photoUrl;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @ManyToOne
-    @JoinColumn(name = "id_conversa")
+    @JoinColumn(name = "id_conversa", nullable = false)
     private Conversation conversation;
 
     @ManyToOne
-    @JoinColumn(name = "id_autor")
-    private Resident author;
+    @JoinColumn(name = "id_resident", nullable = false)
+    private Resident resident;
+
+    @PrePersist
+    public void prePersist(){
+        this.createdDate = LocalDateTime.now();
+        this.status = Status.SENT;
+    }
+
 }

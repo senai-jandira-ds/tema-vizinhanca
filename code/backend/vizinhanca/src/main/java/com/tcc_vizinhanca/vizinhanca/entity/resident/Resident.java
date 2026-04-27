@@ -44,7 +44,7 @@ public class Resident {
     @Column(name = "cpf", nullable = false, unique = true, length = 11)
     private String cpf;
 
-    @Column(name = "email", nullable = false, length = 120)
+    @Column(name = "email", nullable = false, length = 120, unique = true)
     private String email;
 
     @Column(name = "senha", nullable = false)
