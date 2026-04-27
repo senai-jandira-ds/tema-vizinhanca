@@ -30,10 +30,16 @@
   }
 }
 
+@font-face {
+  font-family: 'GoogleSans';
+  src: url('./assets/fonts/Google_Sans/static/GoogleSans-Medium.ttf') format('truetype');
+}
+
 body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'GoogleSans';
 }
 * {
   margin: 0;
