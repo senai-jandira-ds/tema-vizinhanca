@@ -1,4 +1,4 @@
-import styles from '../login/logininput.module.css'
+import styles from '../components/logininput.module.css'
 
 export default function LoginInput(props) {
     return (

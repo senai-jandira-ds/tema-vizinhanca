@@ -1,18 +1,16 @@
-import { Link } from "react-router-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from 'react'
-
-import './App.css'
+import Login from "./pages/login";
+import System from "./pages/system";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<div>Landing Page</div>} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/app" element={<System />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
-export default App
+export default App;
