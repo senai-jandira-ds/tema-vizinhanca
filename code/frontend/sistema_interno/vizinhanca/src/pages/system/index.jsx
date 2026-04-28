@@ -1,15 +1,14 @@
-import "./style.css";
-//import { Link } from "react-router-dom";
-//import logo from "../../assets/img/icons/logo.png";
-//import condominio from "../../assets/img/icons/condominio.png";
+import "./style.module.css";
+import Sidebar from "./components/sidebar";
 
 function Dashboard() {
 
     return (
         <div className="screen-content">
-            
+            <Sidebar />
+            <div className="test-content"></div>
         </div>
     )
 }
 
-export default LoginScreen;
+export default Dashboard;
