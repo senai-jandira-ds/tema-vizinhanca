@@ -1,62 +1,42 @@
 package com.tcc_vizinhanca.vizinhanca.controller.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
-import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
+import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
-@RequestMapping("api/v1/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtService jwtService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-//
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        request.getLogin(),
-//                        request.getPassword()
-//                )
-//        );
-//
-//        String token = jwtService.gerarToken(request.getLogin());
-//
-//        return ResponseEntity.ok(token);
-//    }
+    @PostMapping("/login/condominium")
+    public ResponseEntity<ApiResponse<AuthResponse<CondominiumResponse>>> loginCondominium(@RequestBody LoginRequest request) {
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        System.out.println("CHEGOU NO CONTROLLER");
+        AuthResponse<CondominiumResponse> response = authService.loginCondominium(request.getEmail(), request.getPassword());
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getLogin(),
-                        request.getPassword()
-                )
-        );
+        return ResponseEntity.ok(ResponseUtil.success(response, "Usuário logado com sucesso!"));
 
-        String token = jwtService.gerarToken(request.getLogin());
-
-        return ResponseEntity.ok(token);
     }
 
+    @PostMapping("/login/resident")
+    public ResponseEntity<ApiResponse<AuthResponse<ResidentResponse>>> loginResident(@RequestBody LoginRequest request) {
+
+        AuthResponse<ResidentResponse> response = authService.loginResident(request.getEmail(), request.getPassword());
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Usuário logado com sucesso!"));
+    }
 }

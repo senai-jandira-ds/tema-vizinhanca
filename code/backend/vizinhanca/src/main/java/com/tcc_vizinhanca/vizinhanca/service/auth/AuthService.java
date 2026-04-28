@@ -9,6 +9,9 @@
 
 package com.tcc_vizinhanca.vizinhanca.service.auth;
 
+import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
@@ -35,29 +38,43 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public String login(String email, String password){
+    public AuthResponse<CondominiumResponse> loginCondominium(String email, String password){
 
-        Condominium condominium = condominiumRepository.findByEmail(email).orElse(null);
+        Condominium condominium = condominiumRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
+                ));
 
-        if (condominium != null) {
-            if (!passwordEncoder.matches(password, condominium.getPassword())) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
-            }
-
-            return jwtService.gerarToken(condominium.getEmail());
+        if (!passwordEncoder.matches(password, condominium.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
+            );
         }
 
-        Resident resident = residentRepository.findByEmail(email).orElse(null);
+        String token = jwtService.gerarToken(condominium.getEmail());
 
-        if (resident != null) {
-            if (!passwordEncoder.matches(password, resident.getPassword())) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
-            }
+        CondominiumResponse condominiumResponse = new CondominiumResponse(condominium);
 
-            return jwtService.gerarToken(resident.getEmail());
+        return new AuthResponse<>(token, condominiumResponse);
+    }
+
+    public AuthResponse<ResidentResponse> loginResident(String email, String password) {
+
+        Resident resident = residentRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
+                ));
+
+        if (!passwordEncoder.matches(password, resident.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
+            );
         }
 
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado");
+        String token = jwtService.gerarToken(resident.getEmail());
 
+        ResidentResponse userResponse = new ResidentResponse(resident);
+
+        return new AuthResponse<>(token, userResponse);
     }
 }

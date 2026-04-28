@@ -19,7 +19,7 @@ public class VizinhancaApplication {
         SpringApplication.run(VizinhancaApplication.class, args);
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        System.out.println(passwordEncoder.encode("senha88"));
+        System.out.println(passwordEncoder.encode("senha123"));
     }
 
 }
