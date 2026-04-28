@@ -1,48 +1,74 @@
-ul, li{
+ul,
+li {
     text-decoration: none;
     list-style: none;
 }
 
-aside{
-    display: flex;
-    gap: 1rem;
-    height: 100%;
-    width: 10%;
-    padding: 1%;
-    color: black;
-    background-color: white;
-}
-nav{
+aside {
     position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 100%;
+    width: 2.55rem;
+    color: black;
+    padding-block: 1%;
+    transition: 0.5s;
+    overflow: hidden;
+}
+aside:hover {
+    width: 370px;
+}
+.label {
+    opacity: 0;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    transform: translateX(-10px);
+}
+
+aside:hover .label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+nav {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    width: 300px;
     transition: 0.3s;
 }
 
-nav:hover nav:last-child{
-    position: absolute;
-    height: 100%;
-    width: 300px;
-    background-color: white;
-}
-aside li:last-child{
-    align-self: flex-end;
-}
-
-ul{
+ul {
     display: flex;
+    gap: 3%;
     flex-direction: column;
     height: 100%;
     width: 100%;
 }
-li{
+
+li a {
+    gap: 5%;
     display: flex;
     align-items: center;
-    justify-content: center;
     width: 100%;
+    transition: 0.4s;
+    border-radius: 45px;
+    padding: 10px;
 }
-li a{
-    width: 100%;
+li a:hover{
+    color: white;
+    fill: white;
+    background-color: #2600FF;
+}
+
+li a img {
+    width: 12%;
+}
+li:last-child a {
+    padding: 18px;
+}
+li:last-child a img {
+    width: 5%;
 }
