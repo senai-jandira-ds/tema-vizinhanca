@@ -11,7 +11,7 @@ function LoginScreen() {
     return (
         <div className={styles.screenContent}>
             <div className={styles.leftContent}>
-                <a id="back" href="/landing_page/index.html">Voltar</a>
+                <a className={styles.back} href="/landing_page/index.html">Voltar</a>
 
                 <div className={styles.leftMain}>
                     <img src={logo} alt="" />
@@ -33,6 +33,7 @@ function LoginScreen() {
                 <img src={condominio} alt="" />
             </div>
         </div>
+
     )
 }
 

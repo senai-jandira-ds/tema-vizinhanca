@@ -1,4 +1,5 @@
 .screenContent {
+  padding: 5%;
   display: flex;
   height: 100%;
   width: 100%;
@@ -15,9 +16,9 @@
   padding-bottom: 5rem;
 }
 
-.leftContent #back {
+.back {
   width: fit-content;
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: black;
   padding: 2%;
