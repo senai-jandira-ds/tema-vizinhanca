@@ -1,6 +1,5 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response;
 
-import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResidentResponse {
+public class ResidentDetailResponse {
     private Long id;
     private String foto;
     private String nome;
@@ -22,7 +21,7 @@ public class ResidentResponse {
     private String telefone;
     private Integer pontuacao;
 
-    public ResidentResponse(Resident resident) {
+    public ResidentDetailResponse(Resident resident) {
         this.id = resident.getId();
         this.foto = resident.getPhoto();
         this.nome = resident.getName();

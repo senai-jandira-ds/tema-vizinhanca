@@ -1,25 +1,33 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonPropertyOrder({
+        "condos_amount",
+        "condos"
+})
 public class CondominiumResponse {
-    private Long id;
-    private String nome;
-    private String cnpj;
-    private Integer qtdBlocos, qtdApto;
-    private String email;
 
-    public CondominiumResponse(Condominium condominium) {
-        this.id = condominium.getId();
-        this.nome = condominium.getName();
-        this.cnpj = condominium.getCnpj();
-        this.qtdBlocos = condominium.getAmountBlocks();
-        this.qtdApto = condominium.getAmountApartments();
-        this.email = condominium.getEmail();
+    @JsonProperty("condos_amount")
+    public Integer getCondosAmount() {
+        return condos != null ? condos.size() : 0;
+    }
+
+    private List<Condominium> condos;
+
+    public CondominiumResponse(List<Condominium> condos) {
+        this.condos = condos;
     }
 }

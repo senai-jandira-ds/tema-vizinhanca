@@ -3,8 +3,8 @@ package com.tcc_vizinhanca.vizinhanca.controller.auth;
 import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import org.springframework.http.ResponseEntity;
@@ -24,18 +24,18 @@ public class AuthController {
     }
 
     @PostMapping("/login/condominium")
-    public ResponseEntity<ApiResponse<AuthResponse<CondominiumResponse>>> loginCondominium(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse<CondominiumDetailResponse>>> loginCondominium(@RequestBody LoginRequest request) {
 
-        AuthResponse<CondominiumResponse> response = authService.loginCondominium(request.getEmail(), request.getPassword());
+        AuthResponse<CondominiumDetailResponse> response = authService.loginCondominium(request.getEmail(), request.getPassword());
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Usuário logado com sucesso!"));
 
     }
 
     @PostMapping("/login/resident")
-    public ResponseEntity<ApiResponse<AuthResponse<ResidentResponse>>> loginResident(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse<ResidentDetailResponse>>> loginResident(@RequestBody LoginRequest request) {
 
-        AuthResponse<ResidentResponse> response = authService.loginResident(request.getEmail(), request.getPassword());
+        AuthResponse<ResidentDetailResponse> response = authService.loginResident(request.getEmail(), request.getPassword());
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Usuário logado com sucesso!"));
     }

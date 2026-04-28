@@ -9,11 +9,9 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.dto.request.CondominiumRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +21,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Condominium {
 
     @Id

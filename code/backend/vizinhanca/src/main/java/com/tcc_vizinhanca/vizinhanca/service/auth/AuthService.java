@@ -10,8 +10,8 @@
 package com.tcc_vizinhanca.vizinhanca.service.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
@@ -38,7 +38,7 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public AuthResponse<CondominiumResponse> loginCondominium(String email, String password){
+    public AuthResponse<CondominiumDetailResponse> loginCondominium(String email, String password){
 
         Condominium condominium = condominiumRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -53,12 +53,12 @@ public class AuthService {
 
         String token = jwtService.gerarToken(condominium.getEmail());
 
-        CondominiumResponse condominiumResponse = new CondominiumResponse(condominium);
+        CondominiumDetailResponse condominiumDetailResponse = new CondominiumDetailResponse(condominium);
 
-        return new AuthResponse<>(token, condominiumResponse);
+        return new AuthResponse<>(token, condominiumDetailResponse);
     }
 
-    public AuthResponse<ResidentResponse> loginResident(String email, String password) {
+    public AuthResponse<ResidentDetailResponse> loginResident(String email, String password) {
 
         Resident resident = residentRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -73,7 +73,7 @@ public class AuthService {
 
         String token = jwtService.gerarToken(resident.getEmail());
 
-        ResidentResponse userResponse = new ResidentResponse(resident);
+        ResidentDetailResponse userResponse = new ResidentDetailResponse(resident);
 
         return new AuthResponse<>(token, userResponse);
     }
