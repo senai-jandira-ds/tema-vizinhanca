@@ -9,9 +9,9 @@
 
 package com.tcc_vizinhanca.vizinhanca.service.auth;
 
-import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumDetailResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;

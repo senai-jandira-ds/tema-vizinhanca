@@ -1,9 +1,10 @@
 package com.tcc_vizinhanca.vizinhanca.controller.condominium;
 
-import com.tcc_vizinhanca.vizinhanca.dto.request.CondominiumRequest;
+import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumCreateRequest;
+import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumDetailResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class CondominiumController {
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
-
+        System.out.println("CondominiumController: listAllCondos");
         List<Condominium> condos = condominiumService.getSelectAllCondominiums();
 
         CondominiumResponse response = new CondominiumResponse(condos);
@@ -48,9 +48,9 @@ public class CondominiumController {
 
     // POST
     @PostMapping
-    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(@Valid @RequestBody CondominiumRequest condominiumRequest) {
+    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(@Valid @RequestBody CondominiumCreateRequest condominiumCreateRequest) {
 
-        Condominium condominium = CondominiumMapper.toEntity(condominiumRequest);
+        Condominium condominium = CondominiumMapper.toEntity(condominiumCreateRequest);
 
         Condominium newCondominium = condominiumService.setInsertCondominium(condominium);
 
@@ -63,14 +63,15 @@ public class CondominiumController {
     // PUT
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> updateCondominium(
-            @PathVariable Long id, @Valid @RequestBody CondominiumRequest condominiumRequest
-    ) {
-        Condominium condominium = CondominiumMapper.toEntity(condominiumRequest);
+            @PathVariable Long id, @Valid @RequestBody CondominiumUpdateRequest condominiumUpdateRequest
+            ) {
+        System.out.println("ENTROU");
+        Condominium condominium = CondominiumMapper.updateEntity(condominiumUpdateRequest, new Condominium());
 
         Condominium updatedCondominium = condominiumService.setUpdateCondominium(condominium, id);
 
         CondominiumDetailResponse response = new CondominiumDetailResponse(updatedCondominium);
-
+        System.out.println(response.toString());
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio atualizado com sucesso!"));
     }
 
@@ -79,6 +80,6 @@ public class CondominiumController {
     public ResponseEntity<ApiResponse<Void>> deleteCondominium(@PathVariable("id") Long idCondominium) {
         condominiumService.setDeleteCondominiumById(idCondominium);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ResponseUtil.success(null, "Condomínio deletado com sucesso!"));
     }
 }

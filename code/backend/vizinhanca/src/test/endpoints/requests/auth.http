@@ -6,8 +6,8 @@ POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
-  "email": "contato@solarflores.com",
-  "password": "senha123"
+  "email": "contato@scotti10.com",
+  "password": "OiCamila"
 }
 
 ### ===== CONDOMINIUM =====
@@ -17,20 +17,38 @@ Authorization: Bearer {{token}}
 
 ### Serach by id
 # @name searchCondominium
-GET http://localhost:8080/api/v1/condominium/1
+GET http://localhost:8080/api/v1/condominium/9
 Authorization: Bearer {{token}}
 
 ### Insert
 # @name insertCondominium
 POST http://localhost:8080/api/v1/condominium
-Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
     "name": "Boa Vista",
-    "cnpj": "12345678910124",
+    "cnpj": "12345678910110",
     "amount_blocks": 4,
     "amount_apartments": 160,
-    "email": "contato@scotti.com.br",
+    "email": "contato@scotti10.com",
     "password": "OiCamila"
 }
+
+### Update
+# @name updateCondominium
+PUT http://localhost:8080/api/v1/condominium/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bela Vista",
+  "cnpj": "12345678910124",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "contato@scotti.com.br"
+}
+
+### Delete
+# @name deleteCondominium
+DELETE http://localhost:8080/api/v1/condominium/9
+Authorization: Bearer {{token}}

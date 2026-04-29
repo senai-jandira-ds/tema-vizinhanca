@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.dto.response;
+package com.tcc_vizinhanca.vizinhanca.dto.response.auth;
 
 import lombok.Getter;
 import lombok.Setter;

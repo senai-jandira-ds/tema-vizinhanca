@@ -9,12 +9,16 @@
 
 package com.tcc_vizinhanca.vizinhanca.service.resident;
 
+import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentCreateRequest;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
+import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,6 +29,9 @@ public class ResidentService {
 
     @Autowired
     private ResidentRepository residentRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // SELECT ALL
     public List<Resident> getSelectAllResidents(){
@@ -42,6 +49,19 @@ public class ResidentService {
     // INSERT RESIDENT
     public Resident setInsertResident(@NonNull Resident resident){
         resident.setId(null);
+
+        if(residentRepository.existsByCpf(resident.getCpf())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado!");
+        }
+
+        if(residentRepository.existsByEmail(resident.getEmail())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
+        }
+
+        String rawPassword = PasswordGeneratorUtils.generateSecure(8);
+
+        resident.setPassword(passwordEncoder.encode(rawPassword));
+        resident.setIsActive(true);
 
         return residentRepository.save(resident);
     }

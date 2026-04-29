@@ -11,9 +11,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,9 +33,11 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        boolean shouldSkip = path.startsWith("/api/v1/auth") || path.startsWith("/h2-console");
+        String method = request.getMethod();
 
-        return shouldSkip;
+        return path.startsWith("/api/v1/auth")
+                || path.startsWith("/h2-console")
+                || (path.equals("/api/v1/condominium") && method.equals("POST"));
     }
 
     @Override
@@ -53,11 +55,12 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = header.substring(7);
+
         System.out.println("TOKEN VÁLIDO: " + jwtService.validarToken(token));
         System.out.println("USERNAME: " + jwtService.extrairUsername(token));
 
         if (!jwtService.validarToken(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
             return;
         }
 
@@ -71,7 +74,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
-        System.out.println("AUTENTICAÇÃO SETADA: " + SecurityContextHolder.getContext().getAuthentication());
+
+        System.out.println("AUTENTICAÇÃO SETADA: " +
+                SecurityContextHolder.getContext().getAuthentication());
 
         filterChain.doFilter(request, response);
     }

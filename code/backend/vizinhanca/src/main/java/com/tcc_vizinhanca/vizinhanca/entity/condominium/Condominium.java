@@ -9,7 +9,6 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
-import com.tcc_vizinhanca.vizinhanca.dto.request.CondominiumRequest;
 import jakarta.persistence.*;
 import lombok.*;
 

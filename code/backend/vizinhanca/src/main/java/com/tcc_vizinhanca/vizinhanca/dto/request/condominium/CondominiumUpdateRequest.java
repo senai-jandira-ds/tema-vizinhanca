@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.dto.request;
+package com.tcc_vizinhanca.vizinhanca.dto.request.condominium;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CondominiumRequest {
+public class CondominiumUpdateRequest {
 
     @JsonProperty("name")
     @NotBlank(message = "Nome é obrigatório")
@@ -30,8 +30,4 @@ public class CondominiumRequest {
     @NotBlank(message = "E-mail é obrigatório")
     @Email(message = "E-mail inválido")
     private String email;
-
-    @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
-    private String password;
 }

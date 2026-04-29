@@ -1,9 +1,7 @@
-package com.tcc_vizinhanca.vizinhanca.dto.response;
+package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

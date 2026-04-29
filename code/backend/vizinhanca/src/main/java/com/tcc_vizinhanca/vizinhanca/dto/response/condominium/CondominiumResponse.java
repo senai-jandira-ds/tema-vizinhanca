@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.dto.response;
+package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

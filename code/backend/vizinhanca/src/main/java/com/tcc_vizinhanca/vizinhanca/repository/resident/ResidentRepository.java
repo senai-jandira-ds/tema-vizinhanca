@@ -16,4 +16,6 @@ import java.util.Optional;
 public interface ResidentRepository extends JpaRepository<Resident,Long> {
 
     Optional<Resident> findByEmail(String email);
+    boolean existsByCpf(String cpf);
+    boolean existsByEmail(String email);
 }

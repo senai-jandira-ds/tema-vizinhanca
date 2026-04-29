@@ -2,9 +2,9 @@ package com.tcc_vizinhanca.vizinhanca.controller.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.AuthResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.CondominiumDetailResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.ResidentDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import org.springframework.http.ResponseEntity;

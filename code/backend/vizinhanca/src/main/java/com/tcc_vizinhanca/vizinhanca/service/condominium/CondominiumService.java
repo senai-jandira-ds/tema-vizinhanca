@@ -10,11 +10,13 @@
 package com.tcc_vizinhanca.vizinhanca.service.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,6 +27,9 @@ public class CondominiumService {
 
     @Autowired
     private CondominiumRepository condominiumRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // SELECT ALL
     public List<Condominium> getSelectAllCondominiums() {
@@ -50,6 +55,10 @@ public class CondominiumService {
         if (condominiumRepository.existsByEmail(condominium.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
         }
+
+        condominium.setPassword(
+                passwordEncoder.encode(condominium.getPassword())
+        );
 
         return condominiumRepository.save(condominium);
     }

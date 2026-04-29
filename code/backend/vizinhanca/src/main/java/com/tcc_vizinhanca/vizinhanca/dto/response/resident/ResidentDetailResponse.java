@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.dto.response;
+package com.tcc_vizinhanca.vizinhanca.dto.response.resident;
 
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import lombok.AllArgsConstructor;
