@@ -1,0 +1,114 @@
+.tabelaWrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.tabela-container {
+    height: 90%;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 1);
+    border-radius: 20px;
+    overflow: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 16px;
+    background-color: white;
+    overflow: scroll !important;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    height: 100%;
+    text-align: left;
+    overflow: auto;
+    table-layout: fixed;
+    font-size: 24px;
+}
+
+th,
+td {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+th:last-child,
+td:last-child {
+    border-right: none;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+th {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    font-weight: 500;
+    position: relative;
+    user-select: none;
+}
+
+.redimensionador {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.redimensionador:hover,
+.redimensionador:active {
+    background-color: #9ca3af;
+}
+
+td {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #111827;
+}
+
+td:hover {
+    background-color: #f9fafb;
+}
+
+.status-verde {
+    color: #4d7c4d;
+}
+
+.status-azul {
+    color: #3b18ff;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.btn-paginacao {
+    border: 1px solid #d1d5db;
+    background-color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: black;
+}
+
+.btn-paginacao.ativo {
+    background-color: #3b18ff;
+    color: white;
+    border: none;
+}

@@ -1,6 +1,7 @@
 import styles from "./style.module.css";
 import Sidebar from "./components/sidebar";
 import Card from "./components/card.jsx";
+import Table from "./components/table";
 
 function Dashboard() {
 
@@ -19,7 +20,10 @@ function Dashboard() {
                             <Card title={"Teste"} quantity={1} />
                         </div>
                     </header>
-                    <main></main>
+                    <main>
+                        <h2>Atividade</h2>
+                        <Table />
+                    </main>
                 </div>
             </div>
         </>
