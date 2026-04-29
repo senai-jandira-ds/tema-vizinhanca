@@ -8,10 +8,12 @@ import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class CondominiumController {
 
     // GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> searchCondominiumById(@PathVariable Long idCondominium) {
+    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> searchCondominiumById(@PathVariable("id") Long idCondominium) {
 
         Condominium condominium = condominiumService.getSelectCondominiumById(idCondominium);
 
@@ -46,7 +48,7 @@ public class CondominiumController {
 
     // POST
     @PostMapping
-    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(@RequestBody CondominiumRequest condominiumRequest) {
+    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(@Valid @RequestBody CondominiumRequest condominiumRequest) {
 
         Condominium condominium = CondominiumMapper.toEntity(condominiumRequest);
 
@@ -61,7 +63,7 @@ public class CondominiumController {
     // PUT
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> updateCondominium(
-            @PathVariable Long id, @RequestBody CondominiumRequest condominiumRequest
+            @PathVariable Long id, @Valid @RequestBody CondominiumRequest condominiumRequest
     ) {
         Condominium condominium = CondominiumMapper.toEntity(condominiumRequest);
 
@@ -70,5 +72,13 @@ public class CondominiumController {
         CondominiumDetailResponse response = new CondominiumDetailResponse(updatedCondominium);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio atualizado com sucesso!"));
+    }
+
+    // DELETE
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCondominium(@PathVariable("id") Long idCondominium) {
+        condominiumService.setDeleteCondominiumById(idCondominium);
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -16,4 +16,6 @@ import java.util.Optional;
 public interface CondominiumRepository   extends JpaRepository<Condominium, Long> {
 
     Optional<Condominium> findByEmail(String email);
+    boolean existsByCnpj(String cnpj);
+    boolean existsByEmail(String email);
 }

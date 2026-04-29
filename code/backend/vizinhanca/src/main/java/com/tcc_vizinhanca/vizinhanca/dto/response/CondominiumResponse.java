@@ -3,7 +3,6 @@ package com.tcc_vizinhanca.vizinhanca.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,21 +12,22 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @JsonPropertyOrder({
-        "condos_amount",
-        "condos"
+        "amount_condominiums",
+        "condominiums"
 })
 public class CondominiumResponse {
 
-    @JsonProperty("condos_amount")
-    public Integer getCondosAmount() {
-        return condos != null ? condos.size() : 0;
+    @JsonProperty("amount_condominiums")
+    public Integer getAmountCondominiums() {
+        return condominiums != null ? condominiums.size() : 0;
     }
 
-    private List<Condominium> condos;
+    private List<CondominiumDetailResponse> condominiums;
 
-    public CondominiumResponse(List<Condominium> condos) {
-        this.condos = condos;
+    public CondominiumResponse(List<Condominium> condominiums) {
+        this.condominiums = condominiums.stream()
+                .map(CondominiumDetailResponse::new)
+                .toList();
     }
 }

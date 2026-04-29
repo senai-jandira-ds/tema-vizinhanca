@@ -1,4 +1,7 @@
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlhdCI6MTc3NzQyNTYwNywiZXhwIjoxNzc3NTEyMDA3fQ.QTSVxzrtoRmf5pz3BbuWC2RvQiYFYDdF3iHUNsTXyt8
+
 ### Login
+# @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
 
@@ -7,3 +10,27 @@ Content-Type: application/json
   "password": "senha123"
 }
 
+### ===== CONDOMINIUM =====
+# @name listCondominium
+GET http://localhost:8080/api/v1/condominium
+Authorization: Bearer {{token}}
+
+### Serach by id
+# @name searchCondominium
+GET http://localhost:8080/api/v1/condominium/1
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertCondominium
+POST http://localhost:8080/api/v1/condominium
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Boa Vista",
+    "cnpj": "12345678910124",
+    "amount_blocks": 4,
+    "amount_apartments": 160,
+    "email": "contato@scotti.com.br",
+    "password": "OiCamila"
+}

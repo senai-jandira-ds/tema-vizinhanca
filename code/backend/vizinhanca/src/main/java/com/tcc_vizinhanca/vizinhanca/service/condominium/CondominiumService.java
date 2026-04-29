@@ -43,6 +43,14 @@ public class CondominiumService {
     public Condominium setInsertCondominium(@NonNull Condominium condominium) {
         condominium.setId(null);
 
+        if (condominiumRepository.existsByCnpj(condominium.getCnpj())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CNPJ já cadastrado!");
+        }
+
+        if (condominiumRepository.existsByEmail(condominium.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
+        }
+
         return condominiumRepository.save(condominium);
     }
 
@@ -50,7 +58,7 @@ public class CondominiumService {
     public Condominium setUpdateCondominium(@NonNull Condominium condominium, Long idCondominium) {
         Condominium existingCondominium = getSelectCondominiumById(idCondominium);
 
-        BeanUtils.copyProperties(condominium, existingCondominium, "id");
+        BeanUtils.copyProperties(condominium, existingCondominium, "id", "password", "creationDate");
 
         return condominiumRepository.save(existingCondominium);
     }

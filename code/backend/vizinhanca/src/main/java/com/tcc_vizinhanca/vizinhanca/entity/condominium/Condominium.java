@@ -47,7 +47,11 @@ public class Condominium {
     @Column(name = "senha", nullable = false)
     private String password;
 
-    @Column(name = "data_criacao", insertable = false, updatable = false)
+    @Column(name = "data_criacao", updatable = false)
     private LocalDateTime creationDate;
 
+    @PrePersist
+    public void prePersist() {
+        this.creationDate = LocalDateTime.now();
+    }
 }

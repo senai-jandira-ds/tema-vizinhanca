@@ -12,7 +12,7 @@ public class CondominiumMapper {
                 .amountBlocks(dto.getQtdBlocos())
                 .amountApartments(dto.getQtdApto())
                 .email(dto.getEmail())
-                .password(dto.getSenha())
+                .password(dto.getPassword())
                 .build();
     }
 
