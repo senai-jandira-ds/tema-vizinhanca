@@ -1,0 +1,21 @@
+import styles from "./card.module.css";
+import Back from "../icons/backicon.svg?react";
+
+function Card({ title, quantity }) {
+
+    return (
+        <>
+            <div className={styles.card}>
+                <div className={styles.leftContent}>
+                    <span>{title}</span>
+                    <span>{quantity}</span>
+                </div>
+                <div className={styles.rightContent}>
+                    <Back className={styles.icon} />
+                </div>
+            </div>
+        </>
+    )
+}
+
+export default Card;

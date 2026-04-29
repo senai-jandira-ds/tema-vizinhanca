@@ -1,0 +1,48 @@
+.card {
+    display: flex;
+    aspect-ratio: 273 / 143;
+    width: 25%;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 20px;
+    padding: 2.5%;
+}
+.leftContent{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 80%;
+    gap: 25%;
+}
+.leftContent span:first-child{
+    color: #10B765;
+    font-size: 2.6rem;
+}
+.leftContent span:last-child{
+    font-size: 1.9rem;
+}
+.rightContent{
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    height: 100%;
+    width: 20%;
+}
+.icon{
+
+    width: 50%;
+    rotate: -90deg;
+}
+.card:hover .icon{
+    rotate: 90deg;
+}
+
+
+@media (max-width: 1440px) {
+    .leftContent span:first-child{
+        font-size: 1.8rem;
+    }
+    .leftContent span:last-child{
+        font-size: 1.2rem;
+    }
+}
