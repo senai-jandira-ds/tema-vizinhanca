@@ -12,7 +12,7 @@ package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tbl_condominio")
@@ -47,10 +47,10 @@ public class Condominium {
     private String password;
 
     @Column(name = "data_criacao", updatable = false)
-    private LocalDateTime creationDate;
+    private LocalDate creationDate;
 
     @PrePersist
     public void prePersist() {
-        this.creationDate = LocalDateTime.now();
+        this.creationDate = LocalDate.now();
     }
 }

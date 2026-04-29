@@ -2,7 +2,7 @@ package com.tcc_vizinhanca.vizinhanca.util;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class ResponseUtil {
 
@@ -14,7 +14,7 @@ public class ResponseUtil {
         response.setDeveloper("Leonardo Scotti");
         response.setApiDescription("API para manipular dados da locadora de filmes.");
         response.setVersion("1.0.4.26");
-        response.setRequestDate(LocalDateTime.now().toString());
+        response.setRequestDate(LocalDate.now().toString());
         response.setMessage(message);
         response.setResponse(data);
 
@@ -29,7 +29,7 @@ public class ResponseUtil {
         response.setDeveloper("Leonardo Scotti");
         response.setApiDescription("API para manipular dados da locadora de filmes.");
         response.setVersion("1.0.04.26");
-        response.setRequestDate(LocalDateTime.now().toString());
+        response.setRequestDate(LocalDate.now().toString());
         response.setMessage(message);
 
         return response;

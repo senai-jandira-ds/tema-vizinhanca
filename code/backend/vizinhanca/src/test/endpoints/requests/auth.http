@@ -6,7 +6,7 @@ POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
-  "email": "contato@scotti10.com",
+  "email": "teste@teste.com",
   "password": "OiCamila"
 }
 
