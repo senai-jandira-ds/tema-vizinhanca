@@ -15,7 +15,6 @@ public class ResidentMapper {
                 .block(dto.getBloco())
                 .cpf(dto.getCpf())
                 .email(dto.getEmail())
-                .password(dto.getSenha())
                 .photo(dto.getTelefone())
                 .score(dto.getPontuacao())
                 .condominium(condominium)
@@ -46,10 +45,6 @@ public class ResidentMapper {
 
         if (dto.getEmail() != null) {
             entity.setEmail(dto.getEmail());
-        }
-
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            entity.setPassword(dto.getPassword());
         }
 
         if (dto.getPontuacao() != null) {
