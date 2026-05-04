@@ -1,5 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlhdCI6MTc3NzQyNTYwNywiZXhwIjoxNzc3NTEyMDA3fQ.QTSVxzrtoRmf5pz3BbuWC2RvQiYFYDdF3iHUNsTXyt8
-
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3Nzc5MjE1MzAsImV4cCI6MTc3ODAwNzkzMH0.KebakpjUFXIpalGj9lQ40OcpFSvlxuB37xYnOWlHOvE
 ### Login
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -15,9 +14,9 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/condominium
 Authorization: Bearer {{token}}
 
-### Serach by id
+### Search by id
 # @name searchCondominium
-GET http://localhost:8080/api/v1/condominium/9
+GET http://localhost:8080/api/v1/condominium/1
 Authorization: Bearer {{token}}
 
 ### Insert
@@ -30,7 +29,7 @@ Content-Type: application/json
     "cnpj": "12345678910110",
     "amount_blocks": 4,
     "amount_apartments": 160,
-    "email": "contato@scotti10.com",
+    "email": "teste@teste.com",
     "password": "OiCamila"
 }
 
@@ -50,5 +49,34 @@ Content-Type: application/json
 
 ### Delete
 # @name deleteCondominium
-DELETE http://localhost:8080/api/v1/condominium/9
+DELETE http://localhost:8080/api/v1/condominium/11
 Authorization: Bearer {{token}}
+
+
+### ===== RESIDENT =====
+# @name listResident
+GET http://localhost:8080/api/v1/resident
+Authorization: Bearer {{token}}
+
+### Search by ID
+# @name searchResident
+GET http://localhost:8080/api/v1/resident/6
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertResident
+POST http://localhost:8080/api/v1/resident
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "photo": "",
+  "name": "Leonardo Scotti Tobias",
+  "apartment": "1",
+  "block": "Torre 1",
+  "cpf": "42969976889",
+  "email": "leonardo@gmail.com",
+  "phone": "11998572585",
+  "score": 0,
+  "condominium_id": 1
+}

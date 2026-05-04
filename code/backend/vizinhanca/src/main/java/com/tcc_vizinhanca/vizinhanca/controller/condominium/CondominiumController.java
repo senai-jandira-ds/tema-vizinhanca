@@ -27,7 +27,6 @@ public class CondominiumController {
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
-        System.out.println("CondominiumController: listAllCondos");
         List<Condominium> condos = condominiumService.getSelectAllCondominiums();
 
         CondominiumResponse response = new CondominiumResponse(condos);
@@ -65,13 +64,12 @@ public class CondominiumController {
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> updateCondominium(
             @PathVariable Long id, @Valid @RequestBody CondominiumUpdateRequest condominiumUpdateRequest
             ) {
-        System.out.println("ENTROU");
         Condominium condominium = CondominiumMapper.updateEntity(condominiumUpdateRequest, new Condominium());
 
         Condominium updatedCondominium = condominiumService.setUpdateCondominium(condominium, id);
 
         CondominiumDetailResponse response = new CondominiumDetailResponse(updatedCondominium);
-        System.out.println(response.toString());
+
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio atualizado com sucesso!"));
     }
 

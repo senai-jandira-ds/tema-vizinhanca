@@ -9,10 +9,12 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "tbl_condominio")
@@ -48,6 +50,9 @@ public class Condominium {
 
     @Column(name = "data_criacao", updatable = false)
     private LocalDate creationDate;
+
+    @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
+    private List<Resident> residents;
 
     @PrePersist
     public void prePersist() {

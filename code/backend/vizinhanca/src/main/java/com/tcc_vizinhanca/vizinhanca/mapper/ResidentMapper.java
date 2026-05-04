@@ -15,13 +15,13 @@ public class ResidentMapper {
                 .block(dto.getBloco())
                 .cpf(dto.getCpf())
                 .email(dto.getEmail())
-                .photo(dto.getTelefone())
+                .phone(dto.getTelefone())
                 .score(dto.getPontuacao())
                 .condominium(condominium)
                 .build();
     }
 
-    public static void updateEntity(ResidentUpdateRequest dto, Resident entity) {
+    public static Resident updateEntity(ResidentUpdateRequest dto, Resident entity) {
 
         if (dto.getFoto() != null) {
             entity.setPhoto(dto.getFoto());
@@ -50,6 +50,8 @@ public class ResidentMapper {
         if (dto.getPontuacao() != null) {
             entity.setScore(dto.getPontuacao());
         }
+
+        return entity;
     }
 
 }

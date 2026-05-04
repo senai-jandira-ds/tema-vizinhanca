@@ -59,6 +59,7 @@ public class ResidentService {
         }
 
         String rawPassword = PasswordGeneratorUtils.generateSecure(8);
+        System.out.println(rawPassword);
 
         resident.setPassword(passwordEncoder.encode(rawPassword));
         resident.setIsActive(true);
