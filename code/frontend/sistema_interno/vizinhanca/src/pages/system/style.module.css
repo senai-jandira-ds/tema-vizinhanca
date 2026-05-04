@@ -20,6 +20,7 @@
     padding: 3%;
     gap: 2%;
     color: black;
+    overflow: hidden;
 }
 
 .rightContent{
