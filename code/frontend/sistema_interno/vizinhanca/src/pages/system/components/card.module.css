@@ -12,14 +12,14 @@
     flex-direction: column;
     height: 100%;
     width: 80%;
-    gap: 25%;
+    gap: 60%;
 }
 .leftContent span:first-child{
     color: #10B765;
     font-size: 2.6rem;
 }
 .leftContent span:last-child{
-    font-size: 1.9rem;
+    font-size: 3.5rem;
 }
 .rightContent{
     display: flex;
@@ -29,20 +29,31 @@
     width: 20%;
 }
 .icon{
-
+    transition: 0.5s;
     width: 50%;
     rotate: -90deg;
 }
+.card:hover{
+    background-color: rgba(0, 0, 0, 0.042);
+}
 .card:hover .icon{
+    transform: scale(1.05);
     rotate: 90deg;
 }
 
 
 @media (max-width: 1440px) {
+    .card{
+        padding: 2%;
+    }
+    .leftContent{
+        gap: 40%;
+        padding: 1%;
+    }
     .leftContent span:first-child{
-        font-size: 1.8rem;
+        font-size: 2cqw;
     }
     .leftContent span:last-child{
-        font-size: 1.2rem;
+        font-size: 2rem;
     }
 }

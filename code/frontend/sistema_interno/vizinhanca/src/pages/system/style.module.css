@@ -71,5 +71,9 @@ main h2{
     }
     main h2{
         font-size: 1.8rem;
+ 
+    }
+    .rightContent{
+        gap: 1.5rem;
     }
 }

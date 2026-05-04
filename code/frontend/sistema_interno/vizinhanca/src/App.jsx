@@ -1,14 +1,18 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Login from "./pages/login";
-import System from "./pages/system";
+import SystemLayout from "./pages/system/layout";
+import Dashboard from "./pages/system/home";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/app" element={<System />} />
+        <Route path="/app" element={<SystemLayout />}>
+          <Route index element={<Dashboard />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

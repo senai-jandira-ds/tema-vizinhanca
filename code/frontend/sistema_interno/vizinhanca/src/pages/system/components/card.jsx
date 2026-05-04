@@ -1,13 +1,13 @@
 import styles from "./card.module.css";
 import Back from "../icons/backicon.svg?react";
 
-function Card({ title, quantity }) {
+function Card({ title, quantity, color }) {
 
     return (
         <>
             <div className={styles.card}>
                 <div className={styles.leftContent}>
-                    <span>{title}</span>
+                    <span style={{ color: color }}>{title}</span>
                     <span>{quantity}</span>
                 </div>
                 <div className={styles.rightContent}>

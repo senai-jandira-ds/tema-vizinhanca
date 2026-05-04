@@ -113,3 +113,9 @@ td:hover {
     color: white;
     border: none;
 }
+
+@media (max-width: 1440px) {
+    .paginacao{
+        margin-top: 0.5rem;
+    }
+}
