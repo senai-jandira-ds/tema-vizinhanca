@@ -1,5 +1,5 @@
-import styles from "./card.module.css";
-import Back from "../icons/backicon.svg?react";
+import styles from "./Card.module.css";
+import Back from "../../assets/icons/backicon.svg?react";
 
 function Card({ title, quantity, color }) {
 

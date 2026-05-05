@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './table.module.css';
+import styles from './Table.module.css';
 
 const dadosIniciais = [
   { id: '5524', nome: 'João Pereira', detalhe: 'Preciso de uma furadeira por 1...', tipo: 'Pedido', status: 'Aberto' },

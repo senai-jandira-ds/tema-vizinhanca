@@ -1,8 +1,8 @@
 import styles from "./style.module.css";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/img/icons/logo.png";
-import condominio from "../../assets/img/icons/condominio.png";
-import LoginInput from "./components/logininput";
+import logo from "../../assets/icons/logo.png";
+import condominio from "../../assets/icons/condominio.png";
+import Input from "../../components/ui/Input";
 
 
 
@@ -16,8 +16,8 @@ function LoginScreen() {
                 <div className={styles.leftMain}>
                     <img src={logo} alt="" />
 
-                    <LoginInput placeholder="Login" type="text" />
-                    <LoginInput placeholder="Senha" type="password" />
+                    <Input placeholder="Login" type="text" />
+                    <Input placeholder="Senha" type="password" />
 
                     <button onClick={() => navigate("/app")}>
                         Entrar

@@ -1,8 +1,8 @@
-import styles from "./style.module.css";
-import Sidebar from "./components/sidebar";
+import styles from "./AppLayout.module.css";
+import Sidebar from "./components/Sidebar";
 import { Outlet } from "react-router-dom";
 
-function SystemLayout() {
+function AppLayout() {
     return (
         <>
             <div className={styles.background}></div>
@@ -18,4 +18,4 @@ function SystemLayout() {
     );
 }
 
-export default SystemLayout;
+export default AppLayout;

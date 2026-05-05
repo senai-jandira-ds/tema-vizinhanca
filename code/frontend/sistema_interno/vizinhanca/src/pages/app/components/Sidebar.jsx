@@ -1,13 +1,13 @@
 import React from "react";
-import styles from "./sidebar.module.css";
-import Back from "../icons/backicon.svg?react";
-import Home from "../icons/homeicon.svg?react";
-import People from "../icons/peopleicon.svg?react";
-import Global from "../icons/globalicon.svg?react";
-import Hands from "../icons/handsicon.svg?react";
-import Settings from "../icons/settingsicon.svg?react";
-import Shield from "../icons/shieldsecurityicon.svg?react";
-import Help from "../icons/helpicon.svg?react";
+import styles from "./Sidebar.module.css";
+import Back from "../../../assets/icons/backicon.svg?react";
+import Home from "../../../assets/icons/homeicon.svg?react";
+import People from "../../../assets/icons/peopleicon.svg?react";
+import Global from "../../../assets/icons/globalicon.svg?react";
+import Hands from "../../../assets/icons/handsicon.svg?react";
+import Settings from "../../../assets/icons/settingsicon.svg?react";
+import Shield from "../../../assets/icons/shieldsecurityicon.svg?react";
+import Help from "../../../assets/icons/helpicon.svg?react";
 
 function Sidebar() {
     return (
