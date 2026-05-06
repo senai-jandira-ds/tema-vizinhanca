@@ -1,5 +1,5 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3Nzc5MjE1MzAsImV4cCI6MTc3ODAwNzkzMH0.KebakpjUFXIpalGj9lQ40OcpFSvlxuB37xYnOWlHOvE
-### Login
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3NzgwOTYxMTMsImV4cCI6MTc3ODE4MjUxM30.UCKJsvQLkCjoS063YLlrA_tAmcIJTZebRs9vcAsByuk
+### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
@@ -7,6 +7,16 @@ Content-Type: application/json
 {
   "email": "teste@teste.com",
   "password": "OiCamila"
+}
+
+### LoginResident
+# @name loginRequest
+POST http://localhost:8080/api/v1/auth/login/resident
+Content-Type: application/json
+
+{
+"email": "leonardo07@gmail.com",
+"password": "4@DCrXt@"
 }
 
 ### ===== CONDOMINIUM =====
@@ -74,9 +84,27 @@ Content-Type: application/json
   "name": "Leonardo Scotti Tobias",
   "apartment": "1",
   "block": "Torre 1",
-  "cpf": "42969976889",
-  "email": "leonardo@gmail.com",
+  "cpf": "42969976890",
+  "email": "leonardo07@gmail.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 1
 }
+
+### Update
+# @name updateResident
+PUT http://localhost:8080/api/v1/resident/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "foto": "",
+    "nome": "Leonardo",
+    "apto": "82",
+    "bloco": "Torre 2",
+    "cpf": "67890123456",
+    "email": "ricardo.santos@yahoo.com",
+    "telefone": "11943210987",
+    "pontuacao": 20,
+    "condominium_id": 5
+ }
