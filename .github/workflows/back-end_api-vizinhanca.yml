@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'api-vizinhanca'
           slot-name: 'Production'
-          package: '*.jar'
+          package: '.'
           
