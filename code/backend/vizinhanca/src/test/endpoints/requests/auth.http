@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3NzgwOTYxMTMsImV4cCI6MTc3ODE4MjUxM30.UCKJsvQLkCjoS063YLlrA_tAmcIJTZebRs9vcAsByuk
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3NzgxMjAyNzksImV4cCI6MTc3ODIwNjY3OX0.FIwf6U9zYlY3fp48-EwNg7lPJVrz6r7U4wUC6am-F3U
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -16,8 +16,10 @@ Content-Type: application/json
 
 {
 "email": "leonardo07@gmail.com",
-"password": "4@DCrXt@"
+"password": "k#x8Wb9!"
 }
+
+
 
 ### ===== CONDOMINIUM =====
 # @name listCondominium
@@ -81,11 +83,11 @@ Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Leonardo Scotti Tobias",
+  "name": "Roger",
   "apartment": "1",
   "block": "Torre 1",
-  "cpf": "42969976890",
-  "email": "leonardo07@gmail.com",
+  "cpf": "42969976889",
+  "email": "leonardo@gmail.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 1
@@ -107,4 +109,4 @@ Content-Type: application/json
     "telefone": "11943210987",
     "pontuacao": 20,
     "condominium_id": 5
- }
+}
