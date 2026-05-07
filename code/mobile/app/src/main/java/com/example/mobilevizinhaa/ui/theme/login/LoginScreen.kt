@@ -28,7 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-
 @Composable
 fun LoginScreen(
     navController: (String) -> Unit,
@@ -37,7 +36,7 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Utilitários de sistema
+    // Gerenciadores de sistema para foco e vibração
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
@@ -50,6 +49,7 @@ fun LoginScreen(
     ) {
         Spacer(modifier = Modifier.height(60.dp))
 
+        // --- LOGO ---
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
@@ -58,7 +58,7 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(50.dp))
-        Text(text = "Login", fontSize = 28.sp, color = BluePrimary)
+        Text(text = "Login", fontSize = 28.sp, color = BluePrimary, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(30.dp))
 
         // --- CAMPO EMAIL ---
@@ -73,13 +73,13 @@ fun LoginScreen(
             ),
             isError = uiState.emailError != null,
             modifier = Modifier
-                .fillMaxWidth() // Corrigido de fillMaxWidtn para fillMaxWidth
-                .shake(uiState.emailError != null)
+                .fillMaxWidth()
+                .shake(uiState.emailError != null) // Chama a função do arquivo LoginAnimations
         )
 
-        uiState.emailError?.let {
+        if (uiState.emailError != null) {
             Text(
-                text = it,
+                text = uiState.emailError!!,
                 color = Color.Red,
                 fontSize = 12.sp,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 4.dp)
@@ -114,12 +114,12 @@ fun LoginScreen(
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .shake(uiState.passwordError != null)
+                .shake(uiState.passwordError != null) // Chama a função do arquivo LoginAnimations
         )
 
-        uiState.passwordError?.let {
+        if (uiState.passwordError != null) {
             Text(
-                text = it,
+                text = uiState.passwordError!!,
                 color = Color.Red,
                 fontSize = 12.sp,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 4.dp)
@@ -131,6 +131,7 @@ fun LoginScreen(
         // --- BOTÃO DE LOGIN ---
         Button(
             onClick = {
+                // Vibração tátil ao clicar
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 viewModel.onLoginClicked { _, _ ->
                     navController("home")
@@ -138,10 +139,13 @@ fun LoginScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .bounceClick(), // Agora reconhecido pelo import acima
+                .height(55.dp)
+                .bounceClick(), // Chama a função do arquivo LoginAnimations
             shape = RoundedCornerShape(25.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BluePrimary,
+                contentColor = White
+            )
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(color = White, modifier = Modifier.size(24.dp))
@@ -152,6 +156,7 @@ fun LoginScreen(
     }
 }
 
+// --- COMPONENTE DE TEXT FIELD CUSTOMIZADO ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TccTextField(
@@ -172,7 +177,10 @@ fun TccTextField(
         label = { Text(label) },
         singleLine = true,
         isError = isError,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType,
+            imeAction = imeAction
+        ),
         keyboardActions = keyboardActions,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
@@ -183,7 +191,9 @@ fun TccTextField(
             errorContainerColor = Color(0xFFFFEBEE),
             focusedIndicatorColor = BluePrimary,
             unfocusedIndicatorColor = Color.Transparent,
-            errorIndicatorColor = Color.Red
+            errorIndicatorColor = Color.Red,
+            focusedLabelColor = BluePrimary,
+            unfocusedLabelColor = GrayText
         ),
         shape = RoundedCornerShape(25.dp)
     )

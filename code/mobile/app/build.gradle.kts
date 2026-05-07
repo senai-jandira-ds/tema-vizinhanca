@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,8 +66,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("io.coil-kt:coil-compose:2.6.0")
-        // Estas já devem estar aí, certifique-se de que não são versões muito antigas
-        implementation("androidx.compose.ui:ui")
-        implementation("androidx.compose.material3:material3")
-        implementation("androidx.compose.animation:animation") // Essencial para o shake e bounce
+    implementation("androidx.compose.animation:animation")
 }

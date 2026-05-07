@@ -10,19 +10,25 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 
-// 1. Efeito de Sacudir (Shake) - Corrigido para usar apenas Animatable
+/**
+ * Animação de Shake (Sacudida): Faz o componente balançar para os lados.
+ * Ideal para indicar erros de validação em campos de texto.
+ */
 fun Modifier.shake(enabled: Boolean): Modifier = composed {
+    // Controla o valor da transição horizontal
     val animatable = remember { Animatable(0f) }
 
+    // Dispara a animação toda vez que o estado 'enabled' mudar para true
     LaunchedEffect(enabled) {
         if (enabled) {
-            // Executa a sacudida
+            // Repete o movimento de ir e voltar 6 vezes
             repeat(6) { index ->
                 animatable.animateTo(
                     targetValue = if (index % 2 == 0) 10f else -10f,
                     animationSpec = tween(durationMillis = 50)
                 )
             }
+            // Volta para a posição original (zero)
             animatable.animateTo(0f)
         }
     }
@@ -30,23 +36,29 @@ fun Modifier.shake(enabled: Boolean): Modifier = composed {
     this.graphicsLayer(translationX = animatable.value)
 }
 
-// 2. Efeito de Clique (Bounce) - Agora com a lógica de detecção de toque
+/**
+ * Animação de Bounce (Clique): Faz o componente diminuir levemente ao ser pressionado.
+ * Dá um feedback visual tátil para botões e elementos clicáveis.
+ */
 fun Modifier.bounceClick() = composed {
     var isPressed by remember { mutableStateOf(false) }
+
+    // Anima a escala suavemente entre 100% e 95%
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        label = "bounceScale"
+        label = "bounceScale",
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
     )
 
     this.scale(scale)
         .pointerInput(Unit) {
             awaitPointerEventScope {
                 while (true) {
-                    // Detecta quando o dedo encosta
+                    // Detecta o momento em que o dedo encosta na tela
                     awaitFirstDown(false)
                     isPressed = true
 
-                    // Espera o dedo levantar ou o toque ser cancelado
+                    // Aguarda o dedo levantar ou o movimento ser cancelado
                     waitForUpOrCancellation()
                     isPressed = false
                 }
