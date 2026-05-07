@@ -1,0 +1,68 @@
+.wrapper {    
+    border: 1px solid #00000018;
+    position: relative;
+    display: inline-block;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid #00000018;
+    cursor: pointer;
+}
+
+.card {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    width: 280px;
+    background: #f5f5f5;
+    border-radius: 20px;
+    padding: 15px;
+    z-index: 100;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    animation: dropdown 0.25s ease forwards;
+}
+
+@keyframes dropdown {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.section {
+    margin-bottom: 10px;
+}
+
+.header {
+    background: #e0e0e0;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+}
+
+.content {
+    padding: 10px;
+}
+
+.option {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+.icon {
+    transition: transform 0.2s ease;
+  }
+  
+  .open {
+    transform: rotate(180deg);
+  }

@@ -1,4 +1,5 @@
 import React from "react";
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import styles from "./Sidebar.module.css";
 import Back from "../../../assets/icons/backicon.svg?react";
 import Home from "../../../assets/icons/homeicon.svg?react";
@@ -15,59 +16,59 @@ function Sidebar() {
             <nav>
                 <ul className={styles.list}>
                     <li>
-                        <a href="">
+                        <Link to="/voltar">
                             <Back className={styles.icon} />
                             <span className={styles.label}>Voltar</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="/app">
                             <Home className={styles.icon} />
                             <span className={styles.label}>Dashboard</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="activity">
                             <Global className={styles.icon} />
-                            <span className={styles.label}>Global</span>
-                        </a>
+                            <span className={styles.label}>Atividade Geral</span>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="/usuarios">
                             <People className={styles.icon} />
                             <span className={styles.label}>Usuários</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="/servicos">
                             <Hands className={styles.icon} />
                             <span className={styles.label}>Serviços</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="/seguranca">
                             <Shield className={styles.icon} />
                             <span className={styles.label}>Segurança</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li>
-                        <a href="">
+                        <Link to="/configuracoes">
                             <Settings className={styles.icon} />
                             <span className={styles.label}>Configurações</span>
-                        </a>
+                        </Link>
                     </li>
 
                     <li className={styles.lastItem}>
-                        <a href="">
+                        <Link to="/ajuda">
                             <Help className={styles.icon} />
                             <span className={styles.label}>Ajuda</span>
-                        </a>
+                        </Link>
                     </li>
                 </ul>
             </nav>
