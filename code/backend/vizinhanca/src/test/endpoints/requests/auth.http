@@ -1,11 +1,11 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZS5jb20iLCJpYXQiOjE3NzgxMjAyNzksImV4cCI6MTc3ODIwNjY3OX0.FIwf6U9zYlY3fp48-EwNg7lPJVrz6r7U4wUC6am-F3U
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MTkwNjk3LCJleHAiOjE3NzgyNzcwOTd9.4M1awTt5ETKtSEV41OeaocwjtqJYBRncUa4QwvzCAQI
 ### LoginCondominium
 # @name loginRequest
-POST http://localhost:8080/api/v1/auth/login/condominium
+POST http://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
-  "email": "teste@teste.com",
+  "email": "teste@teste1.com",
   "password": "OiCamila"
 }
 
@@ -15,8 +15,8 @@ POST http://localhost:8080/api/v1/auth/login/resident
 Content-Type: application/json
 
 {
-"email": "leonardo07@gmail.com",
-"password": "k#x8Wb9!"
+"email": "teste@teste.com",
+"password": "A9wuFh$Y"
 }
 
 
@@ -38,10 +38,10 @@ Content-Type: application/json
 
 {
     "name": "Boa Vista",
-    "cnpj": "12345678910110",
+    "cnpj": "12345678910111",
     "amount_blocks": 4,
     "amount_apartments": 160,
-    "email": "teste@teste.com",
+    "email": "teste@teste1.com",
     "password": "OiCamila"
 }
 
@@ -86,11 +86,11 @@ Content-Type: application/json
   "name": "Roger",
   "apartment": "1",
   "block": "Torre 1",
-  "cpf": "42969976880",
-  "email": "teste@gmail.com",
+  "cpf": "42969976881",
+  "email": "teste@teste.com",
   "phone": "11998572585",
   "score": 0,
-  "condominium_id": 8
+  "condominium_id": 9
 }
 
 ### Update
