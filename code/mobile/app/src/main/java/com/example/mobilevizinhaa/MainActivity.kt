@@ -19,7 +19,6 @@ import com.example.mobilevizinhaa.ui.theme.home.HomeScreen
 import com.example.mobilevizinhaa.ui.theme.listaitens.PedidosObjetosScreen
 import com.example.mobilevizinhaa.ui.theme.mural.MuralScreen
 import com.example.mobilevizinhaa.ui.theme.rank.RankingScreen
-// IMPORTANTE: Adicione o import da sua nova tela
 import com.example.mobilevizinhaa.ui.theme.menssage.MessagesScreen
 
 class MainActivity : ComponentActivity() {
@@ -39,7 +38,6 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            // Mantém a lógica de não mostrar a barra no login
             if (currentRoute != "login") {
                 CustomBottomNavBar(navController)
             }
@@ -62,9 +60,9 @@ fun AppNavigation() {
                 HomeScreen(navController)
             }
 
-            // Nova Rota de Mensagens
+            // AJUSTE AQUI: Passando o navController para a tela de mensagens
             composable("mensagens") {
-                MessagesScreen()
+                MessagesScreen(navController = navController)
             }
 
             composable("pedido") {

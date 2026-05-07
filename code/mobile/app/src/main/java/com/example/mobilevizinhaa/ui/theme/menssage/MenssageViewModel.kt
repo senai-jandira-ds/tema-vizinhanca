@@ -6,14 +6,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.mobilevizinhaa.R
 
-// 1. Definição do Modelo de Dados (Pode ficar em um arquivo separado ou aqui)
 data class ChatConversation(
     val id: Int,
     val name: String,
     val lastMessage: String,
     val time: String,
     val profileImage: Int,
-    val unreadCount: Int = 0 // Adicionei para ficar mais completo
+    val unreadCount: Int = 0
 )
 
 data class MessagesUiState(
@@ -23,12 +22,9 @@ data class MessagesUiState(
 
 class MessagesViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(MessagesUiState())
-
     val uiState: StateFlow<MessagesUiState> = _uiState.asStateFlow()
 
-    init {
-        loadMessages()
-    }
+    init { loadMessages() }
 
     private fun loadMessages() {
         _uiState.value = _uiState.value.copy(isLoading = true)
@@ -40,16 +36,10 @@ class MessagesViewModel : ViewModel() {
             ChatConversation(5, "Marcos", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington),
             ChatConversation(6, "tobias", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington),
             ChatConversation(7, "amanda", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington),
-            ChatConversation(8, "carla", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington),
+            ChatConversation(8, "joao belson", "Sim, sou eletricista", "25/03/2026", R.drawable.mulher),
             ChatConversation(9, "marcelo", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington),
             ChatConversation(10, "scott", "Sim, sou eletricista", "25/03/2026", R.drawable.wellington)
         )
-        _uiState.value = MessagesUiState(
-            conversations = list,
-            isLoading = false
-        )
-    }
-    fun onRefresh() {
-        loadMessages()
+        _uiState.value = MessagesUiState(conversations = list, isLoading = false)
     }
 }

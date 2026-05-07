@@ -1,4 +1,4 @@
-package com.example.mobilevizinhaa.ui.theme.menssage
+package com.example.mobilevizinhaa.ui.theme.notificacoes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,6 +20,66 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mobilevizinhaa.ui.theme.login.bounceClick
+import com.example.mobilevizinhaa.ui.theme.menssage.ChatConversation
+
+@Composable
+fun MessageItem(
+    title: String,
+    time: String,
+    imageRes: Int,
+    dotColor: Color,
+    onClick: () -> Unit // Função que abre a tela de mensagens
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onClick() } // O clique chama a função
+            .bounceClick(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = null,
+                modifier = Modifier.size(60.dp).clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = Color(0xFF333333)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.material3.Surface(
+                        modifier = Modifier.size(8.dp),
+                        shape = CircleShape,
+                        color = dotColor
+                    ) {}
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "Às $time",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
@@ -27,7 +87,6 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            // Dica: Coloque o clickable ANTES do bounceClick para melhor resposta
             .clickable { onClick() }
             .bounceClick(),
         shape = RoundedCornerShape(16.dp),
@@ -40,10 +99,9 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagem de Perfil (Usando profileImage da sua ViewModel)
             Image(
                 painter = painterResource(id = chat.profileImage),
-                contentDescription = "Foto de ${chat.name}",
+                contentDescription = null,
                 modifier = Modifier
                     .size(55.dp)
                     .clip(CircleShape),
@@ -52,7 +110,6 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Conteúdo da Mensagem
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

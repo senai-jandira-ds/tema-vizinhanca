@@ -16,10 +16,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.mobilevizinhaa.ui.theme.notificacoes.MessageItem
 
 @Composable
-fun MessagesScreen(viewModel: MessagesViewModel = viewModel()) {
-    // Coletando o estado da UI da ViewModel
+fun MessagesScreen(
+    navController: NavController? = null,
+    viewModel: MessagesViewModel = viewModel()
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     Column(
@@ -27,7 +31,7 @@ fun MessagesScreen(viewModel: MessagesViewModel = viewModel()) {
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        // Header com Gradiente Profissional
+        // Header com Gradiente
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,16 +62,15 @@ fun MessagesScreen(viewModel: MessagesViewModel = viewModel()) {
         // Lista de Mensagens
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            // bottom = 80.dp garante que a última mensagem não fique escondida atrás da BottomBar
-            contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 90.dp)
         ) {
-            // Usamos uiState.conversations que vem da nossa ViewModel estruturada
             items(uiState.conversations) { chat ->
                 MessageItem(
                     chat = chat,
                     onClick = {
-                        // Logica para abrir a conversa específica futuramente
-                        println("Clicou na conversa de ${chat.name}")
+                        navController?.navigate("chat_detalhe/${chat.id}")
+
+                        println("Navegando para a conversa de ${chat.name}")
                     }
                 )
             }
