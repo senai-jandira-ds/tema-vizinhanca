@@ -5,6 +5,7 @@ import Login from "./pages/login";
 import Activity from "./pages/app/Activity";
 import AppLayout from "./pages/app/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
+import Users from "./pages/app/Users";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="activity" element={<Activity />} />
+          <Route path="users" element={<Users />} />
         </Route>
         {/*<Route path="users" element={<Users />} />
           <Route path="services" element={<Services />} />

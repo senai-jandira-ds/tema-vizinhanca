@@ -14,12 +14,12 @@ function Activity() {
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
-        { id: 'nome', label: 'Nome ↕', width: 200 },
+        { id: 'nome', label: 'Nome ', width: 200 },
         { id: 'detalhe', label: 'Detalhe', width: 350 },
-        { id: 'tipo', label: 'Tipo ↕', width: 150 },
+        { id: 'tipo', label: 'Tipo ', width: 150 },
         {
             id: 'status',
-            label: 'Status ↕',
+            label: 'Status ',
             width: 150,
             getCellClass: (status) => {
                 if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];

@@ -9,14 +9,14 @@ aside {
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 2.75rem;
+    width: clamp(2.75rem, 20vw, 4rem);
     color: black;
     padding-block: 1%;
     transition: 0.5s;
     overflow: hidden;
 }
 aside:hover {
-    width: 370px;
+    width: clamp(500px, 30vw, 380px);
 }
 .label {
     opacity: 0;

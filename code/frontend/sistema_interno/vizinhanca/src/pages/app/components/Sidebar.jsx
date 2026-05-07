@@ -37,7 +37,7 @@ function Sidebar() {
                     </li>
 
                     <li>
-                        <Link to="/usuarios">
+                        <Link to="users">
                             <People className={styles.icon} />
                             <span className={styles.label}>Usuários</span>
                         </Link>

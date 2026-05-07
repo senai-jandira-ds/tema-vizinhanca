@@ -12,7 +12,29 @@
     border: 1px solid #d1d5db;
     border-radius: 16px;
     background-color: white;
-    overflow: scroll !important;
+    overflow: auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b3b3b3;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8f8f8f;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b3b3b3 transparent;
 }
 
 table {
@@ -51,6 +73,30 @@ th {
     max-width: 350px;
     position: relative;
     user-select: none;
+    cursor: pointer;
+}
+
+.th-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.th-content > * {
+    pointer-events: auto;
+}
+
+.sort-indicator {
+    font-size: 12px;
+    color: #3b18ff;
+    font-weight: bold;
+}
+
+/* Estilização do SortIcon */
+.th-content svg {
+    flex-shrink: 0;
 }
 
 .redimensionador {
@@ -62,6 +108,8 @@ th {
     cursor: col-resize;
     background-color: transparent;
     transition: background-color 0.2s;
+    pointer-events: auto;
+    z-index: 10;
 }
 
 .redimensionador:hover,
@@ -73,6 +121,8 @@ td {
     cursor: pointer;
     transition: background-color 0.2s;
     color: #111827;
+    position: relative;
+    z-index: 1;
 }
 
 td:hover {
@@ -114,8 +164,75 @@ td:hover {
     border: none;
 }
 
+.btn-paginacao.inativo {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginacao-ellipsis {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    color: #6b7280;
+}
+
 @media (max-width: 1440px) {
-    .paginacao{
+    .paginacao {
         margin-top: 0.5rem;
+    }
+
+    table {
+        font-size: 20px;
+    }
+
+    th,
+    td {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    table {
+        font-size: 16px;
+    }
+
+    th,
+    td {
+        padding: 8px;
+    }
+
+    .btn-paginacao {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .sort-indicator {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabela-container {
+        border-radius: 8px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        padding: 6px;
+    }
+
+    .paginacao {
+        gap: 4px;
+    }
+
+    .btn-paginacao {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
     }
 }

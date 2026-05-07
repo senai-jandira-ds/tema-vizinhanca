@@ -15,21 +15,64 @@
     display: flex;
     width: 100dvw;
     height: 100dvh;
-    padding: 3%;
-    gap: 2%;
+    padding: clamp(1rem, 3%, 3rem);
+    gap: clamp(0.5rem, 2%, 2rem);
     color: black;
     overflow: hidden;
 }
 
 .rightContent{
-    border-radius: 20px;
+    border-radius: clamp(12px, 2vw, 20px);
     width: 100%;
     height: 100%;
     background-color: rgb(255, 255, 255);
-    padding: 2.8%;
-    gap: 2.5rem;
+    padding: clamp(1rem, 2.8%, 2.5rem);
+    gap: clamp(1rem, 2.5rem, 3rem);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+    .screenContent{
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+
+    .rightContent{
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .screenContent{
+        padding: 1rem;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+
+    .rightContent{
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        min-height: 0;
+    }
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px) {
+    .screenContent{
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .rightContent{
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+    }
 }
 
 @media (max-width: 1440px) {

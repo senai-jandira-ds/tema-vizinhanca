@@ -1,59 +1,138 @@
 .card {
     display: flex;
     aspect-ratio: 273 / 143;
-    width: 25%;
+    width: 80%;
     background: #FFFFFF;
     border: 1px solid rgba(0, 0, 0, 0.18);
-    border-radius: 20px;
-    padding: 2.5%;
+    border-radius: clamp(12px, 2vw, 20px);
+    padding: clamp(1.5%, 2.5%, 3%);
 }
-.leftContent{
+
+.leftContent {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 80%;
-    gap: 60%;
+    gap: clamp(30%, 60%, 80%);
 }
-.leftContent span:first-child{
+
+.leftContent span:first-child {
     color: #10B765;
-    font-size: 2.6rem;
+    font-size: clamp(1rem, 5vw, 2.2rem);
 }
-.leftContent span:last-child{
-    font-size: 3.5rem;
+
+.leftContent span:last-child {
+    font-size: clamp(1rem, 5vw, 2.2rem);
 }
-.rightContent{
+
+.rightContent {
     display: flex;
     align-items: center;
     justify-content: end;
     height: 100%;
     width: 20%;
 }
-.icon{
+
+.icon {
     transition: 0.5s;
-    width: 50%;
+    width: clamp(30%, 50%, 60%);
     rotate: -90deg;
 }
-.card:hover{
+
+.card:hover {
     background-color: rgba(0, 0, 0, 0.042);
 }
-.card:hover .icon{
+
+.card:hover .icon {
     transform: scale(1.05);
     rotate: 90deg;
 }
 
-
-@media (max-width: 1440px) {
-    .card{
+/* Tablet */
+@media (max-width: 1024px) {
+    .card {
+        width: clamp(140px, 30%, 280px);
         padding: 2%;
     }
-    .leftContent{
+
+    .leftContent {
+        gap: 40%;
+    }
+
+    .leftContent span:first-child {
+        font-size: 1.75rem;
+    }
+
+    .leftContent span:last-child {
+        font-size: 2.5rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .card {
+        width: clamp(120px, 45%, 200px);
+        padding: 2.5%;
+        border-radius: 16px;
+    }
+
+    .leftContent {
+        gap: 35%;
+    }
+
+    .leftContent span:first-child {
+        font-size: 1.5rem;
+    }
+
+    .leftContent span:last-child {
+        font-size: 2rem;
+    }
+
+    .icon {
+        width: 40%;
+    }
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px) {
+    .card {
+        width: clamp(100px, 48%, 180px);
+        padding: 3%;
+        border-radius: 12px;
+    }
+
+    .leftContent {
+        gap: 25%;
+    }
+
+    .leftContent span:first-child {
+        font-size: 1.25rem;
+    }
+
+    .leftContent span:last-child {
+        font-size: 1.75rem;
+    }
+
+    .icon {
+        width: 35%;
+    }
+}
+
+@media (max-width: 1440px) {
+    .card {
+        padding: 2%;
+    }
+
+    .leftContent {
         gap: 40%;
         padding: 1%;
     }
-    .leftContent span:first-child{
+
+    .leftContent span:first-child {
         font-size: 2cqw;
     }
-    .leftContent span:last-child{
+
+    .leftContent span:last-child {
         font-size: 2rem;
     }
 }

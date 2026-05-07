@@ -1,39 +1,42 @@
-.wrapper {    
-    border: 1px solid #00000018;
+.wrapper {
     position: relative;
-    display: inline-block;
+    z-index: 100;
 }
 
 .button {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
     padding: 10px 20px;
-    border-radius: 20px;
     border: 1px solid #00000018;
+    border-radius: 20px;
     cursor: pointer;
+    color: #00000060;
+    font-weight: 500;
+    background: white;
 }
 
 .card {
     position: absolute;
-    top: 110%;
+    top: calc(100% + 10px);
     left: 0;
     width: 280px;
-    background: #f5f5f5;
+    background: white;
+    border: 1px solid #00000018;
     border-radius: 20px;
     padding: 15px;
-    z-index: 100;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    opacity: 0;
-    transform: translateY(-10px) scale(0.98);
-    animation: dropdown 0.25s ease forwards;
+    animation: slideDown 1s ease;
 }
 
-@keyframes dropdown {
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
@@ -42,27 +45,46 @@
 }
 
 .header {
-    background: #e0e0e0;
+    background: #0000000D;
     padding: 12px;
     border-radius: 12px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
+    color: #00000060;
+    font-weight: 500;
 }
 
 .content {
     padding: 10px;
+    margin-top: 5px;
+    background: #0000000D;
+    border-radius: 12px;
 }
 
 .option {
     display: flex;
     gap: 8px;
-    margin-top: 5px;
+    margin-top: 8px;
+    color: #00000060;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
 }
+
+.option:hover {
+    background: #0000001A;
+}
+
+.option input[type="checkbox"] {
+    cursor: pointer;
+}
+
 .icon {
-    transition: transform 0.2s ease;
-  }
-  
-  .open {
+    transition: transform 0.3s ease;
+}
+
+.open {
     transform: rotate(180deg);
-  }
+}

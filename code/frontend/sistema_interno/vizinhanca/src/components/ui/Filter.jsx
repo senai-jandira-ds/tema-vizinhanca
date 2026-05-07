@@ -13,8 +13,30 @@ const DATA = {
 export default function Filter() {
     const [isOpen, setIsOpen] = useState(false);
     const [openSection, setOpenSection] = useState(null);
+    const [selectedFilters, setSelectedFilters] = useState({});
 
     const ref = useRef();
+
+    function toggleFilter(section, option) {
+        setSelectedFilters(prev => {
+            const sectionFilters = prev[section] || [];
+            if (sectionFilters.includes(option)) {
+                return {
+                    ...prev,
+                    [section]: sectionFilters.filter(f => f !== option)
+                };
+            } else {
+                return {
+                    ...prev,
+                    [section]: [...sectionFilters, option]
+                };
+            }
+        });
+    }
+
+    function isFilterSelected(section, option) {
+        return selectedFilters[section]?.includes(option) || false;
+    }
 
     function toggleSection(section) {
         setOpenSection(openSection === section ? null : section);
@@ -34,7 +56,6 @@ export default function Filter() {
 
     return (
         <div className={styles.wrapper} ref={ref}>
-
             <div className={styles.button} onClick={() => setIsOpen(!isOpen)}>
                 Filtros <img src={filterimg} alt="" />
             </div>
@@ -43,15 +64,13 @@ export default function Filter() {
                 <div className={styles.card}>
                     {Object.entries(DATA).map(([section, options]) => (
                         <div key={section} className={styles.section}>
-
                             <div
                                 className={styles.header}
                                 onClick={() => toggleSection(section)}
                             >
                                 {section}
                                 <svg
-                                    className={`${styles.icon} ${openSection === section ? styles.open : ""
-                                        }`}
+                                    className={`${styles.icon} ${openSection === section ? styles.open : ""}`}
                                     width="13"
                                     height="7"
                                     viewBox="0 0 13 7"
@@ -73,7 +92,11 @@ export default function Filter() {
                                 <div className={styles.content}>
                                     {options.map((opt) => (
                                         <label key={opt} className={styles.option}>
-                                            <input type="checkbox" />
+                                            <input
+                                                type="checkbox"
+                                                checked={isFilterSelected(section, opt)}
+                                                onChange={() => toggleFilter(section, opt)}
+                                            />
                                             {opt}
                                         </label>
                                     ))}
