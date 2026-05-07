@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -12,21 +13,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobilevizinhaa.R
-import com.example.mobilevizinhaa.ui.theme.BluePrimary
-import com.example.mobilevizinhaa.ui.theme.GrayBackground
-import com.example.mobilevizinhaa.ui.theme.GrayText
-import com.example.mobilevizinhaa.ui.theme.White
+import com.example.mobilevizinhaa.ui.theme.*
+
 
 @Composable
 fun LoginScreen(
@@ -36,9 +37,9 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Estados de erro baseados no que o ViewModel processou
-    val emailError = uiState.emailError != null
-    val passwordError = uiState.passwordError != null
+    // Utilitários de sistema
+    val focusManager = LocalFocusManager.current
+    val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = Modifier
@@ -57,9 +58,7 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(50.dp))
-
         Text(text = "Login", fontSize = 28.sp, color = BluePrimary)
-
         Spacer(modifier = Modifier.height(30.dp))
 
         // --- CAMPO EMAIL ---
@@ -68,13 +67,19 @@ fun LoginScreen(
             onValueChange = { viewModel.onEmailChanged(it) },
             label = "E-mail",
             keyboardType = KeyboardType.Email,
-            modifier = Modifier.fillMaxWidth(),
-            isError = emailError
+            imeAction = ImeAction.Next,
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
+            isError = uiState.emailError != null,
+            modifier = Modifier
+                .fillMaxWidth() // Corrigido de fillMaxWidtn para fillMaxWidth
+                .shake(uiState.emailError != null)
         )
 
-        if (emailError) {
+        uiState.emailError?.let {
             Text(
-                text = uiState.emailError ?: "E-mail inválido",
+                text = it,
                 color = Color.Red,
                 fontSize = 12.sp,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 4.dp)
@@ -89,23 +94,32 @@ fun LoginScreen(
             onValueChange = { viewModel.onPasswordChanged(it) },
             label = "Senha",
             keyboardType = KeyboardType.Password,
-            modifier = Modifier.fillMaxWidth(),
-            isError = passwordError,
+            imeAction = ImeAction.Done,
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                    viewModel.onLoginClicked { _, _ -> navController("home") }
+                }
+            ),
+            isError = uiState.passwordError != null,
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = null,
-                        tint = if (passwordError) Color.Red else GrayText
+                        tint = if (uiState.passwordError != null) Color.Red else GrayText
                     )
                 }
             },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shake(uiState.passwordError != null)
         )
 
-        if (passwordError) {
+        uiState.passwordError?.let {
             Text(
-                text = uiState.passwordError ?: "A senha deve ter no mínimo 8 caracteres",
+                text = it,
                 color = Color.Red,
                 fontSize = 12.sp,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 4.dp)
@@ -117,18 +131,17 @@ fun LoginScreen(
         // --- BOTÃO DE LOGIN ---
         Button(
             onClick = {
-                // AQUI ESTAVA O SEU ERRO: Adicionamos os parâmetros email e senha
-                // para aceitar o que o ViewModel envia
-                viewModel.onLoginClicked { email, senha ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.onLoginClicked { _, _ ->
                     navController("home")
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .bounceClick(), // Agora reconhecido pelo import acima
             shape = RoundedCornerShape(25.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = BluePrimary,
-                contentColor = White
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(color = White, modifier = Modifier.size(24.dp))
@@ -149,7 +162,9 @@ fun TccTextField(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    imeAction: ImeAction = ImeAction.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     TextField(
         value = value,
@@ -157,7 +172,8 @@ fun TccTextField(
         label = { Text(label) },
         singleLine = true,
         isError = isError,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        keyboardActions = keyboardActions,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
         modifier = modifier,
@@ -167,9 +183,7 @@ fun TccTextField(
             errorContainerColor = Color(0xFFFFEBEE),
             focusedIndicatorColor = BluePrimary,
             unfocusedIndicatorColor = Color.Transparent,
-            errorIndicatorColor = Color.Red,
-            errorLabelColor = Color.Red,
-            errorTrailingIconColor = Color.Red
+            errorIndicatorColor = Color.Red
         ),
         shape = RoundedCornerShape(25.dp)
     )
