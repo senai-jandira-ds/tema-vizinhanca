@@ -16,8 +16,18 @@ function LoginScreen() {
                 <div className={styles.leftMain}>
                     <img src={logo} alt="" />
 
-                    <Input placeholder="Login" type="text" />
-                    <Input placeholder="Senha" type="password" />
+                    <Input
+                        styles={{
+                            width: 0,
+                            height: 0
+                        }}
+                        placeholder="Login"
+                        type="text"
+                    />
+                    <Input styles={{
+                        width: 0,
+                        height: 0
+                    }} placeholder="Senha" type="password" />
 
                     <button onClick={() => navigate("/app")}>
                         Entrar

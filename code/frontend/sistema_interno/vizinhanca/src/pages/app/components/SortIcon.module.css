@@ -5,10 +5,12 @@
 
 .arrowUp {
   transition: transform 0.3s ease;
+  stroke: #00000060;
 }
 
 .arrowDown {
   transition: transform 0.3s ease;
+  stroke: #00000060;
 }
 
 .sortIcon:not(.asc):not(.desc) {
@@ -21,6 +23,7 @@
 
 .sortIcon.asc .arrowUp {
   transform: translateY(-3px);
+  stroke: #008cd2;
 }
 
 .sortIcon.desc {
@@ -29,4 +32,5 @@
 
 .sortIcon.desc .arrowDown {
   transform: translateY(3px);
+  stroke: #008cd2;
 }

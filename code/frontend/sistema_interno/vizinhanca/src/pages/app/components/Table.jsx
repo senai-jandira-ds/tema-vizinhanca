@@ -18,6 +18,8 @@ export default function Table({
   pageSize = 10,
   maxHeight = null
 }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [cellData, setCellData] = useState(null);
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize });
   const [columnWidths, setColumnWidths] = useState({});
@@ -110,9 +112,13 @@ export default function Table({
 
   // Handler de clique na célula
   const handleCliqueCelula = (valor, colunaId, linha) => {
-    if (onCellClick) {
-      onCellClick(valor, colunaId, linha);
-    }
+    setCellData({
+      valor,
+      colunaId,
+      linha
+    });
+
+    setModalOpen(true);
   };
 
   // Obter classe da célula
@@ -128,7 +134,7 @@ export default function Table({
   const rowModel = table.getRowModel();
 
   // Paginação
-  const pageCount = table.getPageCount();
+  const itemsPerPage = table.getPageCount();
   const currentPage = pagination.pageIndex;
 
   const irParaPagina = (pagina) => {
@@ -152,8 +158,8 @@ export default function Table({
                   const sortDirection = sorting.find((s) => s.id === header.id)?.desc
                     ? 'desc'
                     : sorting.find((s) => s.id === header.id)
-                    ? 'asc'
-                    : null;
+                      ? 'asc'
+                      : null;
 
                   return (
                     <th
@@ -204,7 +210,7 @@ export default function Table({
         </table>
       </div>
 
-      {showPagination && pageCount > 1 && (
+      {showPagination && itemsPerPage > 1 && (
         <div className={styles.paginacao}>
           <button
             className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
@@ -221,10 +227,10 @@ export default function Table({
             {'<'}
           </button>
 
-          {[...Array(pageCount)].map((_, i) => {
+          {[...Array(itemsPerPage)].map((_, i) => {
             if (
               i === 0 ||
-              i === pageCount - 1 ||
+              i === itemsPerPage - 1 ||
               (i >= currentPage - 1 && i <= currentPage + 1)
             ) {
               return (
@@ -246,21 +252,129 @@ export default function Table({
           })}
 
           <button
-            className={`${styles['btn-paginacao']} ${currentPage === pageCount - 1 ? styles.inativo : ''}`}
+            className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
             onClick={() => irParaPagina(currentPage + 1)}
-            disabled={currentPage === pageCount - 1}
+            disabled={currentPage === itemsPerPage - 1}
           >
             {'>'}
           </button>
           <button
-            className={`${styles['btn-paginacao']} ${currentPage === pageCount - 1 ? styles.inativo : ''}`}
-            onClick={() => irParaPagina(pageCount - 1)}
-            disabled={currentPage === pageCount - 1}
+            className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+            onClick={() => irParaPagina(itemsPerPage - 1)}
+            disabled={currentPage === itemsPerPage - 1}
           >
             {'>>'}
           </button>
         </div>
       )}
+{modalOpen && (
+  <div
+    className={styles.overlay}
+    onClick={() => setModalOpen(false)}
+  >
+    <div
+      className={styles.modal}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <img
+        className={styles.avatar}
+        src={cellData?.linha?.foto || "https://i.pravatar.cc/300"}
+        alt=""
+      />
+
+      <h1>Detalhes do Morador</h1>
+
+      <input
+        type="text"
+        value={cellData?.linha?.nome || ""}
+        placeholder="Nome"
+        className={styles.inputGrande}
+        readOnly
+      />
+
+      <div className={styles.row}>
+        <input
+          type="text"
+          value={cellData?.linha?.apto || ""}
+          placeholder="Apto"
+          className={styles.inputMedio}
+          readOnly
+        />
+
+        <select
+          className={styles.selectPequeno}
+          value={cellData?.linha?.bloco || ""}
+          disabled
+        >
+          <option value="">
+            Bloco
+          </option>
+
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+      </div>
+
+      <input
+        type="text"
+        value={cellData?.linha?.cpf || ""}
+        placeholder="CPF"
+        className={styles.inputGrande}
+        readOnly
+      />
+
+      <input
+        type="email"
+        value={cellData?.linha?.email || ""}
+        placeholder="Email"
+        className={styles.inputGrande}
+        readOnly
+      />
+
+      <div className={styles.row}>
+        <input
+          type="text"
+          value={cellData?.linha?.telefone || ""}
+          placeholder="Telefone"
+          className={styles.inputMedio}
+          readOnly
+        />
+
+        <select
+          className={styles.selectPequeno}
+          value={cellData?.linha?.status || ""}
+          disabled
+        >
+          <option value="">
+            Status
+          </option>
+
+          <option value="Ativo">
+            Ativo
+          </option>
+
+          <option value="Inativo">
+            Inativo
+          </option>
+        </select>
+      </div>
+
+      <div className={styles.buttons}>
+        <button
+          className={styles.cancelar}
+          onClick={() => setModalOpen(false)}
+        >
+          Cancelar
+        </button>
+
+        <button className={styles.finalizar}>
+          Finalizar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
