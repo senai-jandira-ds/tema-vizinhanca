@@ -28,7 +28,7 @@ Authorization: Bearer {{token}}
 
 ### Search by id
 # @name searchCondominium
-GET http://localhost:8080/api/v1/condominium/1
+GET http://localhost:8080/api/v1/condominium/8
 Authorization: Bearer {{token}}
 
 ### Insert
@@ -86,11 +86,11 @@ Content-Type: application/json
   "name": "Roger",
   "apartment": "1",
   "block": "Torre 1",
-  "cpf": "42969976889",
-  "email": "leonardo@gmail.com",
+  "cpf": "42969976880",
+  "email": "teste@gmail.com",
   "phone": "11998572585",
   "score": 0,
-  "condominium_id": 1
+  "condominium_id": 8
 }
 
 ### Update
