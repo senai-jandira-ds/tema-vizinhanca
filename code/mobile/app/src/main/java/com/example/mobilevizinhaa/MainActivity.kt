@@ -38,6 +38,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
+            // A barra inferior só aparece se não estivermos na tela de login
             if (currentRoute != "login") {
                 CustomBottomNavBar(navController)
             }
@@ -45,22 +46,25 @@ fun AppNavigation() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "login", // O app sempre começa pedindo login
             modifier = Modifier.padding(paddingValues)
         ) {
+            // TELA DE LOGIN
             composable("login") {
                 LoginScreen(navController = { rota ->
                     navController.navigate(rota) {
+                        // Limpa o histórico para o usuário não conseguir "voltar" pro login logado
                         popUpTo("login") { inclusive = true }
                     }
                 })
             }
 
+            // TELA HOME (Após sucesso da API)
             composable("home") {
                 HomeScreen(navController)
             }
 
-            // AJUSTE AQUI: Passando o navController para a tela de mensagens
+            // TELA DE MENSAGENS (Onde você vai listar quem está registrado)
             composable("mensagens") {
                 MessagesScreen(navController = navController)
             }

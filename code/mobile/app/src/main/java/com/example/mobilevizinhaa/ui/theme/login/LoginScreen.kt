@@ -26,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobilevizinhaa.R
-import com.example.mobilevizinhaa.ui.theme.*
+
+// Nota: Removi os imports de temas customizados para evitar erros de compilação,
+// usando cores padrão do Material3.
 
 @Composable
 fun LoginScreen(
@@ -36,20 +38,18 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Gerenciadores de sistema para foco e vibração
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(Color.White)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(60.dp))
 
-        // --- LOGO ---
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
@@ -58,13 +58,13 @@ fun LoginScreen(
         )
 
         Spacer(modifier = Modifier.height(50.dp))
-        Text(text = "Login", fontSize = 28.sp, color = BluePrimary, fontWeight = FontWeight.Bold)
+        Text(text = "Login", fontSize = 28.sp, color = Color(0xFF2196F3), fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(30.dp))
 
         // --- CAMPO EMAIL ---
         TccTextField(
             value = uiState.email,
-            onValueChange = { viewModel.onEmailChanged(it) },
+            onValueChange = { novoEmail -> viewModel.onEmailChanged(novoEmail) },
             label = "E-mail",
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Next,
@@ -72,9 +72,7 @@ fun LoginScreen(
                 onNext = { focusManager.moveFocus(FocusDirection.Down) }
             ),
             isError = uiState.emailError != null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .shake(uiState.emailError != null) // Chama a função do arquivo LoginAnimations
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (uiState.emailError != null) {
@@ -91,14 +89,14 @@ fun LoginScreen(
         // --- CAMPO SENHA ---
         TccTextField(
             value = uiState.password,
-            onValueChange = { viewModel.onPasswordChanged(it) },
+            onValueChange = { novaSenha -> viewModel.onPasswordChanged(novaSenha) },
             label = "Senha",
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    viewModel.onLoginClicked { _, _ -> navController("home") }
+                    viewModel.onLoginClicked { navController("home") }
                 }
             ),
             isError = uiState.passwordError != null,
@@ -107,14 +105,12 @@ fun LoginScreen(
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = null,
-                        tint = if (uiState.passwordError != null) Color.Red else GrayText
+                        tint = if (uiState.passwordError != null) Color.Red else Color.Gray
                     )
                 }
             },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .shake(uiState.passwordError != null) // Chama a função do arquivo LoginAnimations
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (uiState.passwordError != null) {
@@ -126,29 +122,37 @@ fun LoginScreen(
             )
         }
 
+        uiState.errorMessage?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- BOTÃO DE LOGIN ---
         Button(
             onClick = {
-                // Vibração tátil ao clicar
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                viewModel.onLoginClicked { _, _ ->
+                viewModel.onLoginClicked {
                     navController("home")
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp)
-                .bounceClick(), // Chama a função do arquivo LoginAnimations
+                .height(55.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = BluePrimary,
-                contentColor = White
-            )
+                containerColor = Color(0xFF2196F3),
+                contentColor = Color.White
+            ),
+            enabled = !uiState.isLoading
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(color = White, modifier = Modifier.size(24.dp))
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
                 Text(text = "ENTRAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
@@ -156,7 +160,6 @@ fun LoginScreen(
     }
 }
 
-// --- COMPONENTE DE TEXT FIELD CUSTOMIZADO ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TccTextField(
@@ -186,14 +189,14 @@ fun TccTextField(
         trailingIcon = trailingIcon,
         modifier = modifier,
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = GrayBackground,
-            unfocusedContainerColor = GrayBackground,
+            focusedContainerColor = Color(0xFFF1F1F1),
+            unfocusedContainerColor = Color(0xFFF1F1F1),
             errorContainerColor = Color(0xFFFFEBEE),
-            focusedIndicatorColor = BluePrimary,
+            focusedIndicatorColor = Color(0xFF2196F3),
             unfocusedIndicatorColor = Color.Transparent,
             errorIndicatorColor = Color.Red,
-            focusedLabelColor = BluePrimary,
-            unfocusedLabelColor = GrayText
+            focusedLabelColor = Color(0xFF2196F3),
+            unfocusedLabelColor = Color.Gray
         ),
         shape = RoundedCornerShape(25.dp)
     )
