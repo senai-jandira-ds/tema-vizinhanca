@@ -1,7 +1,7 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjY0NjkxLCJleHAiOjE3NzgzNTEwOTF9.0XfDLqMXT7sNx4UEIZGEb1uKqm76etSLOO4qYljTod8
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjcwMDYzLCJleHAiOjE3NzgzNTY0NjN9.LPn9QLZggeL8ulPlYWw84UsUNvsFszccjg7E6I7z7AQ
 ### LoginCondominium
 # @name loginRequest
-POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/auth/login/condominium
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {

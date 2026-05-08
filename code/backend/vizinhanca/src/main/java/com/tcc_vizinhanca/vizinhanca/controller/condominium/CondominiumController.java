@@ -6,6 +6,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
@@ -47,7 +48,7 @@ public class CondominiumController {
 
     // GET RESIDENTS
     @GetMapping("/resident/me")
-    public ResponseEntity<ApiResponse<ResidentResponse>> listAllResidentsByCondominium(
+    public ResponseEntity<ApiResponse<List<ResidentSummaryResponse>>> listAllResidentsByCondominium(
             HttpServletRequest request
     ) {
         String header = request.getHeader("Authorization");
@@ -59,7 +60,9 @@ public class CondominiumController {
 
         List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
 
-        ResidentResponse response = new ResidentResponse(residents);
+        List<ResidentSummaryResponse> response = residents.stream()
+                .map(ResidentSummaryResponse::new)
+                .toList();
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
