@@ -42,6 +42,18 @@ public class ResidentController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de Moradores retornada com sucesso!"));
     }
 
+    // GET BY CONDOMINIUM ID
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(Authentication authentication) {
+        String email = authentication.getName();
+
+        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
+
+        ResidentResponse response = new ResidentResponse(residents);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+    }
+
     // GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> searchResidentById(@PathVariable("id") Long idResident) {
@@ -54,17 +66,6 @@ public class ResidentController {
 
     }
 
-    // GET BY CONDOMINIUM ID
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(Authentication authentication) {
-        String email = authentication.getName();
-
-        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
-
-        ResidentResponse response = new ResidentResponse(residents);
-
-        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
-    }
 
     // POST
     @PostMapping
