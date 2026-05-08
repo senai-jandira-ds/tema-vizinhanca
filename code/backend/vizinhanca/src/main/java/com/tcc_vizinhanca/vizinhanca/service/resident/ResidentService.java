@@ -70,8 +70,20 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
-    public Resident setUpdateResident(@NonNull ResidentUpdateRequest dto, Long idResident){
+    public Resident setUpdateResident(@NonNull ResidentUpdateRequest dto, Long idResident) {
         Resident existingResident = getSelectResidentById(idResident);
+
+        if (dto.getCpf() != null && !dto.getCpf().equals(existingResident.getCpf())) {
+            if (residentRepository.existsByCpf(dto.getCpf())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado!");
+            }
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().equals(existingResident.getEmail())) {
+            if (residentRepository.existsByEmail(dto.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
+            }
+        }
 
         ResidentMapper.updateEntity(dto, existingResident);
 
