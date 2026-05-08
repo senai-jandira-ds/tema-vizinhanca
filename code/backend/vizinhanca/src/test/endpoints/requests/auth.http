@@ -28,7 +28,7 @@ Authorization: Bearer {{token}}
 
 ### Search by id
 # @name searchCondominium
-GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium/8
+GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium/9
 Authorization: Bearer {{token}}
 
 ### Insert
@@ -83,11 +83,11 @@ Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Roger",
-  "apartment": "1",
-  "block": "Torre 1",
-  "cpf": "42969976881",
-  "email": "teste@teste.com",
+  "name": "Teste3 - SCOTTI",
+  "apartment": "3",
+  "block": "Torre 3",
+  "cpf": "42969976873",
+  "email": "teste@teste3.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 9
@@ -95,19 +95,20 @@ Content-Type: application/json
 
 ### Update
 # @name updateResident
-PUT https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/3
+PUT https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/13
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
+  "id": 13,
   "photo": "",
-  "name": "Beatriz Souza Atualizada",
-  "apartment": "45",
-  "block": "C",
-  "cpf": "12345678910",
-  "email": "teste@teste.com.br",
-  "phone": "11976543210",
-  "score": 10,
+  "name": "Teste3 - SCOTTI - ATUALIZADO",
+  "apartment": "3",
+  "block": "Torre 3",
+  "cpf": "42969976873",
+  "email": "teste@teste3.com",
+  "phone": "11998572585",
+  "score": 1,
   "condominium_id": 2
 }
 
