@@ -13,23 +13,23 @@ public class CondominiumAddressRequest {
     @Size(min = 8, max = 9, message = "")
     private String cep;
 
-    @NotBlank(message = "Street is required")
+    @NotBlank(message = "Street não pode ser vazio")
     private String street;
 
-    @NotBlank(message = "Neighborhood is required")
+    @NotBlank(message = "Neighborhood não pode ser vazio")
     private String neighborhood;
 
-    @NotBlank(message = "Number is required")
+    @NotBlank(message = "Number não pode ser vazio")
     private String number;
 
-    @NotBlank(message = "Landmark is required")
+    @NotBlank(message = "Landmark não pode ser vazio")
     private String landmark;
 
-    @NotBlank(message = "City is required")
+    @NotBlank(message = "City não pode ser vazio")
     private String city;
 
-    @NotBlank(message = "State is required")
-    @Size(min = 2, max = 2, message = "State must have 2 characters")
+    @NotBlank(message = "State não pode ser vazio")
+    @Size(min = 2, max = 2, message = "State tem que ter dois caracteres")
     private String state;
 
 }
