@@ -11,7 +11,7 @@ Content-Type: application/json
 
 ### LoginResident
 # @name loginRequest
-POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/auth/login/resident
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/resident
 Content-Type: application/json
 
 {
@@ -23,7 +23,7 @@ Content-Type: application/json
 
 ### ===== CONDOMINIUM =====
 # @name listCondominium
-GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium
 Authorization: Bearer {{token}}
 
 ### Search by condominium
@@ -33,26 +33,35 @@ Authorization: Bearer {{token}}
 
 ### Search by id
 # @name searchCondominium
-GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium/9
+GET https://api-vizinhanca.onrender.com/api/v1/condominium/9
 Authorization: Bearer {{token}}
 
 ### Insert
 # @name insertCondominium
-POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium
+POST https://api-vizinhanca.onrender.com/api/v1/condominium
 Content-Type: application/json
 
 {
-    "name": "TESTE API",
-    "cnpj": "12345678910112",
-    "amount_blocks": 4,
-    "amount_apartments": 160,
-    "email": "testeapi@teste.com",
-    "password": "testeapi123"
+  "name": "TESTE API",
+  "cnpj": "12345678910115",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "testeapi2@teste.com",
+  "password": "testeapi123",
+  "address": {
+    "cep": "01310100",
+    "street": "Avenida Paulista",
+    "neighborhood": "Bela Vista",
+    "number": "1000",
+    "landmark": "Próximo ao MASP",
+    "city": "São Paulo",
+    "state": "SP"
+  }
 }
 
 ### Update
 # @name updateCondominium
-PUT https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium/7
+PUT https://api-vizinhanca.onrender.com/api/v1/condominium/7
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -66,23 +75,23 @@ Content-Type: application/json
 
 ### Delete
 # @name deleteCondominium
-DELETE https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium/11
+DELETE https://api-vizinhanca.onrender.com/api/v1/condominium/11
 Authorization: Bearer {{token}}
 
 
 ### ===== RESIDENT =====
 # @name listResident
-GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident
+GET https://api-vizinhanca.onrender.com/api/v1/resident
 Authorization: Bearer {{token}}
 
 ### Search by id
 # @name searchResident
-GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/6
+GET https://api-vizinhanca.onrender.com/api/v1/resident/6
 Authorization: Bearer {{token}}
 
 ### Insert
 # @name insertResident
-POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident
+POST https://api-vizinhanca.onrender.com/api/v1/resident
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -118,5 +127,5 @@ Content-Type: application/json
 
 ### Delete
 # @name deleteResident
-DELETE https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/9
+DELETE https://api-vizinhanca.onrender.com/api/v1/resident/9
 Authorization: Bearer {{token}}
