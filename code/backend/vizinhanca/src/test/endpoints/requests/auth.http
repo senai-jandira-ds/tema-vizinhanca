@@ -37,12 +37,12 @@ POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/ap
 Content-Type: application/json
 
 {
-    "name": "Boa Vista",
-    "cnpj": "12345678910111",
+    "name": "TESTE API",
+    "cnpj": "12345678910112",
     "amount_blocks": 4,
     "amount_apartments": 160,
-    "email": "teste@teste1.com",
-    "password": "OiCamila"
+    "email": "testeapi@teste.com",
+    "password": "testeapi123"
 }
 
 ### Update
@@ -70,9 +70,14 @@ Authorization: Bearer {{token}}
 GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident
 Authorization: Bearer {{token}}
 
-### Search by ID
+### Search by id
 # @name searchResident
 GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/6
+Authorization: Bearer {{token}}
+
+### Search by condominium
+# @name searchResidentsByCondominium
+GET http://localhost:8080/api/v1/resident/me
 Authorization: Bearer {{token}}
 
 ### Insert
@@ -95,21 +100,20 @@ Content-Type: application/json
 
 ### Update
 # @name updateResident
-PUT https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/13
+PUT http://localhost:8080/api/v1/resident/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "id": 13,
-  "photo": "",
-  "name": "Teste3 - SCOTTI - ATUALIZADO",
-  "apartment": "3",
-  "block": "Torre 3",
-  "cpf": "42969976873",
-  "email": "teste@teste3.com",
-  "phone": "11998572585",
-  "score": 1,
-  "condominium_id": 2
+  "foto": "",
+  "nome": "Giovana - TESTE",
+  "apto": "22",
+  "bloco": "B",
+  "cpf": "67890123456",
+  "email": "ricardo.santos@yahoo.com",
+  "telefone": "11904851846",
+  "pontuacao": 0,
+  "condominium_id": 8
 }
 
 ### Delete

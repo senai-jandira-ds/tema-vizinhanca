@@ -12,8 +12,10 @@ package com.tcc_vizinhanca.vizinhanca.service.resident;
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
+import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
@@ -33,6 +35,9 @@ public class ResidentService {
     private ResidentRepository residentRepository;
 
     @Autowired
+    private CondominiumRepository condominiumRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     // SELECT ALL
@@ -46,6 +51,18 @@ public class ResidentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!"));
 
         return resident;
+    }
+
+    // SELECT BY CONDOMINIUM ID
+    public List<Resident> getSelectResidentsByCondominiumEmail(String email) {
+
+        Condominium condominium = condominiumRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("Condomínio não encontrado"));
+
+        return residentRepository
+                .findByCondominiumId(condominium.getId());
     }
 
     // INSERT RESIDENT

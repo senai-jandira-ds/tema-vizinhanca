@@ -11,11 +11,13 @@ package com.tcc_vizinhanca.vizinhanca.repository.resident;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ResidentRepository extends JpaRepository<Resident,Long> {
 
     Optional<Resident> findByEmail(String email);
+    List<Resident> findByCondominiumId(Long condominiumId);
     boolean existsByCpf(String cpf);
     boolean existsByEmail(String email);
 }

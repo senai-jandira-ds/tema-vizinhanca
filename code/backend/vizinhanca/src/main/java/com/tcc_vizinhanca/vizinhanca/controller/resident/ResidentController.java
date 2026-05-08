@@ -15,8 +15,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -52,6 +54,18 @@ public class ResidentController {
 
     }
 
+    // GET BY CONDOMINIUM ID
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(Authentication authentication) {
+        String email = authentication.getName();
+
+        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
+
+        ResidentResponse response = new ResidentResponse(residents);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+    }
+
     // POST
     @PostMapping
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> insertResident(@Valid @RequestBody ResidentCreateRequest residentCreateRequest) {
@@ -74,6 +88,8 @@ public class ResidentController {
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> updateResident(
             @PathVariable Long id,  @Valid @RequestBody ResidentUpdateRequest residentUpdateRequest
             ) {
+
+        System.out.println(residentUpdateRequest.toString());
 
         Resident updatedResident = residentService.setUpdateResident(residentUpdateRequest, id);
 
