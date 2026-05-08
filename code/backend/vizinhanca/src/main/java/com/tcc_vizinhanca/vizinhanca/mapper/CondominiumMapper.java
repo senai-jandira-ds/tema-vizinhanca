@@ -28,6 +28,8 @@ public class CondominiumMapper {
                     .state(dto.getAddress().getState())
                     .condominium(condominium)
                     .build();
+
+            condominium.setAddress(condominiumAddress);
         }
 
         return condominium;
