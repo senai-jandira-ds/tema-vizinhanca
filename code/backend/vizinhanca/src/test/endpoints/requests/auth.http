@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjYxNTY2LCJleHAiOjE3NzgzNDc5NjZ9.9Ee0qPYT6iqtrs8KxDqno1iA-Kvhi4-8DVA8VdrrgqY
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjY0NjkxLCJleHAiOjE3NzgzNTEwOTF9.0XfDLqMXT7sNx4UEIZGEb1uKqm76etSLOO4qYljTod8
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/auth/login/condominium
@@ -24,6 +24,11 @@ Content-Type: application/json
 ### ===== CONDOMINIUM =====
 # @name listCondominium
 GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/condominium
+Authorization: Bearer {{token}}
+
+### Search by condominium
+# @name searchResidentsByCondominium
+GET http://localhost:8080/api/v1/condominium/resident
 Authorization: Bearer {{token}}
 
 ### Search by id
@@ -73,11 +78,6 @@ Authorization: Bearer {{token}}
 ### Search by id
 # @name searchResident
 GET https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/resident/6
-Authorization: Bearer {{token}}
-
-### Search by condominium
-# @name searchResidentsByCondominium
-GET http://localhost:8080/api/v1/resident/condominium
 Authorization: Bearer {{token}}
 
 ### Insert

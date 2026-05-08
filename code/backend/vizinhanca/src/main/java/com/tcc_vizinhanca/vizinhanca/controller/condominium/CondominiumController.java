@@ -5,10 +5,15 @@ import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRe
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
+import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +29,12 @@ public class CondominiumController {
     @Autowired
     private CondominiumService condominiumService;
 
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private ResidentService residentService;
+
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
@@ -32,6 +43,25 @@ public class CondominiumController {
         CondominiumResponse response = new CondominiumResponse(condos);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de condomínios retornada com sucesso!"));
+    }
+
+    // GET RESIDENTS
+    @GetMapping("/resident")
+    public ResponseEntity<ApiResponse<ResidentResponse>> listAllResidentsByCondominium(
+            HttpServletRequest request
+    ) {
+        String header = request.getHeader("Authorization");
+        System.out.println(request.getHeader("Authorization"));
+
+        String token = header.substring(7);
+
+        String email = jwtService.extrairUsername(token);
+
+        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
+
+        ResidentResponse response = new ResidentResponse(residents);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
 
     // GET BY ID

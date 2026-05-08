@@ -47,24 +47,6 @@ public class ResidentController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de Moradores retornada com sucesso!"));
     }
 
-    // GET BY CONDOMINIUM ID
-    @GetMapping("/condominium")
-    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(
-            HttpServletRequest request
-    ) {
-        String header = request.getHeader("Authorization");
-
-        String token = header.substring(7);
-
-        String email = jwtService.extrairUsername(token);
-
-        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
-
-        ResidentResponse response = new ResidentResponse(residents);
-
-        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
-    }
-
     // GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> searchResidentById(@PathVariable("id") Long idResident) {
