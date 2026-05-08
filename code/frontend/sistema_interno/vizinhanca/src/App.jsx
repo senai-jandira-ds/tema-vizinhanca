@@ -2,7 +2,6 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/login";
-import Cadastro from "./pages/cadastro";
 import Activity from "./pages/app/Activity";
 import AppLayout from "./pages/app/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
@@ -13,7 +12,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/Cadastro" element={<Cadastro />} />
 
         {/* Área logada */}
         <Route path="/app" element={<AppLayout />}>

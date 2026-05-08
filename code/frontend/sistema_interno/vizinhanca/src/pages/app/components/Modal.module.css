@@ -1,0 +1,280 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.modal {
+    max-height: 90vh;
+    width: 100%;
+    max-width: 600px;
+    background: #f5f5f5;
+    border-radius: 40px;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.modal h1 {
+    font-size: 2.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.inputGrande,
+.inputMedio,
+.selectPequeno,
+.textarea {
+    color: black;
+    border: 2px solid #d6ecff;
+    background: transparent;
+    border-radius: 999px;
+    padding: 1rem 1.5rem;
+    font-size: 1.3rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.textarea {
+    border-radius: 20px;
+    resize: none;
+    font-family: inherit;
+}
+
+.inputGrande {
+    width: 100%;
+}
+
+.row {
+    max-width: 100%;
+    display: flex;
+    gap: 1rem;
+}
+
+.inputMedio {
+    flex: 1;
+}
+
+.selectPequeno {
+    width: 180px;
+}
+
+.buttons {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.cancelar,
+.finalizar,
+.deletar {
+    width: fit-content;
+    border: none;
+    border-radius: 999px;
+    padding: 0.8rem 2.5rem;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+}
+
+.cancelar {
+    background: #ef1d1d;
+}
+
+.finalizar {
+    background: #19c15d;
+}
+
+.deletar {
+    background: #6b7280;
+    padding: 0.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+}
+
+.deletar:hover {
+    background: #ef4444;
+}
+
+.deletar svg {
+    width: 24px;
+    height: 24px;
+}
+
+@media (max-width: 1440px) {
+    .modal {
+        max-width: 600px;
+        padding: 2rem 3rem;
+    }
+
+    .modal h1 {
+        font-size: 2.3rem;
+    }
+
+    .avatar {
+        width: 140px;
+        height: 140px;
+    }
+
+    .inputGrande,
+    .inputMedio,
+    .selectPequeno,
+    .textarea {
+        font-size: 1.3rem;
+        padding: 1rem 1.2rem;
+    }
+
+    .selectPequeno {
+        width: 180px;
+    }
+
+    .cancelar,
+    .finalizar {
+        font-size: 1.5rem;
+        padding: 0.8rem 2rem;
+    }
+
+    .deletar {
+        width: 45px;
+        height: 45px;
+    }
+
+    .deletar svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .buttons {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal {
+        width: 95%;
+        max-width: none;
+        padding: 2rem 1.5rem;
+        border-radius: 24px;
+    }
+
+    .modal h1 {
+        font-size: 1.8rem;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .inputGrande,
+    .inputMedio,
+    .selectPequeno,
+    .textarea {
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .selectPequeno {
+        width: 140px;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .inputMedio {
+        width: 100%;
+    }
+
+    .selectPequeno {
+        width: 100%;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .cancelar,
+    .finalizar {
+        width: 100%;
+        font-size: 1.2rem;
+        padding: 0.8rem 1.5rem;
+    }
+
+    .deletar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .deletar svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        padding: 1.5rem 1rem;
+    }
+
+    .modal h1 {
+        font-size: 1.5rem;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .inputGrande,
+    .inputMedio,
+    .selectPequeno,
+    .textarea {
+        font-size: 0.9rem;
+        padding: 0.7rem 0.8rem;
+    }
+
+    .buttons {
+        margin-top: 1rem;
+    }
+
+    .cancelar,
+    .finalizar {
+        font-size: 1rem;
+        padding: 0.7rem 1.2rem;
+    }
+}

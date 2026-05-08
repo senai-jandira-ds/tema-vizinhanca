@@ -2,49 +2,107 @@ import Searchbar from "../../components/ui/SearchBar";
 import Table from "./components/Table";
 import FilterOptions from "../../components/ui/Filter"
 import styles from "./Users.module.css";
+import { useState, useEffect } from "react";
+import { getResidents, updateResident, deleteResident, createResident } from "../../services/residentService";
+import { formatarCPF } from "../../utils/format";
 
 function Users() {
+    const [loading, setLoading] = useState(true);
+    const [dadosTabela, setDadosTabela] = useState([]);
 
-    const cards = [
-        { id: 1, title: "Ativos", quantity: 128, color: "#10B765" },
-        { id: 2, title: "Inativos", quantity: 12, color: "#A99817" },
-        { id: 3, title: "Pendentes", quantity: 5, color: "#2EA9F5" },
-        { id: 4, title: "Bloqueados", quantity: 2, color: "#FF1111" },
-    ];
+    useEffect(() => {
+        fetchResidents();
+    }, []);
+
+        const fetchResidents = async () => {
+        try {
+            setLoading(true);
+            const response = await getResidents();
+            console.log('Resposta da API (moradores):', response);
+
+            const residents = response?.response?.residents || [];
+
+            if (!Array.isArray(residents)) {
+                setDadosTabela([]);
+                return;
+            }
+
+            const mappedData = residents.map(resident => ({
+                id: resident.id?.toString() || '',
+                nome: resident.nome || '',
+                email: resident.email || '',
+                telefone: resident.telefone || '',
+                cpf: formatarCPF(resident.cpf) || '',
+                status: 'Ativo',
+                apto: `${resident.bloco || ''} - ${resident.apto || ''}`
+            }));
+
+            console.log('Dados mapeados:', mappedData);
+            setDadosTabela(mappedData);
+        } catch (error) {
+            setDadosTabela([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmitUpdate = async (id, dados) => {
+        try {
+            if (id) {
+                await updateResident(id, dados);
+            } else {
+                // POST - Criar
+                console.log('POST /resident - Dados:', dados);
+                await createResident(dados);
+            }
+            fetchResidents();
+        } catch (error) {
+        }
+    };
+
+    const handleDeleteUpdate = async (id) => {
+        try {
+            console.log(`DELETE /resident/${id}`);
+            await deleteResident(id);
+            fetchResidents();
+        } catch (error) {
+        }
+    };
 
     const colunasTabela = [
         { id: 'id', label: 'ID', width: 100 },
         { id: 'nome', label: 'Nome ', width: 250 },
-        { id: 'email', label: 'Email', width: 300 },
-        { id: 'telefone', label: 'Telefone', width: 150 },
+        { id: 'apto', label: 'Apto ', width: 100 },
+        { id: 'cpf', label: 'CPF', width: 250 },
+        { id: 'email', label: 'Email', width: 250 },
         {
             id: 'status',
             label: 'Status ',
             width: 150,
             getCellClass: (status) => {
                 if (status === 'Ativo') return styles['status-verde'];
-                if (status === 'Inativo') return styles['status-amarelo'];
-                if (status === 'Pendente') return styles['status-azul'];
-                if (status === 'Bloqueado') return styles['status-vermelho'];
+                if (status === 'Inativo') return styles['status-vermelho'];
                 return '';
             }
         },
     ];
 
-    const dadosTabela = [
-        { id: '001', nome: 'João Pereira', email: 'joao.pereira@email.com', telefone: '(11) 98765-4321', status: 'Ativo' },
-        { id: '002', nome: 'Maria Oliveira', email: 'maria.oliveira@email.com', telefone: '(11) 97654-3210', status: 'Ativo' },
-        { id: '003', nome: 'Pedro Santos', email: 'pedro.santos@email.com', telefone: '(11) 96543-2109', status: 'Pendente' },
-        { id: '004', nome: 'Ana Costa', email: 'ana.costa@email.com', telefone: '(11) 95432-1098', status: 'Ativo' },
-        { id: '005', nome: 'Carlos Lima', email: 'carlos.lima@email.com', telefone: '(11) 94321-0987', status: 'Inativo' },
-        { id: '006', nome: 'Fernanda Alves', email: 'fernanda.alves@email.com', telefone: '(11) 93210-9876', status: 'Ativo' },
-        { id: '007', nome: 'Roberto Silva', email: 'roberto.silva@email.com', telefone: '(11) 92109-8765', status: 'Bloqueado' },
-        { id: '008', nome: 'Juliana Mendes', email: 'juliana.mendes@email.com', telefone: '(11) 91098-7654', status: 'Ativo' },
-    ];
-
     const handleCellClick = (valor, colunaId, linha) => {
         alert('Clicou na célula: ' + valor);
     };
+
+    const handleCadastrarNovo = () => {
+        setCellData({ linha: null, valor: null, colunaId: null });
+        setModalOpen(true);
+    };
+
+    if (loading) {
+        return (
+            <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -62,6 +120,9 @@ function Users() {
                     data={dadosTabela}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    onSubmit={handleSubmitUpdate}
+                    onDelete={handleDeleteUpdate}
+                    onCadastrarNovo={handleCadastrarNovo}
                 />
             </main>
         </>

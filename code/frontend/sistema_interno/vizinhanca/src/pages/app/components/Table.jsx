@@ -9,14 +9,19 @@ import {
 } from '@tanstack/react-table';
 import styles from './Table.module.css';
 import SortIcon from './SortIcon';
+import Modal from './Modal';
 
 export default function Table({
   columns = [],
   data = [],
   onCellClick = null,
   showPagination = false,
-  pageSize = 10,
-  maxHeight = null
+  pageSize = 8,
+  maxHeight = null,
+  modalType = 'usuario',
+  onSubmit = null,
+  onDelete = null,
+  onCadastrarNovo = null
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [cellData, setCellData] = useState(null);
@@ -195,7 +200,6 @@ export default function Table({
                       key={cell.id}
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Cell clicked:', cell.getValue(), cell.column.id, row.original);
                         handleCliqueCelula(cell.getValue(), cell.column.id, row.original);
                       }}
                       className={cellClass}
@@ -210,171 +214,85 @@ export default function Table({
         </table>
       </div>
 
-      {showPagination && itemsPerPage > 1 && (
-        <div className={styles.paginacao}>
+      <div className={styles.actionsBar}>
+        {modalType === 'usuario' && onCadastrarNovo && (
           <button
-            className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
-            onClick={() => irParaPagina(0)}
-            disabled={currentPage === 0}
+            className={styles.btnCadastrar}
+            onClick={() => {
+              setCellData(null);
+              setModalOpen(true);
+            }}
           >
-            {'<<'}
+            Cadastrar Morador
           </button>
-          <button
-            className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
-            onClick={() => irParaPagina(currentPage - 1)}
-            disabled={currentPage === 0}
-          >
-            {'<'}
-          </button>
+        )}
 
-          {[...Array(itemsPerPage)].map((_, i) => {
-            if (
-              i === 0 ||
-              i === itemsPerPage - 1 ||
-              (i >= currentPage - 1 && i <= currentPage + 1)
-            ) {
-              return (
-                <button
-                  key={i}
-                  className={`${styles['btn-paginacao']} ${i === currentPage ? styles.ativo : ''}`}
-                  onClick={() => irParaPagina(i)}
-                >
-                  {i + 1}
-                </button>
-              );
-            } else if (
-              i === currentPage - 2 ||
-              i === currentPage + 2
-            ) {
-              return <span key={i} className={styles['paginacao-ellipsis']}>...</span>;
-            }
-            return null;
-          })}
+        {showPagination && itemsPerPage > 1 && (
+          <div className={styles.paginacaoBotoes}>
+            <button
+              className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(0)}
+              disabled={currentPage === 0}
+            >
+              {'<<'}
+            </button>
+            <button
+              className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(currentPage - 1)}
+              disabled={currentPage === 0}
+            >
+              {'<'}
+            </button>
 
-          <button
-            className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
-            onClick={() => irParaPagina(currentPage + 1)}
-            disabled={currentPage === itemsPerPage - 1}
-          >
-            {'>'}
-          </button>
-          <button
-            className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
-            onClick={() => irParaPagina(itemsPerPage - 1)}
-            disabled={currentPage === itemsPerPage - 1}
-          >
-            {'>>'}
-          </button>
-        </div>
-      )}
-{modalOpen && (
-  <div
-    className={styles.overlay}
-    onClick={() => setModalOpen(false)}
-  >
-    <div
-      className={styles.modal}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <img
-        className={styles.avatar}
-        src={cellData?.linha?.foto || "https://i.pravatar.cc/300"}
-        alt=""
-      />
+            {[...Array(itemsPerPage)].map((_, i) => {
+              if (
+                i === 0 ||
+                i === itemsPerPage - 1 ||
+                (i >= currentPage - 1 && i <= currentPage + 1)
+              ) {
+                return (
+                  <button
+                    key={i}
+                    className={`${styles['btn-paginacao']} ${i === currentPage ? styles.ativo : ''}`}
+                    onClick={() => irParaPagina(i)}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              } else if (
+                i === currentPage - 2 ||
+                i === currentPage + 2
+              ) {
+                return <span key={i} className={styles['paginacao-ellipsis']}>...</span>;
+              }
+              return null;
+            })}
 
-      <h1>Detalhes do Morador</h1>
-
-      <input
-        type="text"
-        value={cellData?.linha?.nome || ""}
-        placeholder="Nome"
-        className={styles.inputGrande}
-        readOnly
-      />
-
-      <div className={styles.row}>
-        <input
-          type="text"
-          value={cellData?.linha?.apto || ""}
-          placeholder="Apto"
-          className={styles.inputMedio}
-          readOnly
-        />
-
-        <select
-          className={styles.selectPequeno}
-          value={cellData?.linha?.bloco || ""}
-          disabled
-        >
-          <option value="">
-            Bloco
-          </option>
-
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-        </select>
+            <button
+              className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(currentPage + 1)}
+              disabled={currentPage === itemsPerPage - 1}
+            >
+              {'>'}
+            </button>
+            <button
+              className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(itemsPerPage - 1)}
+              disabled={currentPage === itemsPerPage - 1}
+            >
+              {'>>'}
+            </button>
+          </div>
+        )}
       </div>
-
-      <input
-        type="text"
-        value={cellData?.linha?.cpf || ""}
-        placeholder="CPF"
-        className={styles.inputGrande}
-        readOnly
-      />
-
-      <input
-        type="email"
-        value={cellData?.linha?.email || ""}
-        placeholder="Email"
-        className={styles.inputGrande}
-        readOnly
-      />
-
-      <div className={styles.row}>
-        <input
-          type="text"
-          value={cellData?.linha?.telefone || ""}
-          placeholder="Telefone"
-          className={styles.inputMedio}
-          readOnly
-        />
-
-        <select
-          className={styles.selectPequeno}
-          value={cellData?.linha?.status || ""}
-          disabled
-        >
-          <option value="">
-            Status
-          </option>
-
-          <option value="Ativo">
-            Ativo
-          </option>
-
-          <option value="Inativo">
-            Inativo
-          </option>
-        </select>
-      </div>
-
-      <div className={styles.buttons}>
-        <button
-          className={styles.cancelar}
-          onClick={() => setModalOpen(false)}
-        >
-          Cancelar
-        </button>
-
-        <button className={styles.finalizar}>
-          Finalizar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+<Modal
+  isOpen={modalOpen}
+  onClose={() => setModalOpen(false)}
+  data={cellData}
+  type={modalType}
+  onSubmit={onSubmit}
+  onDelete={onDelete}
+/>
     </div>
   );
 }
