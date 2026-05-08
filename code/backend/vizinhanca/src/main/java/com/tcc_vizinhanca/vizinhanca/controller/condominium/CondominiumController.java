@@ -46,7 +46,7 @@ public class CondominiumController {
     }
 
     // GET RESIDENTS
-    @GetMapping("/resident")
+    @GetMapping("/resident/me")
     public ResponseEntity<ApiResponse<ResidentResponse>> listAllResidentsByCondominium(
             HttpServletRequest request
     ) {
