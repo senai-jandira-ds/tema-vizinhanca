@@ -37,9 +37,9 @@ public class CondominiumDetailResponse {
                 ? condominium.getResidents().stream()
                 .map(ResidentSummaryResponse::new)
                 .toList()
-                : null;
+                : new ArrayList<>();
         this.address = condominium.getAddress() != null
                 ? new CondominiumAddressResponse(condominium.getAddress())
-                : null;
+                : new CondominiumAddressResponse();
     }
 }

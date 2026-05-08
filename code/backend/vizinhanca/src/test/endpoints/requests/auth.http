@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjgyOTg5LCJleHAiOjE3NzgzNjkzODl9.D2XucYtOYfWcZuHuVSLNBd6xg8x0hNCW7-bIMsbWVsY
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4Mjg0MDUyLCJleHAiOjE3NzgzNzA0NTJ9.BQ1zjhIgFj4YiQpDDoeDKGlOtcV9Dd9a4NFKf4nH-Rw
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
@@ -43,10 +43,10 @@ Content-Type: application/json
 
 {
   "name": "TESTE API",
-  "cnpj": "12345678910116",
+  "cnpj": "12345678910121",
   "amount_blocks": 4,
   "amount_apartments": 160,
-  "email": "testeapi123@teste.com",
+  "email": "teste7@teste.com",
   "password": "testeapi123",
   "address": {
     "cep": "01310100",
