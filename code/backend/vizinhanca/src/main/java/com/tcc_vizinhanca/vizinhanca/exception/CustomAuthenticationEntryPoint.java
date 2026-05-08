@@ -20,7 +20,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                          HttpServletResponse response,
                          AuthenticationException exception) throws IOException {
 
-        exception.printStackTrace(); // 👈 adiciona isso temporariamente
+        exception.printStackTrace();
 
         System.out.println("ENTRY POINT CHAMADO: " + exception.getMessage());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

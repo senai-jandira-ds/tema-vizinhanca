@@ -13,26 +13,26 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ResidentDetailResponse {
     private Long id;
-    private String foto;
-    private String nome;
+    private String photo;
+    private String name;
     private String apto;
-    private String bloco;
+    private String block;
     private String cpf;
     private String email;
-    private String telefone;
-    private Integer pontuacao;
+    private String phone;
+    private Integer score;
     private CondominiumSummaryResponse condominium;
 
     public ResidentDetailResponse(Resident resident) {
         this.id = resident.getId();
-        this.foto = resident.getPhoto();
-        this.nome = resident.getName();
+        this.phone = resident.getPhoto();
+        this.name = resident.getName();
         this.apto = resident.getApartment();
-        this.bloco = resident.getBlock();
+        this.block = resident.getBlock();
         this.cpf = resident.getCpf();
         this.email = resident.getEmail();
-        this.telefone = resident.getPhone();
-        this.pontuacao = resident.getScore();
+        this.phone = resident.getPhone();
+        this.score = resident.getScore();
         this.condominium = resident.getCondominium() != null
                 ? new CondominiumSummaryResponse(resident.getCondominium())
                 : null;
