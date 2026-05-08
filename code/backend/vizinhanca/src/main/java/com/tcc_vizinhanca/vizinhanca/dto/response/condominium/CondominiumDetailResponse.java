@@ -1,5 +1,6 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
@@ -20,6 +21,7 @@ public class CondominiumDetailResponse {
     private String email;
     private String creation_date;
     private List<ResidentSummaryResponse> residents;
+    private CondominiumAddressResponse address;
 
     public CondominiumDetailResponse(Condominium condominium) {
         this.id = condominium.getId();
@@ -35,6 +37,9 @@ public class CondominiumDetailResponse {
                 ? condominium.getResidents().stream()
                 .map(ResidentSummaryResponse::new)
                 .toList()
+                : null;
+        this.address = condominium.getAddress() != null
+                ? new CondominiumAddressResponse(condominium.getAddress())
                 : null;
     }
 }
