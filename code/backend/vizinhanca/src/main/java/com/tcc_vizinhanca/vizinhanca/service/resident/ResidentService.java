@@ -10,8 +10,10 @@
 package com.tcc_vizinhanca.vizinhanca.service.resident;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentCreateRequest;
+import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
@@ -68,10 +70,10 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
-    public Resident setUpdateResident(@NonNull Resident resident, Long idResident){
+    public Resident setUpdateResident(@NonNull ResidentUpdateRequest dto, Long idResident){
         Resident existingResident = getSelectResidentById(idResident);
 
-        BeanUtils.copyProperties(resident, existingResident, "id");
+        ResidentMapper.updateEntity(dto, existingResident);
 
         return residentRepository.save(existingResident);
     }

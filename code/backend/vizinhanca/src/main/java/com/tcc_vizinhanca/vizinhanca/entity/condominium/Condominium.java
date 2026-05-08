@@ -54,6 +54,9 @@ public class Condominium {
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
     private List<Resident> residents;
 
+    @OneToOne(mappedBy = "condominium", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private CondominiumAddress address;
+
     @PrePersist
     public void prePersist() {
         this.creationDate = LocalDate.now();

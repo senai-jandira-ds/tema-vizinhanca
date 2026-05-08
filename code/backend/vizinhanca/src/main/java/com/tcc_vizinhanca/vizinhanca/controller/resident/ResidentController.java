@@ -74,9 +74,8 @@ public class ResidentController {
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> updateResident(
             @PathVariable Long id,  @Valid @RequestBody ResidentUpdateRequest residentUpdateRequest
             ) {
-        Resident resident = ResidentMapper.updateEntity(residentUpdateRequest, new Resident());
 
-        Resident updatedResident = residentService.setUpdateResident(resident, id);
+        Resident updatedResident = residentService.setUpdateResident(residentUpdateRequest, id);
 
         ResidentDetailResponse response = new ResidentDetailResponse(updatedResident);
 
