@@ -8,9 +8,11 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,9 @@ public class ResidentController {
     @Autowired
     private CondominiumService condominiumService;
 
+    @Autowired
+    private JwtService jwtService;
+
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<ResidentResponse>> listAllResidents() {
@@ -44,8 +49,14 @@ public class ResidentController {
 
     // GET BY CONDOMINIUM ID
     @GetMapping("/condominium")
-    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(Authentication authentication) {
-        String email = authentication.getName();
+    public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(
+            HttpServletRequest request
+    ) {
+        String header = request.getHeader("Authorization");
+
+        String token = header.substring(7);
+
+        String email = jwtService.extrairUsername(token);
 
         List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
 

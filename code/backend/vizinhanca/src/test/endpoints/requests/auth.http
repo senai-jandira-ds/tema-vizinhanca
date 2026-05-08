@@ -77,7 +77,7 @@ Authorization: Bearer {{token}}
 
 ### Search by condominium
 # @name searchResidentsByCondominium
-GET http://localhost:8080/api/v1/resident/me
+GET http://localhost:8080/api/v1/resident/condominium
 Authorization: Bearer {{token}}
 
 ### Insert
