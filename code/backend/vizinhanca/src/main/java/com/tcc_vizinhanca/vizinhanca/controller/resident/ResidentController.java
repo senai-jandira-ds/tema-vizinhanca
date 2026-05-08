@@ -43,7 +43,7 @@ public class ResidentController {
     }
 
     // GET BY CONDOMINIUM ID
-    @GetMapping("/me")
+    @GetMapping("/condominium")
     public ResponseEntity<ApiResponse<ResidentResponse>> searchResidentsByCondominiumId(Authentication authentication) {
         String email = authentication.getName();
 
