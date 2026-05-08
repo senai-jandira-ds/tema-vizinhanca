@@ -1,11 +1,7 @@
 import api from './api';
 
-export const loginResident = async (email, password) => {
-    const response = await api.post('/auth/login/resident', { email, password });
-    return response.data;
-};
-
 export const loginCondominium = async (email, password) => {
+    
     try {
         const payload = { email, password };
         const response = await api.post('/auth/login/condominium', payload);
@@ -25,11 +21,14 @@ export const getToken = () => {
 };
 
 export const saveCondominiumData = (data) => {
+    console.log("teste15151 ")
+    console.log(data)
     localStorage.setItem('@vizinhanca:condominium', JSON.stringify(data));
 };
 
 export const getCondominiumData = () => {
     const data = localStorage.getItem('@vizinhanca:condominium');
+    console.log(data)
     return data ? JSON.parse(data) : null;
 };
 

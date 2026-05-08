@@ -27,14 +27,15 @@ function Users() {
                 return;
             }
 
+
             const mappedData = residents.map(resident => ({
                 id: resident.id?.toString() || '',
-                nome: resident.nome || '',
+                nome: resident.name || '',
                 email: resident.email || '',
-                telefone: resident.telefone || '',
+                telefone: resident.phone || '',
                 cpf: formatarCPF(resident.cpf) || '',
                 status: 'Ativo',
-                apto: `${resident.bloco || ''} - ${resident.apto || ''}`
+                apto: `${resident.block || ''} - ${resident.apto || ''}`
             }));
 
             console.log('Dados mapeados:', mappedData);
@@ -70,7 +71,7 @@ function Users() {
     };
 
     const colunasTabela = [
-        { id: 'id', label: 'ID', width: 100 },
+        { id: 'id', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome ', width: 250 },
         { id: 'apto', label: 'Apto ', width: 100 },
         { id: 'cpf', label: 'CPF', width: 250 },

@@ -15,6 +15,11 @@ api.interceptors.request.use(
         console.log('Token:', token);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+
+            console.log('URL:', `${config.baseURL}${config.url}`);
+            console.log('Método:', config.method);
+            console.log('Headers:', config.headers);
+
         }
         return config;
     },
