@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjAzMzk5LCJleHAiOjE3NzgyODk3OTl9.kz_cs3-wo3kLaTVAvLr7onhtLXxoIqvljxH6ls4ngFQ
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4MjYxNTY2LCJleHAiOjE3NzgzNDc5NjZ9.9Ee0qPYT6iqtrs8KxDqno1iA-Kvhi4-8DVA8VdrrgqY
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca-dqfucdazb0eef3d5.brazilsouth-01.azurewebsites.net/api/v1/auth/login/condominium
@@ -88,11 +88,11 @@ Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Teste3 - SCOTTI",
-  "apartment": "3",
-  "block": "Torre 3",
-  "cpf": "42969976873",
-  "email": "teste@teste3.com",
+  "name": "Teste4 - SCOTTI",
+  "apartment": "4",
+  "block": "Torre 4",
+  "cpf": "42969976874",
+  "email": "teste@teste4.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 9
