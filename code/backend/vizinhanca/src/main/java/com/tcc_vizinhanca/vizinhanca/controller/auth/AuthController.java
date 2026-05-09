@@ -7,6 +7,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailR
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Login", description = "Endpoints para login.")
 public class AuthController {
 
     private final AuthService authService;
