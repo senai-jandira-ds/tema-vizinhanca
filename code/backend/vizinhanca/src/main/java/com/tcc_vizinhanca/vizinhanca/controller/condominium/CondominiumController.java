@@ -5,7 +5,6 @@ import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRe
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;

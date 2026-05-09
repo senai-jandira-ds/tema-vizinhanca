@@ -8,20 +8,16 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
-import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -34,9 +30,6 @@ public class ResidentController {
 
     @Autowired
     private CondominiumService condominiumService;
-
-    @Autowired
-    private JwtService jwtService;
 
     // GET ALL
     @GetMapping
