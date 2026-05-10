@@ -19,67 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// Importações importantes que faltavam ou são necessárias
 import com.example.mobilevizinhaa.ui.theme.login.bounceClick
 import com.example.mobilevizinhaa.ui.theme.menssage.ChatConversation
-
-@Composable
-fun MessageItem(
-    title: String,
-    time: String,
-    imageRes: Int,
-    dotColor: Color,
-    onClick: () -> Unit // Função que abre a tela de mensagens
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { onClick() } // O clique chama a função
-            .bounceClick(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = null,
-                modifier = Modifier.size(60.dp).clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = Color(0xFF333333)
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    androidx.compose.material3.Surface(
-                        modifier = Modifier.size(8.dp),
-                        shape = CircleShape,
-                        color = dotColor
-                    ) {}
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "Às $time",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
@@ -113,7 +55,7 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.SpaceBetween, // Agora o Arrangement funciona
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(

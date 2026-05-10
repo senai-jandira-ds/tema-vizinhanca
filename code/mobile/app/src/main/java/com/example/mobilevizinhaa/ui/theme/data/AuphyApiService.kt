@@ -6,33 +6,55 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-// Modelo de envio para o Login
+// --- MODELOS DE ENVIO (REQUEST) ---
 data class LoginRequest(
     val email: String,
     val password: String
 )
 
-// Modelo de resposta do Login (recebe o Token)
+// --- MODELOS DE RESPOSTA (RESPONSE) DO LOGIN ---
+// Estrutura exata do JSON que veio no seu Logcat
 data class LoginResponse(
-    val token: String? = null
+    val status: Boolean,
+    val status_code: Int,
+    val message: String,
+    val response: ResponseData // Objeto que contém os dados reais
 )
 
-// Modelo de como os moradores chegam do banco (baseado no seu .http)
-data class ResidentResponse(
+data class ResponseData(
+    val token: String,
+    val user: UserData
+)
+
+data class UserData(
     val id: Int,
     val name: String,
     val email: String,
-    val apartment: String,
-    val block: String,
-    val score: Int
+    val apto: String? = null,
+    val block: String? = null,
+    val cpf: String? = null,
+    val phone: String? = null
 )
 
+// --- MODELO PARA LISTAGEM DE MORADORES ---
+data class ResidentResponse(
+    val id: Long,
+    val name: String,
+    val email: String,
+    val apartment: String?,
+    val block: String?,
+    val score: Int?
+)
+
+// --- INTERFACE DA API ---
 interface AuthApiService {
-    // Endpoint de Login de Residente
+
     @POST("api/v1/auth/login/resident")
     suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
 
-    // Endpoint para pegar a lista de moradores (precisa do token no Header)
+    // Endpoint para pegar a lista de moradores (Exige o Token JWT)
     @GET("api/v1/resident")
-    suspend fun listResidents(@Header("Authorization") token: String): Response<List<ResidentResponse>>
+    suspend fun listResidents(
+        @Header("Authorization") token: String
+    ): Response<List<ResidentResponse>>
 }

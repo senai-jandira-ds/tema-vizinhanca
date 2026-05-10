@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.mobilevizinhaa.ui.theme.data.LoginRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
+import android.util.Log // Importante para debug
 
 data class LoginUiState(
     val email: String = "",
@@ -17,7 +18,8 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
-    val token: String? = null // Adicionado para segurar o token após o login
+    val token: String? = null,
+    val userName: String? = null // Adicionei para você mostrar o nome do Breno na Home
 )
 
 class LoginViewModel : ViewModel() {
@@ -34,7 +36,7 @@ class LoginViewModel : ViewModel() {
             !senha.any { it.isUpperCase() } -> "Adicione pelo menos uma letra maiúscula"
             !senha.any { it.isLowerCase() } -> "Adicione pelo menos uma letra minúscula"
             !senha.any { it.isDigit() } -> "Adicione pelo menos um número"
-            !senha.any { "@#$%^&+=!".contains(it) } -> "Adicione um caractere especial (@#$%^&+=!)"
+            !senha.contains("[!@#$%^&*(),.?\":{}|<>]".toRegex()) -> "Adicione um caractere especial (!@#$%)"
             else -> null
         }
     }
@@ -65,30 +67,35 @@ class LoginViewModel : ViewModel() {
                     val response = RetrofitClient.authApi.loginResident(request)
 
                     if (response.isSuccessful && response.body() != null) {
-                        val tokenRecebido = response.body()?.token
+                        val loginBody = response.body()!!
+
+                        // AJUSTE CRÍTICO: Pegando o token de dentro do objet 'response' da API
+                        val tokenRecebido = loginBody.response.token
+                        val nomeUsuario = loginBody.response.user.name
+
+                        Log.d("LOGIN_DEBUG", "Sucesso! Token: $tokenRecebido")
 
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                token = tokenRecebido
+                                token = tokenRecebido,
+                                userName = nomeUsuario
                             )
                         }
 
-                        onSuccess() // Navega para a Home
+                        onSuccess() // Navega para a próxima tela
                     } else {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = "E-mail ou senha incorretos"
-                            )
+                        val erroApi = when (response.code()) {
+                            404 -> "Caminho não encontrado (404)"
+                            401 -> "E-mail ou senha incorretos"
+                            else -> "Erro ${response.code()}: ${response.message()}"
                         }
+                        _uiState.update { it.copy(isLoading = false, errorMessage = erroApi) }
                     }
                 } catch (e: Exception) {
+                    Log.e("LOGIN_ERROR", "Falha na conexão", e)
                     _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = "Erro de conexão: ${e.localizedMessage}"
-                        )
+                        it.copy(isLoading = false, errorMessage = "Falha de conexão: Verifique a internet")
                     }
                 }
             }
@@ -97,7 +104,7 @@ class LoginViewModel : ViewModel() {
                 it.copy(
                     emailError = if (isEmailOk) null else "E-mail inválido",
                     passwordError = mensagemErroSenha,
-                    errorMessage = "Verifique os dados para prosseguir"
+                    errorMessage = "Corrija os erros para continuar"
                 )
             }
         }
