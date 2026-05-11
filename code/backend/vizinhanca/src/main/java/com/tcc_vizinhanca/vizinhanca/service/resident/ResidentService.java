@@ -112,11 +112,11 @@ public class ResidentService {
             }
         }
 
-        if (dto.getEmail() != null && !dto.getEmail().equals(existingResident.getEmail())) {
-            if (residentRepository.existsByEmail(dto.getEmail())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
-            }
-        }
+//        if (dto.getEmail() != null && !dto.getEmail().equals(existingResident.getEmail())) {
+//            if (residentRepository.existsByEmail(dto.getEmail())) {
+//                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
+//            }
+//        }
 
         ResidentMapper.updateEntity(dto, existingResident);
 
