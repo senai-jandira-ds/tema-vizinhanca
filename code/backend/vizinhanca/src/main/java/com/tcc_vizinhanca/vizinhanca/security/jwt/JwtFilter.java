@@ -7,11 +7,13 @@
 
 package com.tcc_vizinhanca.vizinhanca.security.jwt;
 
+import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -58,15 +60,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        System.out.println("TOKEN VÁLIDO: " + jwtService.validarToken(token));
-        System.out.println("USERNAME: " + jwtService.extrairUsername(token));
-
         if (!jwtService.validarToken(token)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            response.sendError(ResponseUtil.error(401, "Token ausente ou inválido").getStatusCode());
             return;
         }
 
         String username = jwtService.extrairUsername(token);
+
+        System.out.println("TOKEN VÁLIDO: " + jwtService.validarToken(token));
+        System.out.println("USERNAME: " + jwtService.extrairUsername(token));
 
         UserDetails userDetails =
                 customUserDetailsService.loadUserByUsername(username);

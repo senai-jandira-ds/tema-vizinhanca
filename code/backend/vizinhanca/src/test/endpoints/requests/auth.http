@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4NDMxNzc5LCJleHAiOjE3Nzg1MTgxNzl9.Uo1tWvjqfxycmN9qFCujSPdniis0t3wQpJMe8_E4lLQ
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4NTI2MjI2LCJleHAiOjE3Nzg2MTI2MjZ9.yR6miMwhOIodCFKTbc9VO3EyL2WpT5jNoEE22D2B2ws
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
@@ -97,11 +97,11 @@ Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Teste - BRENO",
+  "name": "Teste - SCOTTI",
   "apartment": "4",
   "block": "Torre 4",
-  "cpf": "12345678911",
-  "email": "machado.breno127@gmail.com",
+  "cpf": "42969976881",
+  "email": "leonardo.scotti07@gmail.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 14
