@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4Mjg0MDUyLCJleHAiOjE3NzgzNzA0NTJ9.BQ1zjhIgFj4YiQpDDoeDKGlOtcV9Dd9a4NFKf4nH-Rw
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUB0ZXN0ZTEuY29tIiwiaWF0IjoxNzc4NDMxNzc5LCJleHAiOjE3Nzg1MTgxNzl9.Uo1tWvjqfxycmN9qFCujSPdniis0t3wQpJMe8_E4lLQ
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
@@ -91,20 +91,20 @@ Authorization: Bearer {{token}}
 
 ### Insert
 # @name insertResident
-POST https://api-vizinhanca.onrender.com/api/v1/resident
+POST http://localhost:8080/api/v1/resident
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Teste4 - SCOTTI",
+  "name": "Teste - BRENO",
   "apartment": "4",
   "block": "Torre 4",
-  "cpf": "42969976874",
-  "email": "teste@teste4.com",
+  "cpf": "12345678911",
+  "email": "machado.breno127@gmail.com",
   "phone": "11998572585",
   "score": 0,
-  "condominium_id": 9
+  "condominium_id": 14
 }
 
 ### Update
