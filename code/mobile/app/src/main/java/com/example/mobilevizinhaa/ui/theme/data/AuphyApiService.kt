@@ -52,7 +52,6 @@ interface AuthApiService {
     @POST("api/v1/auth/login/resident")
     suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
 
-    // Endpoint para pegar a lista de moradores (Exige o Token JWT)
     @GET("api/v1/resident")
     suspend fun listResidents(
         @Header("Authorization") token: String

@@ -24,6 +24,7 @@ import com.example.mobilevizinhaa.ui.theme.mural.MuralScreen
 import com.example.mobilevizinhaa.ui.theme.rank.RankingScreen
 import com.example.mobilevizinhaa.ui.theme.menssage.MessagesScreen
 import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScreen
+import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,15 +108,6 @@ class MainActivity : ComponentActivity() {
 //    }
 //}
 
-
-
-
-
-
-
-
-
-
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -139,7 +131,7 @@ fun AppNavigation() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login", // <--- ALTERADO PARA ABRIR DIRETO NA HOME
+            startDestination = "login",
             modifier = Modifier.padding(paddingValues)
         ) {
             // --- TELA DE LOGIN ---
@@ -156,12 +148,17 @@ fun AppNavigation() {
                 HomeScreen(navController)
             }
 
-            // --- TELA DE LISTA DE MENSAGENS (CONTATOS) ---
+            // --- TELA DE NOTIFICAÇÕES (A que criamos agora) ---
+            composable("notificacoes") {
+                NotificationsScreen()
+            }
+
+            // --- TELA DE LISTA DE MENSAGENS ---
             composable("mensagens") {
                 MessagesScreen(navController = navController)
             }
 
-            // --- TELA DE DETALHE DO CHAT (EX: CONVERSA COM A SARAH) ---
+            // --- TELA DE DETALHE DO CHAT ---
             composable(
                 route = "chat_detalhe/{chatId}",
                 arguments = listOf(navArgument("chatId") { type = NavType.StringType })

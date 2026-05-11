@@ -20,7 +20,7 @@ object RetrofitClient {
     val authApi: AuthApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client) // Vincula o log ao Retrofit
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(AuthApiService::class.java)

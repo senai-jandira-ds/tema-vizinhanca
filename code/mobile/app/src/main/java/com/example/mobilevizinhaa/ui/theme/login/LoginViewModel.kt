@@ -83,7 +83,7 @@ class LoginViewModel : ViewModel() {
                             )
                         }
 
-                        onSuccess() // Navega para a próxima tela
+                        onSuccess()
                     } else {
                         val erroApi = when (response.code()) {
                             404 -> "Caminho não encontrado (404)"

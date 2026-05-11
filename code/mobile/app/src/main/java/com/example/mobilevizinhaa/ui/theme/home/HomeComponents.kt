@@ -252,8 +252,8 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
     Box(
         modifier = Modifier
             .size(54.dp)
-            .clip(CircleShape) // Garante que o clique seja circular
-            .clickable { onClick() }, // ADICIONE ISSO AQUI
+            .clip(CircleShape)
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
