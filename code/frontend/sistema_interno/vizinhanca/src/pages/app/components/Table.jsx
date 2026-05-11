@@ -7,6 +7,7 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table';
+import ExportButton from "./ExportBtn";
 import styles from './Table.module.css';
 import SortIcon from './SortIcon';
 import Modal from './Modal';
@@ -15,6 +16,7 @@ export default function Table({
   columns = [],
   data = [],
   onCellClick = null,
+  exportType = "",
   showPagination = false,
   pageSize = 8,
   maxHeight = null,
@@ -215,6 +217,7 @@ export default function Table({
       </div>
 
       <div className={styles.actionsBar}>
+      <ExportButton data={data} columns={columns} type={exportType} />
         {modalType === 'usuario' && onCadastrarNovo && (
           <button
             className={styles.btnCadastrar}
@@ -267,7 +270,7 @@ export default function Table({
               }
               return null;
             })}
-
+        
             <button
               className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
               onClick={() => irParaPagina(currentPage + 1)}

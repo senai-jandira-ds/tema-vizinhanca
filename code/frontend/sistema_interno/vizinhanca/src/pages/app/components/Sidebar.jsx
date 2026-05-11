@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styles from "./Sidebar.module.css";
 import Back from "../../../assets/icons/backicon.svg?react";
 import Home from "../../../assets/icons/homeicon.svg?react";
@@ -44,21 +44,21 @@ function Sidebar() {
                     </li>
 
                     <li>
-                        <Link to="/servicos">
+                        <Link to="services">
                             <Hands className={styles.icon} />
                             <span className={styles.label}>Serviços</span>
                         </Link>
                     </li>
 
                     <li>
-                        <Link to="/seguranca">
+                        <Link to="seguranca">
                             <Shield className={styles.icon} />
                             <span className={styles.label}>Segurança</span>
                         </Link>
                     </li>
 
                     <li>
-                        <Link to="/configuracoes">
+                        <Link to="settings">
                             <Settings className={styles.icon} />
                             <span className={styles.label}>Configurações</span>
                         </Link>

@@ -1,5 +1,6 @@
 import Searchbar from "../../components/ui/SearchBar";
 import Table from "./components/Table";
+
 import FilterOptions from "../../components/ui/Filter"
 import styles from "./Users.module.css";
 import { useState, useEffect } from "react";
@@ -19,8 +20,7 @@ function Users() {
             setLoading(true);
             const response = await getResidents();
             console.log('Resposta da API (moradores):', response);
-
-            const residents = response?.response?.residents || [];
+            const residents = response?.response || [];
 
             if (!Array.isArray(residents)) {
                 setDadosTabela([]);
@@ -124,6 +124,7 @@ function Users() {
                     onSubmit={handleSubmitUpdate}
                     onDelete={handleDeleteUpdate}
                     onCadastrarNovo={handleCadastrarNovo}
+                    exportType="moradores"
                 />
             </main>
         </>

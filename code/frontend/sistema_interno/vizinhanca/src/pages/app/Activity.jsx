@@ -5,18 +5,11 @@ import styles from "./Activity.module.css";
 
 function Activity() {
 
-    const cards = [
-        { id: 1, title: "Usuários", quantity: 10, color: "#10B765" },
-        { id: 2, title: "Pedidos", quantity: 5, color: "#A99817" },
-        { id: 3, title: "Objetos", quantity: 2, color: "#2EA9F5" },
-        { id: 4, title: "Denúncias", quantity: 1, color: "#FF1111" },
-    ];
-
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome ', width: 200 },
-        { id: 'detalhe', label: 'Detalhe', width: 350 },
-        { id: 'tipo', label: 'Tipo ', width: 150 },
+        { id: 'descricao', label: 'Descrição', width: 350 },
+        { id: 'categoria', label: 'Categoria ', width: 150 },
         {
             id: 'status',
             label: 'Status ',
@@ -30,49 +23,11 @@ function Activity() {
     ];
 
     const dadosTabela = [
-        { id: '5524', nome: 'João Pereira', detalhe: 'Preciso de uma furadeira por 1...', tipo: 'Pedido', status: 'Aberto' },
-        { id: '3392', nome: 'Maria Oliveira', detalhe: 'Escada disponível para emprést..', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3393', nome: 'Pedro Santos', detalhe: 'Posso ajudar com a mudança hoje', tipo: 'Interação', status: 'Concluído' },
-        { id: '3394', nome: 'Ana Costa', detalhe: 'Preciso de ajuda com jardim...', tipo: 'Pedido', status: 'Aberto' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
+        { id: '5524', nome: 'João Pereira', descricao: 'Preciso de uma furadeira por 1...', categoria: 'Pedido', status: 'Aberto' },
+        { id: '3392', nome: 'Maria Oliveira', descricao: 'Escada disponível para emprést..', categoria: 'Objeto', status: 'Disponível' },
+        { id: '3393', nome: 'Pedro Santos', descricao: 'Posso ajudar com a mudança hoje', categoria: 'Interação', status: 'Concluído' },
+
+        
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
@@ -95,6 +50,7 @@ function Activity() {
                     data={dadosTabela}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    exportType="atividade-geral"
                 />
             </main>
         </>
