@@ -78,9 +78,9 @@ public class ResidentService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado!");
         }
 
-        if (residentRepository.existsByEmail(resident.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
-        }
+//        if (residentRepository.existsByEmail(resident.getEmail())) {
+//            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
+//        }
 
         String rawPassword = PasswordGeneratorUtils.generateSecure(8);
 
