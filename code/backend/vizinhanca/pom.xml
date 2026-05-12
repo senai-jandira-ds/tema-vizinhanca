@@ -111,9 +111,17 @@
             <version>2.6.0</version>
         </dependency>
 
+<!--        EMAIL -->
+<!--        <dependency>-->
+<!--            <groupId>com.resend</groupId>-->
+<!--            <artifactId>resend-java</artifactId>-->
+<!--            <version>3.1.0</version>-->
+<!--        </dependency>-->
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-communication-email</artifactId>
+            <version>1.0.21</version>
         </dependency>
 
     </dependencies>

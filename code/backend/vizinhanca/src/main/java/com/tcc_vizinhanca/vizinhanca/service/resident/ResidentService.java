@@ -9,9 +9,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.service.resident;
 
-import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;
-import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
@@ -19,9 +17,7 @@ import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepositor
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.service.email.EmailService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
-import jakarta.mail.MessagingException;
 import lombok.NonNull;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -87,19 +83,20 @@ public class ResidentService {
         resident.setPassword(passwordEncoder.encode(rawPassword));
         resident.setIsActive(true);
 
-        Resident saved = residentRepository.save(resident);
+        Boolean emailSent = emailService.sendWelcomeEmail(
+                resident.getEmail(),
+                resident.getName(),
+                rawPassword
+        );
 
-        try {
-            emailService.sendWelcomeEmail(
-                    saved.getEmail(),
-                    saved.getName(),
-                    rawPassword
+        if (!emailSent) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Erro ao enviar email. Erro na SERVICE."
             );
-        } catch (MessagingException e) {
-            System.err.println("Erro ao enviar e-mail: " + e.getMessage());
         }
 
-        return saved;
+        return resident;
     }
 
     // UPDATE RESIDENT

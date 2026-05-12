@@ -3,11 +3,10 @@ package com.tcc_vizinhanca.vizinhanca.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -37,7 +36,7 @@ public class ApiResponse<T> {
     private String version = "1.0.04.26";
 
     @JsonProperty("request_date")
-    private String requestDate = LocalDateTime.now().toString();
+    private String requestDate = LocalDate.now().toString();
 
     private String message;
 
