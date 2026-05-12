@@ -58,7 +58,7 @@ export default function ExportButton({
 
     return (
         <div
-            className={styles.button}
+            className={styles.exportButton}
             onClick={handleExport}
         >
             Exportar
