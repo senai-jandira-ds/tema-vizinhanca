@@ -1,4 +1,6 @@
 import InputCondominium from "./components/InputCondominium";
+import VizinhancaLogo from "../../assets/images/VizinhancaLogo.png";
+import { getCondominiumData } from "../../services/authService";
 import Table from "./components/Table";
 import styles from "./Settings.module.css";
 
@@ -34,6 +36,8 @@ function Settings() {
         // Aqui você pode adicionar lógica, como abrir um modal, navegar, etc.
     };
 
+    const data = getCondominiumData()
+
     return (
         <>
             <header className={styles.header}>
@@ -46,17 +50,35 @@ function Settings() {
             </div>
             <main className={styles.main}>
 
-                <div className="condominium-info">
-                    <span></span>
-                    <InputCondominium />
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <div className={styles.condominiumInfo}>
+                    <div className={styles.condominiumInfoForm}>
+                        <span>Nome</span>
+                        <InputCondominium value={data.name} />
+
+                        <span>Endereço</span>
+                        <InputCondominium
+                            value={`${data.address.street}, ${data.address.number} - ${data.address.neighborhood}`}
+                        />
+
+                        <span>Cidade</span>
+                        <InputCondominium value={data.address.city} />
+
+                        <span>Estado</span>
+                        <InputCondominium value={data.address.state} />
+
+                        <span>Blocos no Condomínio</span>
+                        <InputCondominium value={String(data.amount_blocks)} />
+
+                        <span>Apartamentos Totais</span>
+                        <InputCondominium value={String(data.amount_apartments)} />
+                    </div>
+                    <div className={styles.condominiumImage}>
+                        <img src={VizinhancaLogo} alt="" />
+                    </div>
+
                 </div>
 
-                <h2>Atividade</h2>
+                <h2 className={styles.h2}>Atividade</h2>
                 <Table
                     columns={colunasTabela}
                     data={dadosTabela}

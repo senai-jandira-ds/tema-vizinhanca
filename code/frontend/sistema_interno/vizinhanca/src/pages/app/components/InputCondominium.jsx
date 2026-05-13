@@ -1,5 +1,4 @@
-import React from "react";
-import styles from "./InputCondominium.css";
+import styles from "./InputCondominium.module.css";
 
 export default function Input({
   placeholder = "Digite algo...",
@@ -7,9 +6,9 @@ export default function Input({
   onChange,
 }) {
   return (
-    <div className="inputWrapper">
+    <div className={styles.inputWrapper}>
       <input
-        className="custom-input"
+        className={styles["custom-input"]}
         type="text"
         placeholder={placeholder}
         value={value}

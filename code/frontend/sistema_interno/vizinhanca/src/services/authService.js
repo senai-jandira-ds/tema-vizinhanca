@@ -21,14 +21,11 @@ export const getToken = () => {
 };
 
 export const saveCondominiumData = (data) => {
-    console.log("teste15151 ")
-    console.log(data)
     localStorage.setItem('@vizinhanca:condominium', JSON.stringify(data));
 };
 
 export const getCondominiumData = () => {
     const data = localStorage.getItem('@vizinhanca:condominium');
-    console.log(data)
     return data ? JSON.parse(data) : null;
 };
 
