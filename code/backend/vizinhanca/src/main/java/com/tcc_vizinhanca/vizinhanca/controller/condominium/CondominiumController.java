@@ -3,13 +3,16 @@ package com.tcc_vizinhanca.vizinhanca.controller.condominium;
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -37,6 +40,9 @@ public class CondominiumController {
     @Autowired
     private ResidentService residentService;
 
+    @Autowired
+    private ActivityViewService activityViewService;
+
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
@@ -52,10 +58,7 @@ public class CondominiumController {
     public ResponseEntity<ApiResponse<List<ResidentSummaryResponse>>> listAllResidentsByCondominium(
             HttpServletRequest request
     ) {
-        String header = request.getHeader("Authorization");
-        System.out.println(request.getHeader("Authorization"));
-
-        String token = header.substring(7);
+        String token = request.getHeader("Authorization").substring(7);
 
         Long idCondominio = jwtService.extrairIdCondominio(token);
 
@@ -66,6 +69,24 @@ public class CondominiumController {
                 .toList();
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+    }
+
+    // GET ACTIVITIES
+    @GetMapping("/activity/me")
+    public  ResponseEntity<ApiResponse<ActivityViewResponse>> listAllActivitiesByCondominium(
+            HttpServletRequest request
+    ) {
+        String token = request.getHeader("Authorization").substring(7);
+        System.out.println("Token: " + token);
+
+        Long idCondominium = jwtService.extrairIdCondominio(token);
+        System.out.println(idCondominium);
+
+        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(idCondominium);
+
+        ActivityViewResponse response = new ActivityViewResponse(activities);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Atividades encontradas com sucesso!"));
     }
 
     // GET BY ID

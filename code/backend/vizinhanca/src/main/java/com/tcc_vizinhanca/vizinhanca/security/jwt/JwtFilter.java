@@ -51,7 +51,6 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
-        System.out.println("HEADER: " + header);
 
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -61,31 +60,23 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = header.substring(7);
 
         if (!jwtService.validarToken(token)) {
-            response.sendError(ResponseUtil.error(401, "Token ausente ou inválido").getStatusCode());
+            response.sendError(401, "Token inválido");
             return;
         }
 
         String username = jwtService.extrairUsername(token);
 
-        System.out.println("TOKEN VÁLIDO: " + jwtService.validarToken(token));
-        System.out.println("USERNAME: " + jwtService.extrairUsername(token));
-
         UserDetails userDetails =
                 customUserDetailsService.loadUserByUsername(username);
 
         UsernamePasswordAuthenticationToken auth =
-                UsernamePasswordAuthenticationToken.authenticated(
+                new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
 
-        auth.setDetails(userDetails);
-
         SecurityContextHolder.getContext().setAuthentication(auth);
-
-        System.out.println("AUTENTICAÇÃO SETADA: " +
-                SecurityContextHolder.getContext().getAuthentication());
 
         filterChain.doFilter(request, response);
     }
