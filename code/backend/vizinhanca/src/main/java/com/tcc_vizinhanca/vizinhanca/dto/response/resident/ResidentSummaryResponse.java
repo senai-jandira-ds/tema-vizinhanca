@@ -20,6 +20,7 @@ public class ResidentSummaryResponse {
     private String email;
     private String phone;
     private Integer score;
+    private String creationDate;
 
     public ResidentSummaryResponse(Resident resident) {
         this.id = resident.getId();
@@ -31,5 +32,8 @@ public class ResidentSummaryResponse {
         this.email = resident.getEmail();
         this.phone = resident.getPhone();
         this.score = resident.getScore();
+        this.creationDate = resident.getCreationDate() != null
+                ? resident.getCreationDate().toString()
+                : "";
     }
 }

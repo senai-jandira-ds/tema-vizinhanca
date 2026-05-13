@@ -19,6 +19,10 @@ public class CondominiumCreateRequest {
     @Size(min = 14, max = 14, message = "CNPJ deve ter 14 dígitos")
     private String cnpj;
 
+    @JsonProperty("photo")
+    @NotBlank(message = "Foto é obrigatório")
+    private String foto;
+
     @JsonProperty("amount_blocks")
     @NotNull(message = "Quantidade de blocos é obrigatória")
     @Positive(message = "Quantidade de blocos deve ser positiva")

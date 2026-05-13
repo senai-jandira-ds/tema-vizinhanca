@@ -21,6 +21,7 @@ public class ResidentDetailResponse {
     private String email;
     private String phone;
     private Integer score;
+    private String creationDate;
     private CondominiumSummaryResponse condominium;
 
     public ResidentDetailResponse(Resident resident) {
@@ -33,6 +34,9 @@ public class ResidentDetailResponse {
         this.email = resident.getEmail();
         this.phone = resident.getPhone();
         this.score = resident.getScore();
+        this.creationDate = resident.getCreationDate() != null
+                ? resident.getCreationDate().toString()
+                : null;
         this.condominium = resident.getCondominium() != null
                 ? new CondominiumSummaryResponse(resident.getCondominium())
                 : null;

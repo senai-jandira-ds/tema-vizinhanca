@@ -57,9 +57,9 @@ public class CondominiumController {
 
         String token = header.substring(7);
 
-        String email = jwtService.extrairUsername(token);
+        Long idCondominio = jwtService.extrairIdCondominio(token);
 
-        List<Resident> residents = residentService.getSelectResidentsByCondominiumEmail(email);
+        List<Resident> residents = residentService.getSelectResidentsByCondominiumId(idCondominio);
 
         List<ResidentSummaryResponse> response = residents.stream()
                 .map(ResidentSummaryResponse::new)

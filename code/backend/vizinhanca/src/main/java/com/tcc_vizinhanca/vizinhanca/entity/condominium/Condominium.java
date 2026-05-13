@@ -33,6 +33,9 @@ public class Condominium {
     @Column(name = "nome", nullable = false)
     private String name;
 
+    @Column(name = "foto", columnDefinition = "TEXT")
+    private String photo;
+
     @Column(name = "cnpj", nullable = false, unique = true)
     private String cnpj;
 

@@ -4,6 +4,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    @Cacheable("userDetails")
     public UserDetails loadUserByUsername(String email) {
 
         Optional<Condominium> condominium = condominiumRepository.findByEmail(email);

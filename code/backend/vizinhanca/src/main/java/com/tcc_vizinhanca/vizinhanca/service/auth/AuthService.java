@@ -51,7 +51,10 @@ public class AuthService {
             );
         }
 
-        String token = jwtService.gerarToken(condominium.getEmail());
+        String token = jwtService.gerarToken(
+                condominium.getEmail(),
+                condominium.getId(),
+                "CONDOMÍNIO");
 
         CondominiumDetailResponse condominiumDetailResponse = new CondominiumDetailResponse(condominium);
 
@@ -71,7 +74,10 @@ public class AuthService {
             );
         }
 
-        String token = jwtService.gerarToken(resident.getEmail());
+        String token = jwtService.gerarToken(
+                resident.getEmail(),
+                resident.getCondominium().getId(),
+                "MORADOR");
 
         ResidentDetailResponse userResponse = new ResidentDetailResponse(resident);
 

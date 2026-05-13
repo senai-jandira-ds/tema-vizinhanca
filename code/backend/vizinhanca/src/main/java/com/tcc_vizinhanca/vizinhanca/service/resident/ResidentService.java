@@ -15,6 +15,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.email.EmailService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
@@ -33,7 +34,7 @@ public class ResidentService {
     private ResidentRepository residentRepository;
 
     @Autowired
-    private CondominiumRepository condominiumRepository;
+    private CondominiumService condominiumService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -55,12 +56,9 @@ public class ResidentService {
     }
 
     // SELECT BY CONDOMINIUM ID
-    public List<Resident> getSelectResidentsByCondominiumEmail(String email) {
+    public List<Resident> getSelectResidentsByCondominiumId(Long idCondominium) {
 
-        Condominium condominium = condominiumRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("Condomínio não encontrado"));
+        Condominium condominium = condominiumService.getSelectCondominiumById(idCondominium);
 
         return residentRepository
                 .findByCondominiumId(condominium.getId());
@@ -96,7 +94,7 @@ public class ResidentService {
             );
         }
 
-        return resident;
+        return residentRepository.save(resident);
     }
 
     // UPDATE RESIDENT

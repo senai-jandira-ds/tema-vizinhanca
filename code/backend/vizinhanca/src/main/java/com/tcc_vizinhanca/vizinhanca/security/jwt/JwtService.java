@@ -30,30 +30,32 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String gerarToken(String username) {
+    public String gerarToken(String username, Long idCondominio, String tipoPerfil) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("id_condominio", idCondominio)
+                .claim("tipo_perfil", tipoPerfil)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 dia
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extrairUsername(String token) {
+    public Long extrairIdCondominio(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .get("id_condominio", Long.class);
     }
 
-    public boolean validarToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public String extrairTipoPerfil(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("tipo_perfil", String.class);
     }
 }

@@ -13,6 +13,8 @@ import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "tbl_morador")
 @Getter
@@ -57,7 +59,15 @@ public class Resident {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDate creationDate;
+
     @ManyToOne
     @JoinColumn( name = "id_condominio")
     private Condominium condominium;
+
+    @PrePersist
+    public void prePersist() {
+        this.creationDate = LocalDate.now();
+    }
 }
