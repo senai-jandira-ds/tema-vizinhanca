@@ -10,18 +10,23 @@
 package com.tcc_vizinhanca.vizinhanca.service.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -37,6 +42,9 @@ public class AuthService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     public AuthResponse<CondominiumDetailResponse> loginCondominium(String email, String password){
 
@@ -56,7 +64,11 @@ public class AuthService {
                 condominium.getId(),
                 "CONDOMÍNIO");
 
-        CondominiumDetailResponse condominiumDetailResponse = new CondominiumDetailResponse(condominium);
+        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(
+                condominium.getId()
+        );
+
+        CondominiumDetailResponse condominiumDetailResponse = new CondominiumDetailResponse(condominium, activities);
 
         return new AuthResponse<>(token, condominiumDetailResponse);
     }

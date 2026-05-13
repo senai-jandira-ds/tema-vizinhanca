@@ -46,9 +46,9 @@ public class CondominiumController {
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
-        List<Condominium> condos = condominiumService.getSelectAllCondominiums();
+        List<Condominium> condominiums = condominiumService.getSelectAllCondominiums();
 
-        CondominiumResponse response = new CondominiumResponse(condos);
+        CondominiumResponse response = new CondominiumResponse(condominiums);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de condomínios retornada com sucesso!"));
     }
@@ -77,10 +77,8 @@ public class CondominiumController {
             HttpServletRequest request
     ) {
         String token = request.getHeader("Authorization").substring(7);
-        System.out.println("Token: " + token);
 
         Long idCondominium = jwtService.extrairIdCondominio(token);
-        System.out.println(idCondominium);
 
         List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(idCondominium);
 
@@ -95,7 +93,10 @@ public class CondominiumController {
 
         Condominium condominium = condominiumService.getSelectCondominiumById(idCondominium);
 
-        CondominiumDetailResponse response = new CondominiumDetailResponse(condominium);
+        List<ActivityView> activities = activityViewService
+                .getSelectActivitiesViewByCondominiumId(idCondominium);
+
+        CondominiumDetailResponse response = new CondominiumDetailResponse(condominium, activities);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio encontrado com sucesso!"));
     }

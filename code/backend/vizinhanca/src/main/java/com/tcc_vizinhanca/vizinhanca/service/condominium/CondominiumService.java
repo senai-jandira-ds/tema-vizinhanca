@@ -44,6 +44,13 @@ public class CondominiumService {
         return condominium;
     }
 
+    // SELECT BY EMAIL
+    public Condominium getSelectCondominiumByEmail(String email) {
+        return condominiumRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Condomínio não encontrado!"));
+    }
+
     // INSERT CONDOMINIUM
     public Condominium setInsertCondominium(@NonNull Condominium condominium) {
         condominium.setId(null);

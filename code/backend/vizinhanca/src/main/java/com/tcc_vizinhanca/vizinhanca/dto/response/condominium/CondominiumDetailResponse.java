@@ -3,6 +3,7 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class CondominiumDetailResponse {
     private String creation_date;
     private List<ResidentSummaryResponse> residents;
     private CondominiumAddressResponse address;
+    private List<ActivityViewDetailResponse> activities;
 
     public CondominiumDetailResponse(Condominium condominium) {
         this.id = condominium.getId();
@@ -43,5 +45,31 @@ public class CondominiumDetailResponse {
         this.address = condominium.getAddress() != null
                 ? new CondominiumAddressResponse(condominium.getAddress())
                 : new CondominiumAddressResponse();
+    }
+
+    public CondominiumDetailResponse(Condominium condominium, List<ActivityView> activities) {
+        this.id = condominium.getId();
+        this.name = condominium.getName();
+        this.photo = condominium.getPhoto();
+        this.cnpj = condominium.getCnpj();
+        this.amount_blocks = condominium.getAmountBlocks();
+        this.amount_apartments = condominium.getAmountApartments();
+        this.email = condominium.getEmail();
+        this.creation_date = condominium.getCreationDate() != null
+                ? condominium.getCreationDate().toString()
+                : "";
+        this.residents = condominium.getResidents() != null
+                ? condominium.getResidents().stream()
+                  .map(ResidentSummaryResponse::new)
+                  .toList()
+                : new ArrayList<>();
+        this.address = condominium.getAddress() != null
+                ? new CondominiumAddressResponse(condominium.getAddress())
+                : new CondominiumAddressResponse();
+        this.activities = activities != null
+                ? activities.stream()
+                  .map(ActivityViewDetailResponse::new)
+                  .toList()
+                : new ArrayList<>();
     }
 }

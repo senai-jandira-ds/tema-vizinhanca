@@ -64,6 +64,13 @@ public class ResidentService {
                 .findByCondominiumId(condominium.getId());
     }
 
+    // SELECT BY EMAIL
+    public Resident getSelectResidentByEmail(String email) {
+        return residentRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Morador não encontrado!"));
+    }
+
     // INSERT RESIDENT
     public Resident setInsertResident(@NonNull Resident resident) {
         resident.setId(null);

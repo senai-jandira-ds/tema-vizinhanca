@@ -27,8 +27,6 @@ public class EmailService {
             @Value("${azure.communication.connection-string}") String connectionString,
             @Value("${azure.communication.sender}") String sender
     ) {
-        // Log temporário para diagnóstico
-        System.out.println(">>> Connection string lida: [" + connectionString + "]");
 
         this.emailClient = new EmailClientBuilder()
                 .connectionString(connectionString)
