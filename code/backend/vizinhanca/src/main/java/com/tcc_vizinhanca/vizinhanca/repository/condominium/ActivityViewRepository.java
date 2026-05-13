@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface ActivityViewRepository extends JpaRepository<ActivityView, Long> {
 
-    @Query(value = "SELECT a FROM ActivityView a WHERE a.idCondominium = :id")
+    @Query(value = "SELECT * FROM vw_atividades_morador WHERE id_condominio = :id ORDER BY data_criacao DESC", nativeQuery = true)
     List<ActivityView> findByIdCondominium(@Param("id") Long id);
 }

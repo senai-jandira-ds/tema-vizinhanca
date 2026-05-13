@@ -73,12 +73,16 @@ public class JwtService {
     }
 
     public String extrairTipoPerfil(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("tipo_perfil", String.class);
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("tipo_perfil", String.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean validarToken(String token) {
@@ -91,11 +95,15 @@ public class JwtService {
     }
 
     public String extrairUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -1,12 +1,12 @@
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
-import com.azure.core.annotation.Immutable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +18,9 @@ import java.time.LocalDateTime;
 public class ActivityView {
 
     @Id
+    @Column(name = "id")
+    private Long id;
+
     @Column(name = "id_morador")
     private Long idMorador;
 
