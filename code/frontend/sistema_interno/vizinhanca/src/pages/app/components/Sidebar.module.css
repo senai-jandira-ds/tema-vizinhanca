@@ -82,3 +82,78 @@ li:last-child a{
 li:last-child a .icon {
     width: 6%;
 }
+
+@media (max-width: 768px) {
+
+    aside {
+        width: 100%;
+        height: auto;
+
+        flex-direction: row;
+        justify-content: center;
+
+        overflow: visible;
+        transition: none;
+    }
+
+    aside:hover {
+        width: 100%;
+    }
+
+    nav {
+        position: static;
+
+        width: 100%;
+        height: auto;
+        margin-bottom: 0;
+    }
+
+    ul {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+
+        margin-bottom: 0;
+        gap: 0;
+    }
+
+    li {
+        display: flex;
+        justify-content: center;
+    }
+
+    li:first-child{
+        display: none;
+    }
+
+    li:last-child{
+        display: none;
+    }
+
+    li a {
+        justify-content: center;
+        padding: 12px;
+        border-radius: 50%;
+    }
+
+    .label {
+        display: none;
+    }
+
+    .icon {
+        width: 2rem;
+    }
+
+    li:last-child {
+        margin-top: 0;
+        padding: 0;
+    }
+
+    li:last-child a {
+        padding: 12px;
+    }
+
+    li:last-child a .icon {
+        width: 24px;
+    }
+}

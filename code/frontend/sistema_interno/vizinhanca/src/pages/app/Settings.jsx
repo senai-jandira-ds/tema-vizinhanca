@@ -1,5 +1,4 @@
 import InputCondominium from "./components/InputCondominium";
-import VizinhancaLogo from "../../assets/images/VizinhancaLogo.png";
 import { getCondominiumData } from "../../services/authService";
 import Table from "./components/Table";
 import styles from "./Settings.module.css";
@@ -73,7 +72,7 @@ function Settings() {
                         <InputCondominium value={String(data.amount_apartments)} />
                     </div>
                     <div className={styles.condominiumImage}>
-                        <img src={VizinhancaLogo} alt="" />
+                        <img src={data.photo || ""} alt="Logo do Condomínio" />
                     </div>
 
                 </div>
