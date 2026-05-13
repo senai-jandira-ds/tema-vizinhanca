@@ -14,6 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mobilevizinhaa.ui.theme.home.HomeViewModel
 
 // Seus imports de UI
 import com.example.mobilevizinhaa.ui.theme.home.CustomBottomNavBar
@@ -25,6 +27,7 @@ import com.example.mobilevizinhaa.ui.theme.rank.RankingScreen
 import com.example.mobilevizinhaa.ui.theme.menssage.MessagesScreen
 import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScreen
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
+import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,20 +111,106 @@ class MainActivity : ComponentActivity() {
 //    }
 //}
 
+//@Composable
+//fun AppNavigation() {
+//    val navController = rememberNavController()
+//
+//    // Observa em qual tela estamos
+//    val navBackStackEntry by navController.currentBackStackEntryAsState()
+//    val currentRoute = navBackStackEntry?.destination?.route
+//
+//    Scaffold(
+//        bottomBar = {
+//            // Lógica para mostrar a barra inferior:
+//            // NÃO mostra no Login e NÃO mostra dentro da conversa (ChatDetalhe)
+//            val showBottomBar = currentRoute != null &&
+//                    currentRoute != "login" &&
+//                    !currentRoute.startsWith("chat_detalhe")
+//
+//            if (showBottomBar) {
+//                CustomBottomNavBar(navController)
+//            }
+//        }
+//    ) { paddingValues ->
+//        NavHost(
+//            navController = navController,
+//            startDestination = "login",
+//            modifier = Modifier.padding(paddingValues)
+//        ) {
+//            // --- TELA DE LOGIN ---
+//            composable("login") {
+//                LoginScreen(navController = { rota ->
+//                    navController.navigate(rota) {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                })
+//            }
+//
+//            // --- TELA HOME ---
+//            composable("home") {
+//                HomeScreen(navController)
+//            }
+//
+//            // --- TELA DE NOTIFICAÇÕES (A que criamos agora) ---
+//            composable("notificacoes") {
+//                NotificationsScreen()
+//            }
+//
+//            // --- TELA DE LISTA DE MENSAGENS ---
+//            composable("mensagens") {
+//                MessagesScreen(navController = navController)
+//            }
+//
+//            // --- TELA DE DETALHE DO CHAT ---
+//            composable(
+//                route = "chat_detalhe/{chatId}",
+//                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+//            ) { backStackEntry ->
+//                val id = backStackEntry.arguments?.getString("chatId")
+//                ChatDetalheScreen(id = id, navController = navController)
+//            }
+//
+//            // --- OUTRAS TELAS ---
+//            composable("mural") {
+//                MuralScreen()
+//            }
+//
+//            composable("ranking") {
+//                RankingScreen()
+//            }
+//
+//            composable("pedido") {
+//                PedidosObjetosScreen()
+//            }
+//
+//            composable("objeto") {
+//                PedidosObjetosScreen()
+//            }
+//        }
+//    }
+//}
+
+
+
+
+
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    // Observa em qual tela estamos
+    // 1. CRIAMOS O VIEWMODEL AQUI (NÍVEL PAI)
+    // Isso garante que a Home e a Publicação usem a MESMA lista de posts.
+    val homeViewModel: HomeViewModel = viewModel()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         bottomBar = {
-            // Lógica para mostrar a barra inferior:
-            // NÃO mostra no Login e NÃO mostra dentro da conversa (ChatDetalhe)
             val showBottomBar = currentRoute != null &&
                     currentRoute != "login" &&
+                    currentRoute != "publicacao" &&
                     !currentRoute.startsWith("chat_detalhe")
 
             if (showBottomBar) {
@@ -145,20 +234,26 @@ fun AppNavigation() {
 
             // --- TELA HOME ---
             composable("home") {
-                HomeScreen(navController)
+                // Passamos o homeViewModel criado lá em cima
+                HomeScreen(navController = navController, viewModel = homeViewModel)
             }
 
-            // --- TELA DE NOTIFICAÇÕES (A que criamos agora) ---
+            // --- NOVA TELA DE PUBLICAÇÃO ---
+            composable("publicacao") {
+                // Passamos o MESMO homeViewModel para salvar o post na mesma lista
+                PublicacaoScreen(navController = navController, viewModel = homeViewModel)
+            }
+
+            // --- TELA DE NOTIFICAÇÕES ---
             composable("notificacoes") {
                 NotificationsScreen()
             }
 
-            // --- TELA DE LISTA DE MENSAGENS ---
+            // --- MENSAGENS E CHAT ---
             composable("mensagens") {
                 MessagesScreen(navController = navController)
             }
 
-            // --- TELA DE DETALHE DO CHAT ---
             composable(
                 route = "chat_detalhe/{chatId}",
                 arguments = listOf(navArgument("chatId") { type = NavType.StringType })
@@ -168,21 +263,10 @@ fun AppNavigation() {
             }
 
             // --- OUTRAS TELAS ---
-            composable("mural") {
-                MuralScreen()
-            }
-
-            composable("ranking") {
-                RankingScreen()
-            }
-
-            composable("pedido") {
-                PedidosObjetosScreen()
-            }
-
-            composable("objeto") {
-                PedidosObjetosScreen()
-            }
+            composable("mural") { MuralScreen() }
+            composable("ranking") { RankingScreen() }
+            composable("pedido") { PedidosObjetosScreen() }
+            composable("objeto") { PedidosObjetosScreen() }
         }
     }
 }

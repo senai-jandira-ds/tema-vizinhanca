@@ -1,6 +1,5 @@
 package com.example.mobilevizinhaa.ui.theme.home
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,22 +25,24 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = viewModel()
 ) {
+    // Coleta o estado do usuário (nome, apartamento, contadores)
     val uiState by viewModel.uiState.collectAsState()
 
-    // Trocamos o Scaffold por uma Box.
-    // A barra agora é controlada APENAS pela MainActivity.
+    // Lista de posts que vem do ViewModel (agora dinâmica)
+    val posts = viewModel.posts
+
     Box(modifier = Modifier.fillMaxSize().background(GrayBackground)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Header
+            // 1. Header (Mantido original)
             HomeHeader(uiState.userName, uiState.apartment)
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // 2. Cards
+            // 2. Cards de Resumo (Exatamente com o padding de 20dp e espaço de 16dp)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,6 +61,7 @@ fun HomeScreen(
                 )
             }
 
+            // Título da Seção
             Text(
                 text = "Postagens",
                 modifier = Modifier.padding(start = 24.dp, top = 32.dp, bottom = 16.dp),
@@ -68,22 +70,24 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // 3. Grade de fotos
-            PostGridSection()
+            // 3. Grade de fotos (Agora ligada à lista real do ViewModel)
+            PostGridSection(posts = posts)
 
-            // Espaço final para o scroll
+            // Espaçamento para o scroll não bater na BottomBar
             Spacer(modifier = Modifier.height(100.dp))
         }
 
-        // 4. O Botão flutuante (FAB) agora fica aqui, alinhado ao canto
+        // 4. Botão Flutuante (FAB) - Redireciona para PublicacaoScreen
         ExtendedFloatingActionButton(
-            onClick = { /* Ação */ },
+            onClick = {
+                navController.navigate("publicacao")
+            },
             containerColor = BluePrimary,
             contentColor = White,
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(bottom = 20.dp, end = 16.dp) // Ajuste fino na posição
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(Modifier.width(8.dp))

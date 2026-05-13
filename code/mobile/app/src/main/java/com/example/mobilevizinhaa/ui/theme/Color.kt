@@ -12,6 +12,14 @@ val BluePrimary = Color(0xFF2196F3)
 
 val BlueLight = Color(0xFF42A5F5)
 
+
+val BordaFocada = Color(0xFF2196F3)
+val BordaDescricao = Color(0xFF6200EE)
+
+val BordaPadrao = Color(0xFFC7C7C7)
+
+val FundoInput = Color(0xFFFFFFFF)
+
 val White = Color(0xFFFFFFFF)
 val GrayBackground = Color(0xFFF5F5F5)
 val GrayText = Color(0xFF9E9E9E)
