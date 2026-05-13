@@ -31,9 +31,16 @@ public class GlobalExceptionHandler {
                 .body(ResponseUtil.error(400, message));
     }
 
-//    @ExceptionHandler(DataIntegrityViolationException.class)
-//    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
-//        return ResponseEntity.status(HttpStatus.CONFLICT)
-//                .body(ResponseUtil.error(409,"Dado duplicado ou violação de integridade!"));
-//    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ResponseUtil.error(409,"Dado duplicado ou violação de integridade!"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseUtil.error(500, "Erro interno no servidor: " + ex.getMessage()));
+    }
 }

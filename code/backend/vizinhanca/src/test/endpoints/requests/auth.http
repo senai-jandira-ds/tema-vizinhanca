@@ -20,6 +20,17 @@ Content-Type: application/json
 }
 
 
+### ME - CONDOMINIUM
+# @name meCondominium
+GET http://localhost:8080/api/v1/auth/me/condominium
+Authorization: Bearer {{token}}
+
+### ME - RESIDENT
+# @name meResident
+GET http://localhost:8080/api/v1/auth/me/resident
+Authorization: Bearer {{token}}
+
+
 
 ### ===== CONDOMINIUM =====
 # @name listCondominium
