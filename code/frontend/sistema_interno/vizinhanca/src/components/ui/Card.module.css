@@ -6,6 +6,8 @@
     border: 1px solid rgba(0, 0, 0, 0.18);
     border-radius: clamp(12px, 2vw, 20px);
     padding: clamp(1.5%, 2.5%, 3%);
+    font-size: clamp(10px, 0.9vw, 16px);
+    transition: 0.3s;
 }
 
 .leftContent {
@@ -13,21 +15,20 @@
     flex-direction: column;
     height: 100%;
     width: 80%;
-    gap: clamp(30%, 60%, 80%);
 }
 
 .leftContent span:first-child {
-    font-size: clamp(1rem, 5vw, 2.2rem);
+    font-size: 1%;
 }
 
 .leftContent span:last-child {
-    font-size: clamp(1rem, 5vw, 2.2rem);
+    font-size: 0;
 }
 
 .rightContent {
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: flex-end;
     height: 100%;
     width: 20%;
 }
@@ -143,6 +144,26 @@
     }
 }
 
+@media (max-width: 1440px) {
+    .card {
+        padding: 2%;
+    }
+
+    .leftContent {
+        gap: 40%;
+        padding: 1%;
+    }
+
+    .leftContent span:first-child {
+        font-size: 2cqw;
+    }
+
+    .leftContent span:last-child {
+        font-size: 2rem;
+    }
+}
+
+
 /* Mobile pequeno */
 @media (max-width: 480px) {
     .card{
@@ -165,23 +186,3 @@
         width: 35%;
     }
 }
-
-@media (max-width: 1440px) {
-    .card {
-        padding: 2%;
-    }
-
-    .leftContent {
-        gap: 40%;
-        padding: 1%;
-    }
-
-    .leftContent span:first-child {
-        font-size: 2cqw;
-    }
-
-    .leftContent span:last-child {
-        font-size: 2rem;
-    }
-}
-

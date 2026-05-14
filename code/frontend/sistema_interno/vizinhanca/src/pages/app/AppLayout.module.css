@@ -33,6 +33,7 @@
     overflow: hidden;
 }
 
+
 @media (max-width: 1440px) {
     .rightContent{
         gap: 1.5rem;
@@ -57,7 +58,6 @@
     .screenContent{
         padding: 1rem;
         gap: 0.5rem;
-        flex-direction: column;
     }
 
     .rightContent{
@@ -78,10 +78,11 @@
 
     .rightContent{
         display: flex;
-        flex-direction: column;
-        min-height: 100%;   
+        height: 1000px;
         padding: 0.75rem;
+        
         border-radius: 10px;
+
     }
 }
 

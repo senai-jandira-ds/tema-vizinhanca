@@ -50,6 +50,7 @@
 .main h2{
     height: 10;
     font-size: 2.2rem;
+    padding-top: 0.5%;
 }
 
 .condominiumInfo{
@@ -95,7 +96,7 @@
         font-size: 2.2rem;
     }
     .main h2{
-        padding-top: 10%;
+        padding-top: 1%;
         font-size: 1.8rem;
     }
 }

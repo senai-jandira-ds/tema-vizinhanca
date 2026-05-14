@@ -394,3 +394,9 @@ td:hover {
     }
 
 }
+
+@media (max-width: 480px) {
+    .tabelaWrapper{
+        padding-bottom: 10%;
+    }
+}

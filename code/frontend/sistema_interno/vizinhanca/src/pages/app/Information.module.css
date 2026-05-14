@@ -1,0 +1,75 @@
+.condominiumInfo {
+    display: flex;
+    width: 100%;
+    gap: 5%;
+    padding-bottom: 1%;
+    padding-right: 1%;
+}
+
+.condominiumInfoForm {
+    display: flex;
+    flex-direction: column;
+
+    width: 35%;
+
+    gap: 1rem;
+}
+
+.condominiumInfoForm span {
+    font-size: 1.3rem;
+}
+
+.condominiumImage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: auto;
+
+    width: 45vh;
+    height: 45vh;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background-color: gray;
+}
+
+.condominiumImage img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+@media (max-width: 1440px) {
+    .condominiumInfoForm {
+        width: 45%;
+    }
+
+    .condominiumInfoForm span {
+        font-size: 1.1rem;
+    }
+
+    .condominiumImage {
+        width: 35vh;
+        height: 35vh;
+    }
+}
+
+@media (max-width: 1024px) {
+    .condominiumInfo {
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .condominiumInfoForm {
+        width: 100%;
+    }
+
+    .condominiumImage {
+        margin-left: 0;
+    }
+}

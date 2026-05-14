@@ -14,7 +14,10 @@
 .cardsList{
     display: flex;
     gap: 1.2rem;
+    height: fit-content;
+    align-items: stretch;
     width: 100%;
+    font-size: 1vw;
 }
 
 .main{
@@ -54,15 +57,17 @@
     }
 
     .cardsList {
-        height: 100%;
-        width: 100%;
+
         flex-direction: column;
         gap: 1rem;
     }
 
     .main {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        min-height: 100vh;
         gap: 1.2rem;
-        height: auto;
     }
 
     .main h2 {
@@ -73,6 +78,14 @@
 
 @media (max-width: 480px) {
     .header{
-        height: 100%;
+        min-height: auto;
+    }
+    .main h2 {
+        display: flex;
+    }
+    .main {
+        margin-top: 40%;
+        display: flex;
+        gap: 1rem;
     }
 }

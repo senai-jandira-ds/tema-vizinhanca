@@ -51,7 +51,7 @@ function Sidebar() {
                     </li>
 
                     <li>
-                        <Link to="seguranca">
+                        <Link to="security">
                             <Shield className={styles.icon} />
                             <span className={styles.label}>Segurança</span>
                         </Link>
