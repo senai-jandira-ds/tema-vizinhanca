@@ -164,9 +164,9 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomNavItem(painter = painterResource(id = R.drawable.bfenofeadin ), isSelected = currentRoute == "home", onClick = { if (currentRoute != "home") navController?.navigate("home") })
+            BottomNavItem(painter = painterResource(id = R.drawable.home2 ), isSelected = currentRoute == "home", onClick = { if (currentRoute != "home") navController?.navigate("home") })
             BottomNavItem(painter = painterResource(id = R.drawable.pedido2), isSelected = currentRoute == "pedido", onClick = { if (currentRoute != "pedido") navController?.navigate("pedido") })
-            BottomNavItem(painter = painterResource(id = R.drawable.logomural), isSelected = currentRoute == "mural", onClick = { navController?.navigate("mural") })
+            BottomNavItem(painter = painterResource(id = R.drawable.logomural2), isSelected = currentRoute == "mural", onClick = { navController?.navigate("mural") })
             BottomNavItem(painter = painterResource(id = R.drawable.ranking2), isSelected = currentRoute == "ranking", onClick = { navController?.navigate("ranking") })
             BottomNavItem(painter = painterResource(id = R.drawable.chat2), isSelected = currentRoute == "mensagens", onClick = { navController?.navigate("mensagens") })
             BottomNavItem(painter = painterResource(id = R.drawable.notificacoes2), isSelected = currentRoute == "notificacoes", onClick = { navController?.navigate("notificacoes") })
