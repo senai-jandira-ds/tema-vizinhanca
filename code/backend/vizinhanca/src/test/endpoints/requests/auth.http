@@ -1,7 +1,7 @@
 @token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZTdAdGVzdGUuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3Nzg3MTIzNjQsImV4cCI6MTc3ODc5ODc2NH0.ruBfsVp1MRvjqrmIoQW-qiMEYblgAxS0cbdKAK8YDJg
 ### LoginCondominium
 # @name loginRequest
-POST http://localhost:8080/api/v1/auth/login/condominium
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
@@ -44,7 +44,7 @@ Authorization: Bearer {{token}}
 
 ### Search activities by condominium
 # @name searchActivitiesByCondominium
-GET http://localhost:8080/api/v1/condominium/activity/me
+GET https://api-vizinhanca.onrender.com/api/v1/condominium/activity/me
 Authorization: Bearer {{token}}
 
 ### Search by id
@@ -145,3 +145,15 @@ Content-Type: application/json
 # @name deleteResident
 DELETE https://api-vizinhanca.onrender.com/api/v1/resident/9
 Authorization: Bearer {{token}}
+
+
+### ===== PUBLICATION =====
+# @name listPublication
+GET http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertPublication
+POST http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+Content-Type: application/json

@@ -10,7 +10,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryRespon
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
-import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
+import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
@@ -131,8 +131,8 @@ public class CondominiumController {
 
     // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteCondominium(@PathVariable("id") Long idCondominium) {
-        condominiumService.setDeleteCondominiumById(idCondominium);
+    public ResponseEntity<ApiResponse<Void>> deleteCondominium(@PathVariable Long id) {
+        condominiumService.setDeleteCondominiumById(id);
 
         return ResponseEntity.ok(ResponseUtil.success(null, "Condomínio deletado com sucesso!"));
     }

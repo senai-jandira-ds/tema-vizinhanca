@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.mapper;
+package com.tcc_vizinhanca.vizinhanca.mapper.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRequest;

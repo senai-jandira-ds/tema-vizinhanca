@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.mapper;
+package com.tcc_vizinhanca.vizinhanca.mapper.resident;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;

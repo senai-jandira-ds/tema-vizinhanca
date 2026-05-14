@@ -10,7 +10,6 @@
 package com.tcc_vizinhanca.vizinhanca.service.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
-import com.tcc_vizinhanca.vizinhanca.mapper.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;

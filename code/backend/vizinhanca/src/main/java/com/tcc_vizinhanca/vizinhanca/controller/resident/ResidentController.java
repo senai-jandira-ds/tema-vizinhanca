@@ -7,7 +7,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailRespons
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
-import com.tcc_vizinhanca.vizinhanca.mapper.ResidentMapper;
+import com.tcc_vizinhanca.vizinhanca.mapper.resident.ResidentMapper;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
