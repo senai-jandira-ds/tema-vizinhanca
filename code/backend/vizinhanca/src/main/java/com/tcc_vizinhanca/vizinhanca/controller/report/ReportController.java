@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/report")
-@Tag(name = "Denúncia", description = "Endpoints para gerenciamento das denúncias.")
+@Tag(name = "Report", description = "Endpoints para gerenciamento das denúncias.")
 public class ReportController {
 
     @Autowired
