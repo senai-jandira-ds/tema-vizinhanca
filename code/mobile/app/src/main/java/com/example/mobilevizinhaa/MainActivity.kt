@@ -1,5 +1,6 @@
 package com.example.mobilevizinhaa
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,16 +9,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mobilevizinhaa.ui.theme.home.HomeViewModel
 
-// Seus imports de UI
+// Imports de UI e Lógica
+import com.example.mobilevizinhaa.ui.theme.home.HomeViewModel
 import com.example.mobilevizinhaa.ui.theme.home.CustomBottomNavBar
 import com.example.mobilevizinhaa.ui.theme.login.LoginScreen
 import com.example.mobilevizinhaa.ui.theme.home.HomeScreen
@@ -28,6 +31,7 @@ import com.example.mobilevizinhaa.ui.theme.menssage.MessagesScreen
 import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScreen
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
+import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,180 +42,32 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//@Composable
-//fun AppNavigation() {
-//    val navController = rememberNavController()
-//
-//    // Observa a rota atual para decidir se mostra a BottomBar
-//    val navBackStackEntry by navController.currentBackStackEntryAsState()
-//    val currentRoute = navBackStackEntry?.destination?.route
-//
-//    Scaffold(
-//        bottomBar = {
-//            // A regra: Só mostra a barra se NÃO for login E NÃO for detalhe do chat
-//            val showBottomBar = currentRoute != null &&
-//                    currentRoute != "login" &&
-//                    !currentRoute.startsWith("chat_detalhe")
-//
-//            if (showBottomBar) {
-//                CustomBottomNavBar(navController)
-//            }
-//        }
-//    ) { paddingValues ->
-//        NavHost(
-//            navController = navController,
-//            startDestination = "login",
-//            modifier = Modifier.padding(paddingValues)
-//        ) {
-//            // --- TELA DE LOGIN ---
-//            composable("login") {
-//                LoginScreen(navController = { rota ->
-//                    navController.navigate(rota) {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                })
-//            }
-//
-//            // --- TELA HOME ---
-//            composable("home") {
-//                HomeScreen(navController)
-//            }
-//
-//            // --- TELA DE LISTA DE MENSAGENS ---
-//            composable("mensagens") {
-//                MessagesScreen(navController = navController)
-//            }
-//
-//            // --- TELA DE DETALHE DO CHAT (A que você pediu) ---
-//            composable(
-//                route = "chat_detalhe/{chatId}",
-//                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
-//            ) { backStackEntry ->
-//                val id = backStackEntry.arguments?.getString("chatId")
-//                ChatDetalheScreen(id = id, navController = navController)
-//            }
-//
-//            // --- OUTRAS TELAS ---
-//            composable("mural") {
-//                MuralScreen()
-//            }
-//
-//            composable("ranking") {
-//                RankingScreen()
-//            }
-//
-//            composable("pedido") {
-//                PedidosObjetosScreen()
-//            }
-//
-//            composable("objeto") {
-//                PedidosObjetosScreen()
-//            }
-//        }
-//    }
-//}
-
-//@Composable
-//fun AppNavigation() {
-//    val navController = rememberNavController()
-//
-//    // Observa em qual tela estamos
-//    val navBackStackEntry by navController.currentBackStackEntryAsState()
-//    val currentRoute = navBackStackEntry?.destination?.route
-//
-//    Scaffold(
-//        bottomBar = {
-//            // Lógica para mostrar a barra inferior:
-//            // NÃO mostra no Login e NÃO mostra dentro da conversa (ChatDetalhe)
-//            val showBottomBar = currentRoute != null &&
-//                    currentRoute != "login" &&
-//                    !currentRoute.startsWith("chat_detalhe")
-//
-//            if (showBottomBar) {
-//                CustomBottomNavBar(navController)
-//            }
-//        }
-//    ) { paddingValues ->
-//        NavHost(
-//            navController = navController,
-//            startDestination = "login",
-//            modifier = Modifier.padding(paddingValues)
-//        ) {
-//            // --- TELA DE LOGIN ---
-//            composable("login") {
-//                LoginScreen(navController = { rota ->
-//                    navController.navigate(rota) {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                })
-//            }
-//
-//            // --- TELA HOME ---
-//            composable("home") {
-//                HomeScreen(navController)
-//            }
-//
-//            // --- TELA DE NOTIFICAÇÕES (A que criamos agora) ---
-//            composable("notificacoes") {
-//                NotificationsScreen()
-//            }
-//
-//            // --- TELA DE LISTA DE MENSAGENS ---
-//            composable("mensagens") {
-//                MessagesScreen(navController = navController)
-//            }
-//
-//            // --- TELA DE DETALHE DO CHAT ---
-//            composable(
-//                route = "chat_detalhe/{chatId}",
-//                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
-//            ) { backStackEntry ->
-//                val id = backStackEntry.arguments?.getString("chatId")
-//                ChatDetalheScreen(id = id, navController = navController)
-//            }
-//
-//            // --- OUTRAS TELAS ---
-//            composable("mural") {
-//                MuralScreen()
-//            }
-//
-//            composable("ranking") {
-//                RankingScreen()
-//            }
-//
-//            composable("pedido") {
-//                PedidosObjetosScreen()
-//            }
-//
-//            composable("objeto") {
-//                PedidosObjetosScreen()
-//            }
-//        }
-//    }
-//}
-
-
-
-
-
-
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
-    // 1. CRIAMOS O VIEWMODEL AQUI (NÍVEL PAI)
-    // Isso garante que a Home e a Publicação usem a MESMA lista de posts.
-    val homeViewModel: HomeViewModel = viewModel()
+    /** * CENTRALIZAÇÃO DO VIEWMODEL:
+     * Criamos o HomeViewModel aqui para que ele sobreviva às trocas de tela.
+     * Usamos a Factory para permitir que ele acesse o SharedPreferences (contexto).
+     */
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+            context.applicationContext as Application
+        )
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         bottomBar = {
+            // Lógica para esconder a barra em telas de foco (Login, Criação, Chat)
             val showBottomBar = currentRoute != null &&
                     currentRoute != "login" &&
                     currentRoute != "publicacao" &&
-                    !currentRoute.startsWith("chat_detalhe")
+                    !currentRoute.startsWith("chat_detalhe") &&
+                    !currentRoute.startsWith("detalhe_post")
 
             if (showBottomBar) {
                 CustomBottomNavBar(navController)
@@ -223,50 +79,58 @@ fun AppNavigation() {
             startDestination = "login",
             modifier = Modifier.padding(paddingValues)
         ) {
+
             // --- TELA DE LOGIN ---
             composable("login") {
-                LoginScreen(navController = { rota ->
-                    navController.navigate(rota) {
-                        popUpTo("login") { inclusive = true }
-                    }
-                })
+                LoginScreen(
+                    navController = { rota ->
+                        navController.navigate(rota) {
+                            // Limpa a pilha para o usuário não voltar para o login com o botão "back"
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    homeViewModel = homeViewModel
+                )
             }
 
             // --- TELA HOME ---
             composable("home") {
-                // Passamos o homeViewModel criado lá em cima
-                HomeScreen(navController = navController, viewModel = homeViewModel)
+                HomeScreen(
+                    navController = navController,
+                    viewModel = homeViewModel
+                )
             }
 
-            // --- NOVA TELA DE PUBLICAÇÃO ---
+            // --- CRIAÇÃO DE POSTAGEM ---
             composable("publicacao") {
-                // Passamos o MESMO homeViewModel para salvar o post na mesma lista
-                PublicacaoScreen(navController = navController, viewModel = homeViewModel)
+                PublicacaoScreen(navController, homeViewModel)
             }
 
-            // --- TELA DE NOTIFICAÇÕES ---
-            composable("notificacoes") {
-                NotificationsScreen()
+            // --- DETALHE DA POSTAGEM ---
+            composable(
+                route = "detalhe_post/{postId}",
+                arguments = listOf(navArgument("postId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getInt("postId") ?: 0
+                DetalhePostagemScreen(id, navController, homeViewModel)
             }
 
-            // --- MENSAGENS E CHAT ---
-            composable("mensagens") {
-                MessagesScreen(navController = navController)
-            }
+            // --- ROTAS SECUNDÁRIAS ---
+            composable("notificacoes") { NotificationsScreen() }
+            composable("mensagens") { MessagesScreen(navController) }
+            composable("mural") { MuralScreen() }
+            composable("ranking") { RankingScreen() }
+            composable("pedido") { PedidosObjetosScreen() }
+            composable("objeto") { PedidosObjetosScreen() }
 
+            // --- CHAT DETALHADO ---
             composable(
                 route = "chat_detalhe/{chatId}",
                 arguments = listOf(navArgument("chatId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("chatId")
-                ChatDetalheScreen(id = id, navController = navController)
+                ChatDetalheScreen(id, navController)
             }
-
-            // --- OUTRAS TELAS ---
-            composable("mural") { MuralScreen() }
-            composable("ranking") { RankingScreen() }
-            composable("pedido") { PedidosObjetosScreen() }
-            composable("objeto") { PedidosObjetosScreen() }
         }
     }
 }

@@ -33,7 +33,7 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// 1. HEADER (Foto de perfil clicável)
+
 @Composable
 fun HomeHeader(userName: String, apartment: String) {
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
@@ -46,86 +46,118 @@ fun HomeHeader(userName: String, apartment: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(brush = Brush.verticalGradient(colors = listOf(GradientBlueStart, GradientBlueEnd)))
+                .background(brush = Brush.verticalGradient(
+                    colors = listOf(GradientBlueStart, GradientBlueEnd)
+                ))
                 .padding(horizontal = 24.dp)
         ) {
-            Column(modifier = Modifier.align(Alignment.CenterStart).padding(start = 115.dp, top = 20.dp)) {
-                Text(text = "Olá, $userName!", color = White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                Text(text = apartment, color = White.copy(alpha = 0.9f), fontSize = 16.sp)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 125.dp, top = 20.dp)
+            ) {
+                Text(
+                    text = if (userName.isNotEmpty()) "Olá, $userName!" else "Bem-vindo!",
+                    color = Color.White,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = apartment,
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 15.sp
+                )
             }
-            IconButton(onClick = { }, modifier = Modifier.align(Alignment.TopEnd).padding(top = 40.dp)) {
-                Icon(Icons.Default.Settings, contentDescription = null, tint = White, modifier = Modifier.size(28.dp))
+
+            IconButton(
+                onClick = { /* Configurações */ },
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 40.dp)
+            ) {
+                Icon(Icons.Default.Settings, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
         }
 
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 24.dp, bottom = 15.dp)
+                .padding(start = 24.dp, bottom = 10.dp)
                 .size(110.dp)
-                .shadow(12.dp, CircleShape)
-                .background(White, CircleShape)
-                .padding(6.dp)
+                .shadow(10.dp, CircleShape)
+                .background(Color.White, CircleShape)
+                .padding(5.dp)
                 .clip(CircleShape)
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
             if (fotoUri != null) {
-                AsyncImage(model = fotoUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                AsyncImage(model = fotoUri, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             } else {
-                Box(modifier = Modifier.fillMaxSize().background(Color.LightGray), contentAlignment = Alignment.Center) {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(50.dp))
+                Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
+                    Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
                 }
             }
         }
     }
 }
 
-// 2. INFO CARD
+// --- 2. INFO CARD ---
 @Composable
-fun InfoCard(title: String, count: String, iconRes: Int) {
+fun InfoCard(titulo: String, quantidade: String, iconeRes: Int) {
     Card(
-        modifier = Modifier.width(168.dp).height(135.dp).shadow(8.dp, RoundedCornerShape(18.dp)),
-        colors = CardDefaults.cardColors(containerColor = White),
+        modifier = Modifier
+            .width(168.dp)
+            .height(130.dp)
+            .shadow(6.dp, RoundedCornerShape(18.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Column {
-                Text(text = count, fontSize = 40.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = title, fontSize = 14.sp, color = GrayText)
+                Text(quantidade, fontSize = 38.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(titulo, fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
             }
-            Icon(painter = painterResource(id = iconRes), contentDescription = null, tint = BluePrimary, modifier = Modifier.align(Alignment.TopEnd).size(24.dp))
-            Box(modifier = Modifier.align(Alignment.BottomEnd).size(38.dp).background(BluePrimary, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = White, modifier = Modifier.size(24.dp))
+            Icon(
+                painter = painterResource(id = iconeRes),
+                contentDescription = null,
+                tint = BluePrimary,
+                modifier = Modifier.align(Alignment.TopEnd).size(22.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(34.dp)
+                    .background(BluePrimary, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))
             }
         }
     }
 }
 
-// 3. GRADE DE POSTAGENS (Corrigida para imagens da Galeria ou Resource)
+// --- 3. GRADE DE POSTAGENS ---
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PostGridSection(posts: List<Post>) {
+fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
     FlowRow(
-        modifier = Modifier
-            .fillMaxWidth(), // REMOVIDO o padding horizontal de 16.dp para encostar na tela
-        horizontalArrangement = Arrangement.spacedBy(1.dp), // Espaço mínimo entre as fotos
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
         maxItemsInEachRow = 3
     ) {
         posts.forEach { post ->
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .aspectRatio(1f) // Quadrado perfeito (1:1)
-                    .padding(bottom = 1.dp) // Espaço mínimo entre as linhas
-                    .background(Color.LightGray)
-                // Sem .clip ou .clip(RoundedCornerShape) para manter as bordas RETAS
+                    .fillMaxWidth(0.3333f)
+                    .aspectRatio(1f)
+                    .padding(1.dp)
+                    .background(Color(0xFFF0F0F0))
+                    .clickable { onPostClick(post.id) }
             ) {
                 if (post.imagemUri != null) {
                     AsyncImage(
                         model = post.imagemUri,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop // Corta a imagem para preencher o quadrado todo
+                        contentScale = ContentScale.Crop
                     )
                 } else {
                     Image(
@@ -137,39 +169,49 @@ fun PostGridSection(posts: List<Post>) {
                 }
             }
         }
-
-        // Isso evita que o último item fique gigante se estiver sozinho na linha
-        val emptySlots = 3 - (posts.size % 3)
-        if (emptySlots < 3) {
-            repeat(emptySlots) {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        }
     }
 }
 
-// 4. NAVBAR
+// --- 4. NAVBAR ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.value?.destination?.route
 
     Surface(
-        modifier = Modifier.fillMaxWidth().height(85.dp),
-        color = White,
-        shadowElevation = 20.dp
+        modifier = Modifier.fillMaxWidth().height(80.dp),
+        color = Color.White,
+        shadowElevation = 25.dp
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomNavItem(painter = painterResource(id = R.drawable.home2 ), isSelected = currentRoute == "home", onClick = { if (currentRoute != "home") navController?.navigate("home") })
-            BottomNavItem(painter = painterResource(id = R.drawable.pedido2), isSelected = currentRoute == "pedido", onClick = { if (currentRoute != "pedido") navController?.navigate("pedido") })
-            BottomNavItem(painter = painterResource(id = R.drawable.logomural2), isSelected = currentRoute == "mural", onClick = { navController?.navigate("mural") })
-            BottomNavItem(painter = painterResource(id = R.drawable.ranking2), isSelected = currentRoute == "ranking", onClick = { navController?.navigate("ranking") })
-            BottomNavItem(painter = painterResource(id = R.drawable.chat2), isSelected = currentRoute == "mensagens", onClick = { navController?.navigate("mensagens") })
-            BottomNavItem(painter = painterResource(id = R.drawable.notificacoes2), isSelected = currentRoute == "notificacoes", onClick = { navController?.navigate("notificacoes") })
+            val items = listOf(
+                Triple(R.drawable.home2, "home", "Home"),
+                Triple(R.drawable.pedido2, "pedido", "Pedidos"),
+                Triple(R.drawable.logomural2, "mural", "Mural"),
+                Triple(R.drawable.ranking2, "ranking", "Ranking"),
+                Triple(R.drawable.chat2, "mensagens", "Chat"),
+                Triple(R.drawable.notificacoes2, "notificacoes", "Notificações")
+            )
+
+            items.forEach { item ->
+                BottomNavItem(
+                    painter = painterResource(id = item.first),
+                    isSelected = currentRoute?.startsWith(item.second) == true,
+                    onClick = {
+                        if (currentRoute != item.second) {
+                            navController?.navigate(item.second) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -177,15 +219,15 @@ fun CustomBottomNavBar(navController: NavController? = null) {
 @Composable
 fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> Unit) {
     Box(
-        modifier = Modifier.size(54.dp).clip(CircleShape).clickable { onClick() },
+        modifier = Modifier.size(50.dp).clip(CircleShape).clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
-            Box(modifier = Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape), contentAlignment = Alignment.Center) {
-                Icon(painter = painter, contentDescription = null, tint = White, modifier = Modifier.size(28.dp))
+            Box(Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape), Alignment.Center) {
+                Icon(painter, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
         } else {
-            Icon(painter = painter, contentDescription = null, tint = GrayText, modifier = Modifier.size(28.dp))
+            Icon(painter, null, tint = Color.Gray, modifier = Modifier.size(26.dp))
         }
     }
 }

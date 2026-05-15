@@ -1,28 +1,59 @@
 package com.example.mobilevizinhaa.ui.theme.data
 
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
+    // A URL base deve terminar sempre com "/"
     private const val BASE_URL = "https://api-vizinhanca.onrender.com/"
 
-    // Adicionando um log para ver no Logcat exatamente o que a API responde
-    private val logging = HttpLoggingInterceptor().apply {
+    /**
+     * Interceptor de Log: essencial para debugar as requisições no Logcat.
+     */
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(logging)
+    /**
+     * Configuração do Gson personalizada:
+     * .setLenient() ajuda a aceitar JSONs mal formatados que alguns servidores enviam.
+     */
+    private val gson = GsonBuilder()
+        .setLenient()
+        .create()
+
+    /**
+     * Configuração do Cliente HTTP (OkHttp)
+     */
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        // Timeouts de 30s são ideais para o Render.com não dar erro de "Timeout"
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
-    val authApi: AuthApiService by lazy {
+    /**
+     * Instância do Retrofit.
+     */
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            // Usando o conversor GSON com a configuração que definimos acima
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
-            .create(AuthApiService::class.java)
+    }
+
+    /**
+     * Nosso serviço de Autenticação e Residentes.
+     */
+    val authApi: AuthApiService by lazy {
+        retrofit.create(AuthApiService::class.java)
     }
 }

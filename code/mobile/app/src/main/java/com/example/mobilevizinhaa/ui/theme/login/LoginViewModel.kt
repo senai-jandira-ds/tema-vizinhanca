@@ -9,8 +9,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.mobilevizinhaa.ui.theme.data.LoginRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
-import android.util.Log // Importante para debug
+import com.example.mobilevizinhaa.ui.theme.data.LoginResponse // Certifique-se de importar
+import android.util.Log
 
+/**
+ * Estado da UI de Login ajustado para suportar a injeção de dados na Home.
+ */
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -18,8 +22,8 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
-    val token: String? = null,
-    val userName: String? = null // Adicionei para você mostrar o nome do Breno na Home
+    // ADICIONADO: Campo para armazenar a resposta completa da API
+    val loginResponse: LoginResponse? = null
 )
 
 class LoginViewModel : ViewModel() {
@@ -49,7 +53,10 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(password = newPassword, passwordError = null, errorMessage = null) }
     }
 
-    fun onLoginClicked(onSuccess: () -> Unit) {
+    /**
+     * Tenta realizar o login e armazena a resposta completa no estado.
+     */
+    fun onLoginClicked(onSuccess: (String) -> Unit) {
         val currentState = _uiState.value
         val emailValidado = currentState.email.trim()
         val senhaParaValidar = currentState.password
@@ -69,33 +76,38 @@ class LoginViewModel : ViewModel() {
                     if (response.isSuccessful && response.body() != null) {
                         val loginBody = response.body()!!
 
-                        // AJUSTE CRÍTICO: Pegando o token de dentro do objet 'response' da API
-                        val tokenRecebido = loginBody.response.token
-                        val nomeUsuario = loginBody.response.user.name
-
-                        Log.d("LOGIN_DEBUG", "Sucesso! Token: $tokenRecebido")
-
+                        // ATUALIZAÇÃO IMPORTANTE:
+                        // Salvamos o 'loginBody' inteiro para a LoginScreen poder ler
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                token = tokenRecebido,
-                                userName = nomeUsuario
+                                loginResponse = loginBody // Isso resolve o erro do print!
                             )
                         }
 
-                        onSuccess()
+                        val token = loginBody.response.token
+                        val userId = loginBody.response.user.id
+
+                        val user = loginBody.response.user
+
+
+                        Log.d("LOGIN_DEBUG", "Sucesso! Usuário: ${loginBody.response.user.name}")
+
+                        // MANDA A ROTA COMPLETA
+                        onSuccess("home/$token/$userId")
+
                     } else {
                         val erroApi = when (response.code()) {
-                            404 -> "Caminho não encontrado (404)"
                             401 -> "E-mail ou senha incorretos"
-                            else -> "Erro ${response.code()}: ${response.message()}"
+                            404 -> "Usuário não encontrado"
+                            else -> "Erro ${response.code()}: Verifique suas credenciais"
                         }
                         _uiState.update { it.copy(isLoading = false, errorMessage = erroApi) }
                     }
                 } catch (e: Exception) {
                     Log.e("LOGIN_ERROR", "Falha na conexão", e)
                     _uiState.update {
-                        it.copy(isLoading = false, errorMessage = "Falha de conexão: Verifique a internet")
+                        it.copy(isLoading = false, errorMessage = "Servidor indisponível.")
                     }
                 }
             }
@@ -104,7 +116,7 @@ class LoginViewModel : ViewModel() {
                 it.copy(
                     emailError = if (isEmailOk) null else "E-mail inválido",
                     passwordError = mensagemErroSenha,
-                    errorMessage = "Corrija os erros para continuar"
+                    errorMessage = "Corrija os erros acima"
                 )
             }
         }

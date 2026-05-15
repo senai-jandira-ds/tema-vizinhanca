@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
@@ -23,26 +22,33 @@ import com.example.mobilevizinhaa.ui.theme.*
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel // Recebe a instância única vinda da MainActivity
 ) {
-    // Coleta o estado do usuário (nome, apartamento, contadores)
-    val uiState by viewModel.uiState.collectAsState()
-
-    // Lista de posts que vem do ViewModel (agora dinâmica)
+    // Observa os dados. Como o ViewModel inicia lendo o disco,
+    // 'resident' já terá valor se o usuário estiver logado.
+    val resident by viewModel.residentData.collectAsState()
     val posts = viewModel.posts
 
-    Box(modifier = Modifier.fillMaxSize().background(GrayBackground)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(GrayBackground) // Certifique-se que GrayBackground está definido em seu Color.kt
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Header (Mantido original)
-            HomeHeader(uiState.userName, uiState.apartment)
+            // HEADER INSTANTÂNEO:
+            //userName e apartment pegos diretamente do Flow que lê o cache local
+            HomeHeader(
+                userName = resident?.name ?: "Vizinho(a)",
+                apartment = resident?.apartment?.let { "Apto $it" } ?: "Condomínio"
+            )
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // 2. Cards de Resumo (Exatamente com o padding de 20dp e espaço de 16dp)
+            // Seção de Cards de Atalho
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -50,18 +56,17 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 InfoCard(
-                    title = "Meus pedidos",
-                    count = uiState.pedidosCount.toString(),
-                    iconRes = R.drawable.pedido
+                    titulo = "Meus pedidos",
+                    quantidade = "3",
+                    iconeRes = R.drawable.pedido
                 )
                 InfoCard(
-                    title = "Meus objetos",
-                    count = uiState.objetosCount.toString(),
-                    iconRes = R.drawable.objeto
+                    titulo = "Meus objetos",
+                    quantidade = "3",
+                    iconeRes = R.drawable.objeto
                 )
             }
 
-            // Título da Seção
             Text(
                 text = "Postagens",
                 modifier = Modifier.padding(start = 24.dp, top = 32.dp, bottom = 16.dp),
@@ -70,24 +75,24 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // 3. Grade de fotos (Agora ligada à lista real do ViewModel)
-            PostGridSection(posts = posts)
+            // Grade de fotos do Mural (Lê a lista do ViewModel)
+            PostGridSection(posts = posts) { postId ->
+                navController.navigate("detalhe_post/$postId")
+            }
 
-            // Espaçamento para o scroll não bater na BottomBar
             Spacer(modifier = Modifier.height(100.dp))
         }
 
-        // 4. Botão Flutuante (FAB) - Redireciona para PublicacaoScreen
+        // Botão Flutuante (FAB) para criar postagem
         ExtendedFloatingActionButton(
-            onClick = {
-                navController.navigate("publicacao")
-            },
+            onClick = { navController.navigate("publicacao") },
             containerColor = BluePrimary,
-            contentColor = White,
+            contentColor = Color.White,
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 20.dp, end = 16.dp) // Ajuste fino na posição
+                .padding(bottom = 24.dp, end = 16.dp),
+            elevation = FloatingActionButtonDefaults.elevation(8.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(Modifier.width(8.dp))
