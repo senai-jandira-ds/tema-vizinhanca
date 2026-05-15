@@ -18,6 +18,7 @@ import com.tcc_vizinhanca.vizinhanca.mapper.report.ReportMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.report.ReportService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/report")
+@Tag(name = "Denúncia", description = "Endpoints para gerenciamento das denúncias.")
 public class ReportController {
 
     @Autowired
