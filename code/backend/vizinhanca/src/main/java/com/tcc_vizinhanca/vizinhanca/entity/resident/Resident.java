@@ -10,10 +10,12 @@
 package com.tcc_vizinhanca.vizinhanca.entity.resident;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "tbl_morador")
@@ -61,6 +63,9 @@ public class Resident {
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDate creationDate;
+
+    @OneToMany(mappedBy = "resident",  fetch = FetchType.LAZY)
+    private List<Publication> publications;
 
     @ManyToOne
     @JoinColumn( name = "id_condominio")

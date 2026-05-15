@@ -1,7 +1,19 @@
+/***************************************************
+ * Objetivo: Serviço responsável pela regra de negócio
+ * das publicações, gerenciando operações de consulta,
+ * inserção, atualização e remoção no banco de dados
+ * Data: 15/05/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.04.26
+ * *************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.service.publication;
 
 import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.publication.PublicationRepository;
+import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
+import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +29,9 @@ public class PublicationService {
     @Autowired
     private PublicationRepository publicationRepository;
 
+    @Autowired
+    private ResidentRepository residentRepository;
+
     // SELECT ALL
     public List<Publication> getSelectAllPublications(){
         return publicationRepository.findAll();
@@ -30,9 +45,14 @@ public class PublicationService {
                         "Publicação não encontrada no banco de dados!"));
     }
 
-    // INSERT PUBLICATION
-    public Publication setInsertPublication(@NonNull Publication publication){
+    public Publication setInsertPublication(@NonNull Publication publication, String email) {
+        Resident resident = residentRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Morador não encontrado!"));
+
         publication.setId(null);
+        publication.setResident(resident);
+        publication.setCondominium(resident.getCondominium());
 
         return publicationRepository.save(publication);
     }

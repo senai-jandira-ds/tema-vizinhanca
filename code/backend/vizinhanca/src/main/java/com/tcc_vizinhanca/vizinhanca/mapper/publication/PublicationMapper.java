@@ -1,3 +1,12 @@
+/***************************************************
+ * Objetivo: Mapper responsável pela conversão entre
+ * os DTOs de requisição e a entidade Publication,
+ * utilizado nas operações de criação e atualização
+ * Data: 14/05/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.04.26
+ * *************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.mapper.publication;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.publication.PublicationRequest;

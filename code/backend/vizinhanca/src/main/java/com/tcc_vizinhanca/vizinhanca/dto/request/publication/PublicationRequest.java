@@ -1,3 +1,12 @@
+/***************************************************
+ * Objetivo: DTO de requisição responsável por transportar
+ * os dados necessários para criação e atualização
+ * de uma publicação na aplicação
+ * Data: 24/04/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.04.26
+ * *************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.dto.request.publication;
 
 import jakarta.validation.constraints.NotBlank;

@@ -62,7 +62,7 @@ public class EmailService {
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
           <style>
             body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: Arial, sans-serif; }
-            .wrapper { max-width: 60vw; margin: 32px auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e0e6ef; }
+            .wrapper { max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e0e6ef; }
             .banner { background-color: #1a4fa3; text-align: center; }
             .banner img { width: 100%%; height:100%%; object-fit: fill; }
             .body { padding: 32px 40px; }

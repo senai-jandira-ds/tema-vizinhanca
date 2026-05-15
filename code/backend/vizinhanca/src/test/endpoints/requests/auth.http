@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZTdAdGVzdGUuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3Nzg3MTIzNjQsImV4cCI6MTc3ODc5ODc2NH0.ruBfsVp1MRvjqrmIoQW-qiMEYblgAxS0cbdKAK8YDJg
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzY290dGlsZW9uYXJkbzFAZ21haWwuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiTU9SQURPUiIsImlhdCI6MTc3ODg2NjM5MywiZXhwIjoxNzc4OTUyNzkzfQ.NYUDr8Kuj5BUi_89yx0D-uyWcdDmeGnxjrdXkDP8GpM
 ### LoginCondominium
 # @name loginRequest
 POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
@@ -16,7 +16,7 @@ Content-Type: application/json
 
 {
 "email": "scottileonardo1@gmail.com",
-"password": "*7FjCdj#"
+"password": "xc0!VZDG"
 }
 
 
@@ -107,17 +107,17 @@ Authorization: Bearer {{token}}
 
 ### Insert
 # @name insertResident
-POST http://localhost:8080/api/v1/resident
+POST https://api-vizinhanca.onrender.com/api/v1/resident
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "photo": "",
-  "name": "Teste - BRENO",
+  "name": "Teste - SCOTTI",
   "apartment": "4",
   "block": "Torre 4",
-  "cpf": "12345678998",
-  "email": "machado.breno127@gmail.com",
+  "cpf": "45678912340",
+  "email": "scottileonardo1@gmail.com",
   "phone": "11998572585",
   "score": 0,
   "condominium_id": 14
@@ -143,7 +143,7 @@ Content-Type: application/json
 
 ### Delete
 # @name deleteResident
-DELETE https://api-vizinhanca.onrender.com/api/v1/resident/9
+DELETE https://api-vizinhanca.onrender.com/api/v1/resident/62
 Authorization: Bearer {{token}}
 
 
