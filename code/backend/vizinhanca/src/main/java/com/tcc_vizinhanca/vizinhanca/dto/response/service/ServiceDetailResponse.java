@@ -8,6 +8,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.service;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.category.CategorySummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,9 +26,7 @@ public class ServiceDetailResponse {
     private String urgency;
     private String description;
     private String status;
-    private Long residentId;
-    private String residentName;
-    private String residentPhoto;
+    private ResidentSummaryResponse resident;
     private CategorySummaryResponse category;
 
     public ServiceDetailResponse(Service service) {
@@ -38,11 +37,11 @@ public class ServiceDetailResponse {
         this.urgency = service.getUrgency();
         this.description = service.getDescription();
         this.status = service.getStatus();
-        this.residentId = service.getResident().getId();
-        this.residentName = service.getResident().getName();
-        this.residentPhoto = service.getResident().getPhoto();
+        this.resident = service.getResident() != null
+                ? new ResidentSummaryResponse(service.getResident())
+                : new ResidentSummaryResponse();
         this.category = service.getCategory() != null
                 ? new CategorySummaryResponse(service.getCategory())
-                : null;
+                : new CategorySummaryResponse();
     }
 }
