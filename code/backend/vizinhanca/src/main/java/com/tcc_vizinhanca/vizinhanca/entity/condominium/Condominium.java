@@ -10,6 +10,7 @@
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -56,6 +57,9 @@ public class Condominium {
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
     private List<Resident> residents;
+
+    @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
+    private List<Service> services;
 
     @OneToOne(mappedBy = "condominium", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CondominiumAddress address;

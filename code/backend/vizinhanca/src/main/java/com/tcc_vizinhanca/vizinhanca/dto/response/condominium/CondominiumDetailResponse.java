@@ -2,6 +2,7 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ public class CondominiumDetailResponse {
     private String email;
     private String creation_date;
     private List<ResidentSummaryResponse> residents;
+    private List<ServiceDetailResponse> services;
     private CondominiumAddressResponse address;
     private List<ActivityViewDetailResponse> activities;
 
@@ -44,6 +46,11 @@ public class CondominiumDetailResponse {
                 .map(ResidentSummaryResponse::new)
                 .toList()
                 : new ArrayList<>();
+        this.services = condominium.getServices() != null
+            ? condominium.getServices().stream()
+              .map(ServiceDetailResponse::new)
+              .toList()
+            : new ArrayList<>();
         this.address = condominium.getAddress() != null
                 ? new CondominiumAddressResponse(condominium.getAddress())
                 : new CondominiumAddressResponse();

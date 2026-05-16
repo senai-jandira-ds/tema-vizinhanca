@@ -9,12 +9,15 @@
 
 package com.tcc_vizinhanca.vizinhanca.dto.response.report;
 
+import com.tcc_vizinhanca.vizinhanca.dto.response.publication.PublicationSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -28,7 +31,7 @@ public class ReportDetailResponse {
     private ReasonReportResponse reasonReport;
     private Long objectId;
     private Long serviceId;
-    private Long publicationId;
+    private PublicationSummaryResponse publication;
 
     public ReportDetailResponse(Report report) {
         this.id = report.getId();
@@ -38,15 +41,15 @@ public class ReportDetailResponse {
                 : null;
         this.reasonReport = report.getReasonReport() != null
                 ? new ReasonReportResponse(report.getReasonReport())
-                : null;
+                : new ReasonReportResponse();
         this.objectId = report.getObject() != null
                 ? report.getObject().getId()
                 : null;
         this.serviceId = report.getService() != null
                 ? report.getService().getId()
                 : null;
-        this.publicationId = report.getPublication() != null
-                ? report.getPublication().getId()
-                : null;
+        this.publication = report.getPublication() != null
+                ? new PublicationSummaryResponse(report.getPublication())
+                : new PublicationSummaryResponse();
     }
 }

@@ -73,7 +73,15 @@ public class CondominiumService {
     public Condominium setUpdateCondominium(@NonNull Condominium condominium, Long idCondominium) {
         Condominium existingCondominium = getSelectCondominiumById(idCondominium);
 
-        BeanUtils.copyProperties(condominium, existingCondominium, "id", "password", "creationDate", "address", "residents");
+        BeanUtils.copyProperties(
+                condominium,
+                existingCondominium,
+                "id",
+                "password",
+                "creationDate",
+                "address",
+                "residents",
+                "services");
 
         return condominiumRepository.save(existingCondominium);
     }
