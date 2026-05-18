@@ -9,20 +9,18 @@ import lombok.Setter;
 @Setter
 public class ResidentUpdateRequest {
 
-    @JsonProperty("photo")
-    private String foto;
+    private String photo;
 
-    @JsonProperty("name")
     @NotBlank(message = "Nome é obrigatório")
-    private String nome;
+    private String name;
 
-    @JsonProperty("apartment")
     @NotBlank(message = "Apartamento é obrigatório")
-    private String apto;
+    private String apartment;
 
-    @JsonProperty("block")
-    @NotBlank(message = "Bloco é obrigatório")
-    private String bloco;
+    @JsonProperty("id_block")
+    @NotNull(message = "ID do Bloco deve ser obrigatório")
+    @Positive(message = "ID do Bloco deve ser positivo")
+    private Long idBlock;
 
     @NotBlank(message = "CPF é obrigatório")
     @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos")
@@ -32,15 +30,13 @@ public class ResidentUpdateRequest {
     @Email(message = "Email inválido")
     private String email;
 
-    @JsonProperty("phone")
     @NotBlank(message = "Telefone é obrigatório")
-    private String telefone;
+    private String phone;
 
-    @JsonProperty("score")
     @NotNull(message = "Pontuação é obrigatório")
-    private Integer pontuacao;
+    private Integer score;
 
-    @JsonProperty("condominium_id")
+    @JsonProperty("id_condominium")
     @NotNull(message = "ID do Condomínio deve ser obrigatório")
     @Positive(message = "ID do Condomínio deve ser positivo")
     private Long idCondominium;

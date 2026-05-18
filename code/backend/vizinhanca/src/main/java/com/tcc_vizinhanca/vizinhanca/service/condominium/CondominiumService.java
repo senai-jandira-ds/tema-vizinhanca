@@ -81,7 +81,8 @@ public class CondominiumService {
                 "creationDate",
                 "address",
                 "residents",
-                "services");
+                "services",
+                "blocks");
 
         return condominiumRepository.save(existingCondominium);
     }

@@ -5,9 +5,11 @@ import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.resident.ResidentMapper;
+import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -30,6 +32,9 @@ public class ResidentController {
 
     @Autowired
     private CondominiumService condominiumService;
+
+    @Autowired
+    private BlockService blockService;
 
     // GET ALL
     @GetMapping
@@ -61,7 +66,9 @@ public class ResidentController {
 
         Condominium condominium = condominiumService.getSelectCondominiumById(residentCreateRequest.getIdCondominium());
 
-        Resident resident = ResidentMapper.toEntity(residentCreateRequest, condominium);
+        Block block = blockService.getSelectBlockById(residentCreateRequest.getIdBlock());
+
+        Resident resident = ResidentMapper.toEntity(residentCreateRequest, condominium, block);
 
         Resident newResident = residentService.setInsertResident(resident);
 

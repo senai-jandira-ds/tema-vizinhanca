@@ -56,6 +56,9 @@ public class Condominium {
     private LocalDate creationDate;
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
+    private List<Block> blocks;
+
+    @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
     private List<Resident> residents;
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)

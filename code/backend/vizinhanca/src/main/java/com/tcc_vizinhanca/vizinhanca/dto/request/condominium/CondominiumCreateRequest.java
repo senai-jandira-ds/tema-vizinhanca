@@ -20,7 +20,6 @@ public class CondominiumCreateRequest {
     private String cnpj;
 
     @JsonProperty("photo")
-    @NotBlank(message = "Foto é obrigatório")
     private String foto;
 
     @JsonProperty("amount_blocks")

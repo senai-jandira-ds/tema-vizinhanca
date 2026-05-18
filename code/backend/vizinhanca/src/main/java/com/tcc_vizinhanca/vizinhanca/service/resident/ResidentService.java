@@ -10,10 +10,12 @@
 package com.tcc_vizinhanca.vizinhanca.service.resident;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.resident.ResidentUpdateRequest;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.resident.ResidentMapper;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
+import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.email.EmailService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
@@ -40,6 +42,9 @@ public class ResidentService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private BlockService blockService;
 
     // SELECT ALL
     public List<Resident> getSelectAllResidents(){
@@ -119,7 +124,9 @@ public class ResidentService {
 //            }
 //        }
 
-        ResidentMapper.updateEntity(dto, existingResident);
+        Block block = blockService.getSelectBlockById(dto.getIdBlock());
+
+        ResidentMapper.updateEntity(dto, existingResident, block);
 
         return residentRepository.save(existingResident);
     }

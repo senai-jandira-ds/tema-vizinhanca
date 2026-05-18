@@ -1,5 +1,6 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
@@ -25,6 +26,7 @@ public class CondominiumDetailResponse {
     private Integer amount_blocks, amount_apartments;
     private String email;
     private String creation_date;
+    private List<BlockSummaryResponse> blocks;
     private List<ResidentSummaryResponse> residents;
     private List<ServiceDetailResponse> services;
     private CondominiumAddressResponse address;
@@ -41,6 +43,11 @@ public class CondominiumDetailResponse {
         this.creation_date = condominium.getCreationDate() != null
                 ? condominium.getCreationDate().toString()
                 : "";
+        this.blocks = condominium.getBlocks() != null
+                ? condominium.getBlocks().stream()
+                    .map(BlockSummaryResponse::new)
+                    .toList()
+                : new ArrayList<>();
         this.residents = condominium.getResidents() != null
                 ? condominium.getResidents().stream()
                 .map(ResidentSummaryResponse::new)

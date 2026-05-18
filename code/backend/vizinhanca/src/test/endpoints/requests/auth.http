@@ -1,7 +1,7 @@
 @token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzY290dGlsZW9uYXJkbzFAZ21haWwuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiTU9SQURPUiIsImlhdCI6MTc3ODg2NjM5MywiZXhwIjoxNzc4OTUyNzkzfQ.NYUDr8Kuj5BUi_89yx0D-uyWcdDmeGnxjrdXkDP8GpM
 ### LoginCondominium
 # @name loginRequest
-POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
+POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
@@ -15,8 +15,8 @@ POST http://localhost:8080/api/v1/auth/login/resident
 Content-Type: application/json
 
 {
-"email": "scottileonardo1@gmail.com",
-"password": "xc0!VZDG"
+"email": "machado.breno127@gmail.com",
+"password": "18IF$wl#"
 }
 
 

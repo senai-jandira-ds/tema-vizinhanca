@@ -9,6 +9,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.resident;
 
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
 import jakarta.persistence.*;
@@ -40,9 +41,6 @@ public class Resident {
     @Column(name = "apto", nullable = false, length = 10)
     private String apartment;
 
-    @Column(name = "bloco", nullable = false, length = 10)
-    private String block;
-
     @Column(name = "cpf", nullable = false, unique = true, length = 11)
     private String cpf;
 
@@ -63,6 +61,10 @@ public class Resident {
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDate creationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "id_bloco")
+    private Block block;
 
     @OneToMany(mappedBy = "resident",  fetch = FetchType.LAZY)
     private List<Publication> publications;
