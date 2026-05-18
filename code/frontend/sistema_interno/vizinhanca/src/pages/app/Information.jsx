@@ -9,7 +9,7 @@ import settingsStyles from "./Settings.module.css";
 function Informacoes() {
 
     const data = getCondominiumData();
-
+    console.log(data)
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome', width: 200 },

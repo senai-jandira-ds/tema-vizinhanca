@@ -1,7 +1,17 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+
+import { AnimatePresence } from "framer-motion";
 
 import Login from "./pages/login";
+import Sign from "./pages/cadastro";
 
 import AppLayout from "./pages/app/AppLayout";
 
@@ -14,11 +24,14 @@ import Settings from "./pages/app/Settings";
 import Information from "./pages/app/Information";
 import Categories from "./pages/app/Categories";
 
-function App() {
+function AnimatedRoutes() {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Login />} />
+        <Route path="/cadastro" element={<Sign />} />
 
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Dashboard />} />
@@ -27,6 +40,7 @@ function App() {
           <Route path="users" element={<Users />} />
           <Route path="services" element={<Services />} />
           <Route path="security" element={<Security />} />
+
           <Route path="settings" element={<Settings />}>
             <Route index element={<Navigate to="information" replace />} />
 
@@ -35,6 +49,14 @@ function App() {
           </Route>
         </Route>
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
     </BrowserRouter>
   );
 }
