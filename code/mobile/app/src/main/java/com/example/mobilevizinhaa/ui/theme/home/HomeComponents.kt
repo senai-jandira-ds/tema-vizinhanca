@@ -124,9 +124,9 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
     }
 }
 
-// --- 2. INFO CARD ---
+// --- 2. INFO CARD (ATUALIZADO COM EVENTO DE CLIQUE) ---
 @Composable
-fun InfoCard(titulo: String, quantidade: String, iconeRes: Int) {
+fun InfoCard(titulo: String, quantidade: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(168.dp)
@@ -149,7 +149,9 @@ fun InfoCard(titulo: String, quantidade: String, iconeRes: Int) {
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .size(34.dp)
-                    .background(BluePrimary, CircleShape),
+                    .background(BluePrimary, CircleShape)
+                    .clip(CircleShape)
+                    .clickable { onAddClick() }, // <--- Ação executada ao clicar no "+"
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))

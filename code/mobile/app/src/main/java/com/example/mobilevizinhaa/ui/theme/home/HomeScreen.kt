@@ -58,7 +58,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Seção de Cards de Atalho
+            // Seção de Cards de Atalho com o parâmetro de clique configurado
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,12 +68,18 @@ fun HomeScreen(
                 InfoCard(
                     titulo = "Meus pedidos",
                     quantidade = "3",
-                    iconeRes = R.drawable.pedido
+                    iconeRes = R.drawable.pedido,
+                    onAddClick = {
+                        navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para pedidos
+                    }
                 )
                 InfoCard(
                     titulo = "Meus objetos",
                     quantidade = "3",
-                    iconeRes = R.drawable.objeto
+                    iconeRes = R.drawable.objeto,
+                    onAddClick = {
+                        navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para objetos
+                    }
                 )
             }
 

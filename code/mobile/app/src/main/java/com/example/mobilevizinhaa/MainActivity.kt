@@ -4,7 +4,10 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge // Importação para habilitar a StatusBar transparente
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,9 +36,16 @@ import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
 
+// IMPORT DA NOVA TELA DE CADASTRO
+import com.example.mobilevizinhaa.ui.theme.listaitens.criar.CriarPedidoObjetoScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Ativa o comportamento transparente de ponta a ponta (Edge-to-Edge)
+        enableEdgeToEdge()
+
         setContent {
             AppNavigation()
         }
@@ -61,11 +71,14 @@ fun AppNavigation() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
+        // Impede que os componentes da base entrem por baixo das barras virtuais de navegação nativas do Android
+        contentWindowInsets = WindowInsets.systemBars,
         bottomBar = {
-            // Lógica para esconder a barra em telas de foco (Login, Criação, Chat)
+            // Lógica para esconder a barra em telas de foco (Login, Criação, Chat, Criar Pedido)
             val showBottomBar = currentRoute != null &&
                     currentRoute != "login" &&
                     currentRoute != "publicacao" &&
+                    currentRoute != "criar_pedido" &&
                     !currentRoute.startsWith("chat_detalhe") &&
                     !currentRoute.startsWith("detalhe_post")
 
@@ -76,7 +89,7 @@ fun AppNavigation() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "home",
             modifier = Modifier.padding(paddingValues)
         ) {
 
@@ -104,6 +117,11 @@ fun AppNavigation() {
             // --- CRIAÇÃO DE POSTAGEM ---
             composable("publicacao") {
                 PublicacaoScreen(navController, homeViewModel)
+            }
+
+            // --- NOVA TELA: CRIAÇÃO DE PEDIDO OU OBJETO ---
+            composable("criar_pedido") {
+                CriarPedidoObjetoScreen(navController = navController)
             }
 
             // --- DETALHE DA POSTAGEM ---
