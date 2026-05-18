@@ -188,10 +188,15 @@ fun PublicacaoScreen(
                     Text("Cancelar", color = Color.DarkGray, fontWeight = FontWeight.Bold)
                 }
 
-                // Enviar
+                // Enviar (INTEGRADO COM O SEU BANCO DE DADOS REMOTE)
                 Button(
                     onClick = {
-                        viewModel.adicionarPost(titulo, descricao, imagemUri)
+                        // Converte a Uri da imagem para String e dispara o POST real no seu servidor
+                        viewModel.adicionarPostNoBanco(
+                            titulo = titulo,
+                            descricao = descricao,
+                            fotoUrlOuBase64 = imagemUri?.toString()
+                        )
                         navController.popBackStack()
                     },
                     enabled = podeEnviar, // Botão fica cinza se não validar

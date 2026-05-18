@@ -1,5 +1,7 @@
 package com.example.mobilevizinhaa.ui.theme.home.createpost.infopost
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,38 +17,60 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mobilevizinhaa.R
 
 @Composable
-fun PostUserHeader(userName: String, profileImageRes: Int) {
+fun PostUserHeader(userName: String, userPhotoUrl: String? = null) {
+    // Tenta decodificar o Base64 caso ele exista na conta do usuário
+    val bitmapPerfil = remember(userPhotoUrl) { carregarImagemBase64Local(userPhotoUrl) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = profileImageRes),
-            contentDescription = "Foto de $userName",
+        Box(
             modifier = Modifier
                 .size(42.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
+                .clip(CircleShape)
+        ) {
+            if (bitmapPerfil != null) {
+                // Se o Base64 do usuário for válido, renderiza a foto real
+                Image(
+                    bitmap = bitmapPerfil,
+                    contentDescription = "Foto de $userName",
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback caso o usuário não tenha imagem cadastrada
+                Image(
+                    painter = painterResource(id = R.drawable.mulher),
+                    contentDescription = "Foto de $userName",
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
         Column {
             Text(
-                text = userName,
+                text = userName.ifBlank { "Vizinho(a)" },
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = Color.Black
@@ -54,7 +78,7 @@ fun PostUserHeader(userName: String, profileImageRes: Int) {
             Text(
                 text = "Publicado agora",
                 fontSize = 12.sp,
-                color = Color.Gray // Cidade removida aqui
+                color = Color.Gray
             )
         }
     }
@@ -92,5 +116,24 @@ fun PostDescriptionSection(titulo: String, descricao: String) {
             color = Color(0xFF444444),
             lineHeight = 22.sp
         )
+    }
+}
+
+/**
+ * Função utilitária interna para conversão do Base64 da foto do autor
+ */
+private fun carregarImagemBase64Local(base64String: String?): ImageBitmap? {
+    if (base64String.isNullOrBlank() || base64String == "string") return null
+    return try {
+        val stringLimpa = if (base64String.contains(",")) {
+            base64String.substring(base64String.indexOf(",") + 1)
+        } else {
+            base64String
+        }
+        val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
+        bitmap.asImageBitmap()
+    } catch (e: Exception) {
+        null
     }
 }

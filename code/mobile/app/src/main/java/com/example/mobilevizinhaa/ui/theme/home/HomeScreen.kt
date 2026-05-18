@@ -29,6 +29,15 @@ fun HomeScreen(
     val resident by viewModel.residentData.collectAsState()
     val posts = viewModel.posts
 
+    // GATILHO DE ATUALIZAÇÃO AUTOMÁTICA (CORRIGIDO PARA O ENDPOINT /me/resident):
+    // Dispara em background assim que a tela abre, buscando tudo baseado puramente no Token ativo
+    LaunchedEffect(Unit) {
+        val tokenSalvo = viewModel.obterTokenSalvo()
+        if (tokenSalvo.isNotEmpty()) {
+            viewModel.carregarDadosPerfil(tokenSalvo)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -39,11 +48,12 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // HEADER INSTANTÂNEO:
-            //userName e apartment pegos diretamente do Flow que lê o cache local
+            // HEADER INSTANTÂNEO CORRIGIDO:
+            // Passamos 'userPhotoUrl' recebendo a string crua. Sumirá o erro do Android Studio!
             HomeHeader(
                 userName = resident?.name ?: "Vizinho(a)",
-                apartment = resident?.apartment?.let { "Apto $it" } ?: "Condomínio"
+                apartment = resident?.apartment?.let { "Apto $it" } ?: "Condomínio",
+                userPhotoUrl = resident?.photo
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -75,7 +85,7 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // Grade de fotos do Mural (Lê a lista do ViewModel)
+            // Grade de fotos do Mural (Lê a lista do ViewModel que agora é preenchida pelo banco de dados)
             PostGridSection(posts = posts) { postId ->
                 navController.navigate("detalhe_post/$postId")
             }

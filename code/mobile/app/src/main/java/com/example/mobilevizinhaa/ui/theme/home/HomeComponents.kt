@@ -1,6 +1,8 @@
 package com.example.mobilevizinhaa.ui.theme.home
 
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,6 +23,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,13 +37,16 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-
+// --- 1. HOME HEADER (ÁREA VERDE COMPLETA) ---
 @Composable
-fun HomeHeader(userName: String, apartment: String) {
+fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null) {
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? -> if (uri != null) fotoUri = uri }
+
+    // Tenta converter a string que veio da API caso ela pareça um Base64 válido
+    val bitmapPerfil = remember(userPhotoUrl) { carregarImagemBase64(userPhotoUrl) }
 
     Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
         Box(
@@ -89,9 +96,26 @@ fun HomeHeader(userName: String, apartment: String) {
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
+            // Se o usuário escolheu uma foto local na hora, ela tem prioridade total
             if (fotoUri != null) {
-                AsyncImage(model = fotoUri, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            } else {
+                AsyncImage(
+                    model = fotoUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            // Se não escolheu local, mas a API mandou um Base64 convertido com sucesso, renderiza o Bitmap
+            else if (bitmapPerfil != null) {
+                Image(
+                    bitmap = bitmapPerfil,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            // Fallback caso a string da API venha vazia, nula ou inválida ("string")
+            else {
                 Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
                     Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
                 }
@@ -134,25 +158,36 @@ fun InfoCard(titulo: String, quantidade: String, iconeRes: Int) {
     }
 }
 
-// --- 3. GRADE DE POSTAGENS ---
+// --- 3. GRADE DE POSTAGENS STYLE INSTAGRAM (ÁREA VERMELHA COMPLETA) ---
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
     FlowRow(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp),
         horizontalArrangement = Arrangement.Start,
         maxItemsInEachRow = 3
     ) {
         posts.forEach { post ->
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.3333f)
-                    .aspectRatio(1f)
-                    .padding(1.dp)
+                    .fillMaxWidth(0.3333f) // Força a largura exata de 1/3 para ter as 3 colunas perfeitas
+                    .aspectRatio(1f)       // Mantém proporção estritamente quadrada igual ao Instagram
+                    .padding(1.dp)         // Linha divisória fina entre as publicações
                     .background(Color(0xFFF0F0F0))
                     .clickable { onPostClick(post.id) }
             ) {
-                if (post.imagemUri != null) {
+                val hasRemoteImage = !post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string"
+
+                if (hasRemoteImage) {
+                    AsyncImage(
+                        model = post.imagemUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (post.imagemUri != null) {
                     AsyncImage(
                         model = post.imagemUri,
                         contentDescription = null,
@@ -160,12 +195,31 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
+                    // Fallback visual fixo: não altera a forma do Grid, mantendo o quadrado idêntico
                     Image(
                         painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+
+                    // Sobreposição sutil com o título do seu post criado no banco
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = post.titulo,
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 4.dp)
+                        )
+                    }
                 }
             }
         }
@@ -229,5 +283,26 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
         } else {
             Icon(painter, null, tint = Color.Gray, modifier = Modifier.size(26.dp))
         }
+    }
+}
+
+/**
+ * Função utilitária local que decodifica strings Base64 do banco de dados
+ * e as transforma em ImageBitmaps renderizáveis pelo Jetpack Compose.
+ */
+fun carregarImagemBase64(base64String: String?): ImageBitmap? {
+    if (base64String.isNullOrBlank() || base64String == "string") return null
+    return try {
+        // Remove cabeçalhos de metadados como "data:image/jpeg;base64," caso estejam presentes
+        val stringLimpa = if (base64String.contains(",")) {
+            base64String.substring(base64String.indexOf(",") + 1)
+        } else {
+            base64String
+        }
+        val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
+        bitmap.asImageBitmap()
+    } catch (e: Exception) {
+        null
     }
 }

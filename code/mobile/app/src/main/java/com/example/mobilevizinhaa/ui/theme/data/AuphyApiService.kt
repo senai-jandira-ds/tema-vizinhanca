@@ -1,107 +1,138 @@
-    package com.example.mobilevizinhaa.ui.theme.data
+package com.example.mobilevizinhaa.ui.theme.data
 
-    import com.google.gson.annotations.SerializedName
-    import retrofit2.Response
-    import retrofit2.http.*
+import com.google.gson.annotations.SerializedName
+import retrofit2.Response
+import retrofit2.http.*
 
-    // ==========================================
-    // 1. MODELOS DE LOGIN (AUTH)
-    // ==========================================
-    data class LoginRequest(
-        val email: String,
-        val password: String
-    )
+// ==========================================
+// 1. MODELOS DE LOGIN (AUTH)
+// ==========================================
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
 
-    data class LoginResponse(
-        val status: Boolean,
-        val status_code: Int,
-        val message: String,
-        val response: LoginData
-    )
+data class LoginResponse(
+    val status: Boolean,
+    val status_code: Int,
+    val message: String,
+    val response: LoginData
+)
 
-    data class LoginData(
-        val token: String,
-        val user: UserData
-    )
+data class LoginData(
+    val token: String,
+    val user: UserData
+)
 
-    data class UserData(
-        val id: Int,
-        val name: String,
-        val email: String,
-        @SerializedName("apartment", alternate = ["apto", "unidade"])
-        val apto: String? = null,
-        val block: String? = null,
-        val cpf: String? = null,
-        val phone: String? = null
-    )
+data class UserData(
+    val id: Int,
+    val name: String,
+    val email: String,
+    @SerializedName("apartment", alternate = ["apto", "unidade"])
+    val apto: String? = null,
+    val block: String? = null,
+    val cpf: String? = null,
+    val phone: String? = null
+)
 
-    // ==========================================
-    // 2. MODELOS DE RESIDENTE (CONTA GERAL)
-    // ==========================================
+// ==========================================
+// 2. MODELOS DE RESIDENTE (CONTA GERAL COM AS PUBLICAÇÕES)
+// ==========================================
 
-    /**
-     * Classe "Envelope" para capturar a resposta do objeto único.
-     * Necessária porque a API coloca o morador dentro do campo "response".
-     */
-    data class SingleResidentResponse(
-        val status: Boolean,
-        val message: String,
-        @SerializedName("response", alternate = ["data"])
-        val resident: ResidentResponse
-    )
+/**
+ * Modelo das publicações individuais do próprio usuário, vindo do JSON.
+ */
+data class PublicationResponse(
+    val id: Int,
+    @SerializedName("photo", alternate = ["photoUrl", "imageUrl"])
+    val photo: String?,       // Mapeamento flexível para capturar a URL da foto do post do Swagger
+    val title: String,        // Título do post
+    val description: String,  // Descrição do post
+    val creationDate: String?
+)
 
-    data class ResidentResponse(
-        val id: Int,
+/**
+ * Classe "Envelope" para capturar a resposta do objeto único.
+ * Garante que o objeto do morador seja extraído corretamente de dentro da chave "response".
+ */
+data class SingleResidentResponse(
+    val status: Boolean,
+    val message: String,
+    @SerializedName("response", alternate = ["data"])
+    val resident: ResidentResponse
+)
 
-        @SerializedName("name", alternate = ["nome", "username"])
-        val name: String?,
+data class ResidentResponse(
+    val id: Int,
+    @SerializedName("name", alternate = ["nome", "username"])
+    val name: String?,
+    val email: String,
+    @SerializedName("apartment", alternate = ["apto", "unidade"])
+    val apartment: String?,
+    val block: String?,
+    val score: Int?,
+    val phone: String? = null,
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"])
+    val photo: String? = null, // Mapeamento flexível da foto de perfil (Sincroniza com a Área Verde)
+    val publications: List<PublicationResponse>? = null // Lista de posts do usuário (Sincroniza com a Área Vermelha)
+)
 
-        val email: String,
+data class UpdateResidentRequest(
+    val id: Int,
+    val name: String,
+    val email: String,
+    val apartment: String?,
+    val block: String?,
+    val phone: String?
+)
 
-        @SerializedName("apartment", alternate = ["apto", "unidade"])
-        val apartment: String?,
+// ==========================================
+// MODELOS PARA CRIAR POSTAGEM NO BANCO
+// ==========================================
+data class CreatePostRequest(
+    val title: String,
+    val description: String,
+    val photo: String? = null // URL da imagem ou string em Base64 enviado para a API
+)
 
-        val block: String?,
-        val score: Int?,
-        val phone: String? = null
-    )
+data class CreatePostResponse(
+    val status: Boolean,
+    val message: String
+)
 
-    data class UpdateResidentRequest(
-        val id: Int, // Alterado para Int para manter consistência com ResidentResponse
-        val name: String,
-        val email: String,
-        val apartment: String?,
-        val block: String?,
-        val phone: String?
-    )
+// ==========================================
+// 3. INTERFACE DA API (ROTAS DE RETROFIT)
+// ==========================================
+interface AuthApiService {
 
-    // ==========================================
-    // 3. INTERFACE DA API
-    // ==========================================
-    interface AuthApiService {
+    // --- AUTENTICAÇÃO ---
+    @POST("api/v1/auth/login/resident")
+    suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
 
-        // --- AUTENTICAÇÃO ---
-        @POST("api/v1/auth/login/resident")
-        suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
+    // --- LISTAGEM GERAL ---
+    @GET("api/v1/resident")
+    suspend fun listResidents(
+        @Header("Authorization") token: String
+    ): Response<List<ResidentResponse>>
 
-        // --- LISTAGEM GERAL ---
-        @GET("api/v1/resident")
-        suspend fun listResidents(
-            @Header("Authorization") token: String
-        ): Response<List<ResidentResponse>>
+    // --- BUSCAR DADOS DA CONTA AUTENTICADA (PARA A HOME) ---
+    // Sincroniza os dados do perfil e a lista de posts do usuário logado usando o Token
+    @GET("api/v1/auth/me/resident")
+    suspend fun getResidentById(
+        @Header("Authorization") token: String
+    ): Response<SingleResidentResponse>
 
-        // --- BUSCAR DADOS DA CONTA (PARA A HOME) ---
-        // Retorna SingleResidentResponse para que o GSON consiga entrar no campo "response"
-        @GET("api/v1/resident/{id}")
-        suspend fun getResidentById(
-            @Header("Authorization") token: String,
-            @Path("id") id: Int
-        ): Response<SingleResidentResponse>
+    // --- ATUALIZAR DADOS DO PERFIL ---
+    @PUT("api/v1/resident")
+    suspend fun updateResident(
+        @Header("Authorization") token: String,
+        @Body request: UpdateResidentRequest
+    ): Response<ResidentResponse>
 
-        // --- ATUALIZAR DADOS ---
-        @PUT("api/v1/resident")
-        suspend fun updateResident(
-            @Header("Authorization") token: String,
-            @Body request: UpdateResidentRequest
-        ): Response<ResidentResponse>
-    }
+    // --- SALVAR NOVA POSTAGEM NO MURAL ---
+    @POST("api/v1/publication")
+    suspend fun criarPublicacao(
+        @Header("Authorization") token: String,
+        @Body request: CreatePostRequest
+    ): Response<CreatePostResponse>
+}

@@ -63,8 +63,8 @@ fun LoginScreen(
             // Salva no ViewModel (Memória + Disco)
             homeViewModel.setResidentData(resident)
 
-            // Sincroniza em background
-            homeViewModel.carregarDadosPerfil(loginData.token, user.id)
+            // Sincroniza em background (ATUALIZADO: Passando apenas o token para o endpoint /me/resident)
+            homeViewModel.carregarDadosPerfil(loginData.token)
 
             // Navega para a Home
             navController("home")

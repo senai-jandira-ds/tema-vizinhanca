@@ -35,6 +35,9 @@ fun DetalhePostagemScreen(
 ) {
     val post = viewModel.posts.find { it.id == postId }
 
+    // Puxa os dados reais do morador logado armazenados no ViewModel
+    val resident by viewModel.residentData.collectAsState()
+
     // Estado para controlar a abertura do menu de opções
     var menuExpandido by remember { mutableStateOf(false) }
 
@@ -82,8 +85,11 @@ fun DetalhePostagemScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Cabeçalho do Usuário (Sarah)
-            PostUserHeader(userName = "Sarah", profileImageRes = R.drawable.mulher)
+            // 1. Cabeçalho do Usuário TOTALMENTE DINÂMICO (Substituído a Sarah pelos dados da API)
+            PostUserHeader(
+                userName = resident?.name ?: "Vizinho(a)",
+                userPhotoUrl = resident?.photo
+            )
 
             // 2. Imagem Principal
             Box(
@@ -116,7 +122,6 @@ fun DetalhePostagemScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-
 
             Spacer(modifier = Modifier.height(40.dp))
         }

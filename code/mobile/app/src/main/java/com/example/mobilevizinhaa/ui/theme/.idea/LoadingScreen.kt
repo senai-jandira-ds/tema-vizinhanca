@@ -24,19 +24,18 @@ import com.example.mobilevizinhaa.ui.theme.home.HomeViewModel
 @Composable
 fun LoadingScreen(
     token: String,
-    userId: Int,
     navController: NavController,
     homeViewModel: HomeViewModel
 ) {
     // Observa quando os dados do banco chegarem
     val resident by homeViewModel.residentData.collectAsState()
 
-    // Dispara a busca assim que a tela abre
+    // Dispara a busca assim que a tela abre passando apenas o Token (Sincronizado com o Swagger)
     LaunchedEffect(Unit) {
-        homeViewModel.carregarDadosPerfil(token, userId)
+        homeViewModel.carregarDadosPerfil(token)
     }
 
-    // Monitora o dado: quando deixar de ser nulo, vai para a Home
+    // Monitora o dado: quando deixar de ser nulo (banco respondeu), vai para a Home
     LaunchedEffect(resident) {
         if (resident != null) {
             navController.navigate("home") {
