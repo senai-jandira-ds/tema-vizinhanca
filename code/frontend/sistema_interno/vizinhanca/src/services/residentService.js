@@ -1,8 +1,7 @@
-import api from './api';
+import api from "./api";
 
 export const getResidents = async () => {
-    const response = await api.get('/condominium/resident/me');
-    console.log(response.data)
+    const response = await api.get("/condominium/resident/me");
     return response.data;
 };
 
@@ -12,12 +11,11 @@ export const getResidentById = async (id) => {
 };
 
 export const createResident = async (data) => {
-    const response = await api.post('/resident', data);
+    const response = await api.post("/resident", data);
     return response.data;
 };
 
 export const updateResident = async (id, data) => {
-    console.log(data)
     const response = await api.put(`/resident/${id}`, data);
     return response.data;
 };
