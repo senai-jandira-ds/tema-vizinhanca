@@ -1,38 +1,77 @@
+import { useEffect, useState } from "react";
 import Searchbar from "../../components/ui/SearchBar";
+import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import FilterOptions from "../../components/ui/Filter"
+import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType } from "../../services/activityService";
 import styles from "./Activity.module.css";
 
 function Activity() {
+    const [loading, setLoading] = useState(true);
+    const [dadosTabela, setDadosTabela] = useState([]);
+
+    useEffect(() => {
+        fetchActivities();
+    }, []);
+
+    const fetchActivities = async () => {
+        try {
+            setLoading(true);
+            const data = await getActivities();
+
+            if (!Array.isArray(data)) {
+                setDadosTabela([]);
+                return;
+            }
+
+            const mappedData = data.map((activity, index) => ({
+                id: activity.idMorador?.toString() || (index + 1).toString(),
+                nome: activity.morador || '',
+                descricao: activity.descricao || '',
+                categoria: formatActivityType(activity.tipo),
+                status: formatActivityStatus(activity.status),
+                data: formatActivityDate(activity.dataCriacao)
+            }));
+
+            console.log('Dados mapeados:', mappedData);
+            setDadosTabela(mappedData);
+        } catch (error) {
+            console.error('Erro ao buscar atividades:', error);
+            setDadosTabela([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
-        { id: 'nome', label: 'Nome ', width: 200 },
+        { id: 'nome', label: 'Nome', width: 220 },
         { id: 'descricao', label: 'Descrição', width: 350 },
-        { id: 'categoria', label: 'Categoria ', width: 150 },
+        { id: 'categoria', label: 'Categoria', width: 180 },
         {
             id: 'status',
-            label: 'Status ',
-            width: 150,
+            label: 'Status',
+            width: 160,
             getCellClass: (status) => {
                 if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluído') return styles['status-azul'];
+                if (status === 'Concluído' || status === 'Finalizado') return styles['status-azul'];
+                if (status === 'Pendente' || status === 'Em andamento') return styles['status-amarelo'];
                 return '';
             }
         },
-    ];
-
-    const dadosTabela = [
-        { id: '5524', nome: 'João Pereira', descricao: 'Preciso de uma furadeira por 1...', categoria: 'Pedido', status: 'Aberto' },
-        { id: '3392', nome: 'Maria Oliveira', descricao: 'Escada disponível para emprést..', categoria: 'Objeto', status: 'Disponível' },
-        { id: '3393', nome: 'Pedro Santos', descricao: 'Posso ajudar com a mudança hoje', categoria: 'Interação', status: 'Concluído' },
-
-        
+        { id: 'data', label: 'Data', width: 150 }
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
         console.log('Clicou na célula:', { valor, colunaId, linha });
     };
+
+    if (loading) {
+        return (
+            <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -42,8 +81,8 @@ function Activity() {
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
-                <FilterOptions/>
-                <Searchbar placeholder="Pesquisar Nº ou Nome" type="text"  />
+                    <FilterOptions />
+                    <Searchbar placeholder="Pesquisar Nº ou Nome" type="text" />
                 </div>
                 <Table
                     columns={colunasTabela}
