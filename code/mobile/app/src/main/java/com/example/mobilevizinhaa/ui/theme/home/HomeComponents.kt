@@ -45,8 +45,13 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? -> if (uri != null) fotoUri = uri }
 
-    // Tenta converter a string que veio da API caso ela pareça um Base64 válido
-    val bitmapPerfil = remember(userPhotoUrl) { carregarImagemBase64(userPhotoUrl) }
+    // Identifica se a foto vinda da API é um link remoto HTTP (Nuvem)
+    val isUrlRemota = userPhotoUrl?.startsWith("http", ignoreCase = true) == true
+
+    // Caso NÃO seja link direto HTTP, tenta converter a string assumindo que seja Base64 válido
+    val bitmapPerfil = remember(userPhotoUrl) {
+        if (!isUrlRemota) carregarImagemBase64(userPhotoUrl) else null
+    }
 
     Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
         Box(
@@ -96,7 +101,7 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
-            // Se o usuário escolheu uma foto local na hora, ela tem prioridade total
+            // Condição 1: Prioridade se o usuário escolheu uma foto local do dispositivo
             if (fotoUri != null) {
                 AsyncImage(
                     model = fotoUri,
@@ -105,7 +110,17 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
                     contentScale = ContentScale.Crop
                 )
             }
-            // Se não escolheu local, mas a API mandou um Base64 convertido com sucesso, renderiza o Bitmap
+            // Condição 2: Se a API enviou uma URL HTTP direta (ex: AWS S3, Firebase Storage, Render static)
+            else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = userPhotoUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(id = R.drawable.mulher) // Fallback caso quebre o link
+                )
+            }
+            // Condição 3: Se a API mandou um Base64, renderiza o bitmap decodificado
             else if (bitmapPerfil != null) {
                 Image(
                     bitmap = bitmapPerfil,
@@ -114,7 +129,7 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
                     contentScale = ContentScale.Crop
                 )
             }
-            // Fallback caso a string da API venha vazia, nula ou inválida ("string")
+            // Condição 4: Fallback padrão caso não exista foto cadastrada de nenhum modo
             else {
                 Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
                     Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
@@ -124,7 +139,7 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
     }
 }
 
-// --- 2. INFO CARD (ATUALIZADO COM EVENTO DE CLIQUE) ---
+// --- 2. INFO CARD ---
 @Composable
 fun InfoCard(titulo: String, quantidade: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
@@ -151,7 +166,7 @@ fun InfoCard(titulo: String, quantidade: String, iconeRes: Int, onAddClick: () -
                     .size(34.dp)
                     .background(BluePrimary, CircleShape)
                     .clip(CircleShape)
-                    .clickable { onAddClick() }, // <--- Ação executada ao clicar no "+"
+                    .clickable { onAddClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))
@@ -174,9 +189,9 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
         posts.forEach { post ->
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.3333f) // Força a largura exata de 1/3 para ter as 3 colunas perfeitas
-                    .aspectRatio(1f)       // Mantém proporção estritamente quadrada igual ao Instagram
-                    .padding(1.dp)         // Linha divisória fina entre as publicações
+                    .fillMaxWidth(0.3333f)
+                    .aspectRatio(1f)
+                    .padding(1.dp)
                     .background(Color(0xFFF0F0F0))
                     .clickable { onPostClick(post.id) }
             ) {
@@ -197,7 +212,6 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Fallback visual fixo: não altera a forma do Grid, mantendo o quadrado idêntico
                     Image(
                         painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
                         contentDescription = null,
@@ -205,7 +219,6 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
 
-                    // Sobreposição sutil com o título do seu post criado no banco
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -295,7 +308,6 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
 fun carregarImagemBase64(base64String: String?): ImageBitmap? {
     if (base64String.isNullOrBlank() || base64String == "string") return null
     return try {
-        // Remove cabeçalhos de metadados como "data:image/jpeg;base64," caso estejam presentes
         val stringLimpa = if (base64String.contains(",")) {
             base64String.substring(base64String.indexOf(",") + 1)
         } else {

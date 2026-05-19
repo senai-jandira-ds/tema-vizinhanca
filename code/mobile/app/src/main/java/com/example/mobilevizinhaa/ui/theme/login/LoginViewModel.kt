@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.mobilevizinhaa.ui.theme.data.LoginRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
-import com.example.mobilevizinhaa.ui.theme.data.LoginResponse // Certifique-se de importar
+import com.example.mobilevizinhaa.ui.theme.data.LoginResponse
 import android.util.Log
 
 /**
@@ -22,7 +22,7 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
-    // ADICIONADO: Campo para armazenar a resposta completa da API
+    // Armazena a resposta completa da API (Processa perfeitamente o objeto block corrigido)
     val loginResponse: LoginResponse? = null
 )
 
@@ -76,25 +76,21 @@ class LoginViewModel : ViewModel() {
                     if (response.isSuccessful && response.body() != null) {
                         val loginBody = response.body()!!
 
-                        // ATUALIZAÇÃO IMPORTANTE:
-                        // Salvamos o 'loginBody' inteiro para a LoginScreen poder ler
+                        // Atualiza o estado da tela, disparando o LaunchedEffect da LoginScreen
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                loginResponse = loginBody // Isso resolve o erro do print!
+                                loginResponse = loginBody
                             )
                         }
 
                         val token = loginBody.response.token
                         val userId = loginBody.response.user.id
 
-                        val user = loginBody.response.user
-
-
                         Log.d("LOGIN_DEBUG", "Sucesso! Usuário: ${loginBody.response.user.name}")
 
-                        // MANDA A ROTA COMPLETA
-                        onSuccess("home/$token/$userId")
+                        // Executa o callback passando o padrão de rota simples
+                        onSuccess("home")
 
                     } else {
                         val erroApi = when (response.code()) {
@@ -107,7 +103,7 @@ class LoginViewModel : ViewModel() {
                 } catch (e: Exception) {
                     Log.e("LOGIN_ERROR", "Falha na conexão", e)
                     _uiState.update {
-                        it.copy(isLoading = false, errorMessage = "Servidor indisponível.")
+                        it.copy(isLoading = false, errorMessage = "Erro na resposta do servidor.")
                     }
                 }
             }

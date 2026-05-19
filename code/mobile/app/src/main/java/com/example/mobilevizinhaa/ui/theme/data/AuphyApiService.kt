@@ -5,6 +5,14 @@ import retrofit2.Response
 import retrofit2.http.*
 
 // ==========================================
+// NOVO MODELO PARA O OBJETO BLOCO (SWAGGER)
+// ==========================================
+data class BlockResponse(
+    val id: Int? = null,
+    val name: String? = null
+)
+
+// ==========================================
 // 1. MODELOS DE LOGIN (AUTH)
 // ==========================================
 data class LoginRequest(
@@ -30,7 +38,8 @@ data class UserData(
     val email: String,
     @SerializedName("apartment", alternate = ["apto", "unidade"])
     val apto: String? = null,
-    val block: String? = null,
+    // CORRIGIDO: Alterado de String? para BlockResponse? para receber o objeto JSON do backend
+    val block: BlockResponse? = null,
     val cpf: String? = null,
     val phone: String? = null
 )
@@ -69,7 +78,8 @@ data class ResidentResponse(
     val email: String,
     @SerializedName("apartment", alternate = ["apto", "unidade"])
     val apartment: String?,
-    val block: String?,
+    // CORRIGIDO: Alterado de String? para BlockResponse? para aceitar a estrutura de objeto do condomínio
+    val block: BlockResponse?,
     val score: Int?,
     val phone: String? = null,
     @SerializedName("photo", alternate = ["photoUrl", "avatar"])
@@ -82,7 +92,8 @@ data class UpdateResidentRequest(
     val name: String,
     val email: String,
     val apartment: String?,
-    val block: String?,
+    // CORRIGIDO: Modificado para BlockResponse? para manter consistência nas atualizações de perfil
+    val block: BlockResponse?,
     val phone: String?
 )
 

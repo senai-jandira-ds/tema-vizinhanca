@@ -50,12 +50,13 @@ fun LoginScreen(
         uiState.loginResponse?.response?.let { loginData ->
             val user = loginData.user
 
+            // Cria o objeto contendo o Bloco corrigido vindo do seu modelo da API
             val resident = ResidentResponse(
                 id = user.id,
                 name = user.name,
                 email = user.email,
                 apartment = user.apto,
-                block = user.block,
+                block = user.block, // Repassa o objeto/tipo mapeado direto do Swagger
                 score = 0,
                 phone = user.phone
             )
@@ -63,7 +64,7 @@ fun LoginScreen(
             // Salva no ViewModel (Memória + Disco)
             homeViewModel.setResidentData(resident)
 
-            // Sincroniza em background (ATUALIZADO: Passando apenas o token para o endpoint /me/resident)
+            // Sincroniza em background (Passando apenas o token para o endpoint /me/resident)
             homeViewModel.carregarDadosPerfil(loginData.token)
 
             // Navega para a Home
