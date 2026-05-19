@@ -14,6 +14,8 @@ import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepositor
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,11 +38,11 @@ public class CondominiumService {
     }
 
     // SELECT BY ID
+    @Cacheable(value = "condominium", key = "#id")
     public Condominium getSelectCondominiumById(Long id) {
-        Condominium condominium = condominiumRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Condomínio não encontrado no Bando de Dados!"));
-
-        return condominium;
+        return condominiumRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Condomínio não encontrado no Banco de Dados!"));
     }
 
     // SELECT BY EMAIL
@@ -70,6 +72,7 @@ public class CondominiumService {
     }
 
     // UPDATE CONDOMINIUM
+    @CacheEvict(value = "condominium", key = "#idCondominium")
     public Condominium setUpdateCondominium(@NonNull Condominium condominium, Long idCondominium) {
         Condominium existingCondominium = getSelectCondominiumById(idCondominium);
 
@@ -88,6 +91,7 @@ public class CondominiumService {
     }
 
     // DELETE CONDOMINIUM
+    @CacheEvict(value = "condominium", key = "#idCondominium")
     public void  setDeleteCondominiumById(Long idCondominium) {
         if (!condominiumRepository.existsById(idCondominium)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Condomínio não encontrado no Bando de Dados!");

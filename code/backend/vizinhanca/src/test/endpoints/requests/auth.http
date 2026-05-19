@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzY290dGlsZW9uYXJkbzFAZ21haWwuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiTU9SQURPUiIsImlhdCI6MTc3ODg2NjM5MywiZXhwIjoxNzc4OTUyNzkzfQ.NYUDr8Kuj5BUi_89yx0D-uyWcdDmeGnxjrdXkDP8GpM
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZTdAdGVzdGUuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3NzkyMTQ2NzAsImV4cCI6MTc3OTMwMTA3MH0.4o58pN5s_lopdomsJ2mGRKYFgsGCcykEQa1a7zpo8J0
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -11,7 +11,7 @@ Content-Type: application/json
 
 ### LoginResident
 # @name loginRequest
-POST http://localhost:8080/api/v1/auth/login/resident
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/resident
 Content-Type: application/json
 
 {
@@ -49,7 +49,7 @@ Authorization: Bearer {{token}}
 
 ### Search by id
 # @name searchCondominium
-GET https://api-vizinhanca.onrender.com/api/v1/condominium/9
+GET http://localhost:8080/api/v1/condominium/14
 Authorization: Bearer {{token}}
 
 ### Insert
@@ -112,15 +112,15 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "photo": "",
-  "name": "Teste - SCOTTI",
-  "apartment": "4",
-  "block": "Torre 4",
-  "cpf": "45678912340",
-  "email": "scottileonardo1@gmail.com",
-  "phone": "11998572585",
+  "photo": "https://i.pravatar.cc/300",
+  "name": "João da Silva",
+  "apartment": "101",
+  "id_block": 1,
+  "cpf": "12345678901",
+  "email": "@email.com",
+  "phone": "11999999999",
   "score": 0,
-  "condominium_id": 14
+  "id_condominium": 14
 }
 
 ### Update

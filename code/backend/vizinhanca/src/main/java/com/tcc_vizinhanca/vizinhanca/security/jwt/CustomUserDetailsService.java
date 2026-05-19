@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -29,24 +28,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    @Cacheable("userDetails")
+    @Cacheable(value = "userDetails", key = "#email")
     public UserDetails loadUserByUsername(String email) {
 
-        Optional<Condominium> condominium = condominiumRepository.findByEmail(email);
-
-        if (condominium.isPresent()) {
-            return buildCondominium(condominium.get());
-        }
-
-        Optional<Resident> resident = residentRepository.findByEmail(email);
-
-        if (resident.isPresent()) {
-            return buildResident(resident.get());
-        }
-
-        throw new UsernameNotFoundException("Usuário não encontrado");
+        return condominiumRepository.findByEmail(email)
+                .map(condominium -> (UserDetails) buildCondominium(condominium))
+                .orElseGet(() -> residentRepository.findByEmail(email)
+                        .map(resident -> (UserDetails) buildResident(resident))
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado")));
     }
-
 
     private UserDetails buildCondominium(Condominium condominium) {
         return new User(
@@ -63,5 +53,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                 List.of(new SimpleGrantedAuthority("ROLE_RESIDENT"))
         );
     }
-
 }

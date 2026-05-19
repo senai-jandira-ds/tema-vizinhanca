@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ResidentSummaryResponse {
     private Long id;
-    private String photo;
     private String name;
     private String apartment;
     private String cpf;
@@ -26,11 +25,9 @@ public class ResidentSummaryResponse {
     private Integer score;
     private String creationDate;
     private BlockSummaryResponse block;
-    private List<PublicationSummaryResponse>  publications;
 
     public ResidentSummaryResponse(Resident resident) {
         this.id = resident.getId();
-        this.photo = resident.getPhoto();
         this.name = resident.getName();
         this.apartment = resident.getApartment();
         this.cpf = resident.getCpf();
@@ -43,10 +40,5 @@ public class ResidentSummaryResponse {
         this.block = resident.getBlock() != null
                 ? new BlockSummaryResponse(resident.getBlock())
                 : null;
-        this.publications = resident.getPublications() != null
-                ? resident.getPublications().stream()
-                    .map(PublicationSummaryResponse::new)
-                    .toList()
-                : new ArrayList<>();
     }
 }

@@ -7,13 +7,12 @@
 
 package com.tcc_vizinhanca.vizinhanca.security.jwt;
 
-import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,6 +49,11 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
@@ -58,26 +62,23 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = header.substring(7);
+        Claims claims = jwtService.extrairClaims(token);
 
-        if (!jwtService.validarToken(token)) {
+        if (claims == null) {
             response.sendError(401, "Token inválido");
             return;
         }
 
-        String username = jwtService.extrairUsername(token);
+        String username = claims.getSubject();
 
-        UserDetails userDetails =
-                customUserDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
+                        userDetails, null, userDetails.getAuthorities()
                 );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
-
         filterChain.doFilter(request, response);
     }
 }

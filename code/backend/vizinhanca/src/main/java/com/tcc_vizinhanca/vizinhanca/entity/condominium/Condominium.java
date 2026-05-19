@@ -15,7 +15,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tbl_condominio")
@@ -56,13 +58,13 @@ public class Condominium {
     private LocalDate creationDate;
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
-    private List<Block> blocks;
+    private Set<Block> blocks = new HashSet<>();
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
-    private List<Resident> residents;
+    private Set<Resident> residents = new HashSet<>();
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
-    private List<Service> services;
+    private Set<Service> services = new HashSet<>();
 
     @OneToOne(mappedBy = "condominium", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CondominiumAddress address;

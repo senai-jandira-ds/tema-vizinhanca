@@ -16,7 +16,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tbl_morador")
@@ -67,7 +69,7 @@ public class Resident {
     private Block block;
 
     @OneToMany(mappedBy = "resident",  fetch = FetchType.LAZY)
-    private List<Publication> publications;
+    private Set<Publication> publications = new HashSet<>();
 
     @ManyToOne
     @JoinColumn( name = "id_condominio")
