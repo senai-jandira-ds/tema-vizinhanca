@@ -32,9 +32,6 @@ public class JwtService {
     }
 
     public String gerarToken(String username, Long idCondominio, String tipoPerfil) {
-        System.out.println("USERNAME: " + username);
-        System.out.println("ID CONDOMINIO: " + idCondominio);
-        System.out.println("TIPO PERFIL: " + tipoPerfil);
 
         return Jwts.builder()
                 .setSubject(username)
@@ -55,8 +52,6 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-            System.out.println(claims);
 
             Object value = claims.get("id_condominio");
 

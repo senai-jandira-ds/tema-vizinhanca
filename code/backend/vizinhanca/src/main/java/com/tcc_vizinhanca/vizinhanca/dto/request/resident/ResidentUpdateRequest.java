@@ -35,9 +35,4 @@ public class ResidentUpdateRequest {
 
     @NotNull(message = "Pontuação é obrigatório")
     private Integer score;
-
-    @JsonProperty("id_condominium")
-    @NotNull(message = "ID do Condomínio deve ser obrigatório")
-    @Positive(message = "ID do Condomínio deve ser positivo")
-    private Long idCondominium;
 }

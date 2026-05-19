@@ -35,14 +35,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         Optional<Condominium> condominium = condominiumRepository.findByEmail(email);
 
         if (condominium.isPresent()) {
-            System.out.println(condominium.get());
             return buildCondominium(condominium.get());
         }
 
         Optional<Resident> resident = residentRepository.findByEmail(email);
 
         if (resident.isPresent()) {
-            System.out.println(resident.get());
             return buildResident(resident.get());
         }
 

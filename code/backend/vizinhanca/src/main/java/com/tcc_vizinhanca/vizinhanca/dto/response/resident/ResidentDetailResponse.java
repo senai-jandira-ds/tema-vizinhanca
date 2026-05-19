@@ -39,10 +39,12 @@ public class ResidentDetailResponse {
         this.email = resident.getEmail();
         this.phone = resident.getPhone();
         this.score = resident.getScore();
-        this.block = new BlockSummaryResponse(resident.getBlock());
+        this.block = resident.getBlock() != null
+                ? new BlockSummaryResponse(resident.getBlock())
+                : null;
         this.creationDate = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
-                : null;
+                : "";
         this.publications = resident.getPublications() != null
                 ? resident.getPublications().stream()
                     .map(PublicationSummaryResponse::new)

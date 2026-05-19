@@ -124,7 +124,9 @@ public class ResidentService {
 //            }
 //        }
 
-        Block block = blockService.getSelectBlockById(dto.getIdBlock());
+        Block block = dto.getIdBlock() != null
+                ? blockService.getSelectBlockById(dto.getIdBlock())
+                : null;
 
         ResidentMapper.updateEntity(dto, existingResident, block);
 

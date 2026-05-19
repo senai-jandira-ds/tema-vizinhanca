@@ -40,7 +40,9 @@ public class ResidentSummaryResponse {
         this.creationDate = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
                 : "";
-        this.block = new BlockSummaryResponse(resident.getBlock());
+        this.block = resident.getBlock() != null
+                ? new BlockSummaryResponse(resident.getBlock())
+                : null;
         this.publications = resident.getPublications() != null
                 ? resident.getPublications().stream()
                     .map(PublicationSummaryResponse::new)
