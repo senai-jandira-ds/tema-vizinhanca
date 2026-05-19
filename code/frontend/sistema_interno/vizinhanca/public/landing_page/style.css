@@ -66,7 +66,9 @@ nav {
     border-radius: 50px;
 }
 
-header button {
+header>a {
+    cursor: pointer;
+    all: unset;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -79,7 +81,7 @@ header button {
     transition: 0.5s ease-in-out;
 }
 
-header button:hover {
+header>a:hover {
     color: white;
     background-color: var(--cor-quartenária);
 }
@@ -208,7 +210,9 @@ p {
     width: 80%;
 }
 
-.hero-left-content button {
+.hero-left-content a {
+    all: unset;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -219,7 +223,7 @@ p {
     font-size: 1.8rem;
     transition: 0.5s;
 }
-.hero-left-content button:hover{
+.hero-left-content a:hover{
     background-color: var(--cor-quartenária);
 }
 

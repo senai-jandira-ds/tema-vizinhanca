@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom';
+import { logoutDeleteToken } from "../../../services/authService";
 import styles from "./Sidebar.module.css";
 import Back from "../../../assets/icons/backicon.svg?react";
 import Home from "../../../assets/icons/homeicon.svg?react";
@@ -16,7 +17,8 @@ function Sidebar() {
             <nav>
                 <ul className={styles.list}>
                     <li>
-                        <Link to="/voltar">
+                        <Link to="/"
+                                onClick={logoutDeleteToken}>
                             <Back className={styles.icon} />
                             <span className={styles.label}>Voltar</span>
                         </Link>

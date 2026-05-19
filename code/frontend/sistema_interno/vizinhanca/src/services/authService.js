@@ -18,6 +18,10 @@ export const getToken = () => {
     return localStorage.getItem("@vizinhanca:token");
 };
 
+export const logoutDeleteToken = () => {
+    return localStorage.clear("@vizinhanca:token");
+};
+
 export const saveCondominiumData = (data) => {
     localStorage.setItem("@vizinhanca:condominium", JSON.stringify(data));
 };
