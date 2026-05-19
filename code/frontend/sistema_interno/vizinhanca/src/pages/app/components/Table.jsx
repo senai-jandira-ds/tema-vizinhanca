@@ -18,6 +18,7 @@ export default function Table({
   onCellClick = null,
   exportType = "",
   showPagination = false,
+  showExport = true,
   pageSize = 8,
   maxHeight = null,
   modalType = 'usuario',
@@ -217,7 +218,7 @@ export default function Table({
       </div>
 
       <div className={styles.actionsBar}>
-      <ExportButton data={data} columns={columns} type={exportType} />
+        {showExport && <ExportButton data={data} columns={columns} type={exportType} />}
         {modalType === 'usuario' && onCadastrarNovo && (
           <button
             className={styles.btnCadastrar}
