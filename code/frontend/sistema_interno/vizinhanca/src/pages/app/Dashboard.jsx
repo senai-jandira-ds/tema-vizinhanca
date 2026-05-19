@@ -65,6 +65,7 @@ function Dashboard() {
                     data={dadosTabela}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    showExport={false}
                 />
             </main>
         </>
