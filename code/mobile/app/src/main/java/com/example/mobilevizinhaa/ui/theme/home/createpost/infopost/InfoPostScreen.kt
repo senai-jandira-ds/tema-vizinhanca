@@ -1,5 +1,7 @@
 package com.example.mobilevizinhaa.ui.theme.home.detail
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +44,16 @@ fun DetalhePostagemScreen(
 
     // Estado para controlar a abertura do menu de opções (Excluir)
     var menuExpandido by remember { mutableStateOf(false) }
+
+    // Verifica se a imagem vinda do banco é um link de internet (HTTP)
+    val isPostImgUrlRemota = post?.imagemUrl?.startsWith("http", ignoreCase = true) == true
+
+    // Caso a imagem do post venha em formato Base64 puro do banco, decodifica aqui
+    val bitmapPostImage = remember(post?.imagemUrl) {
+        if (!isPostImgUrlRemota && !post?.imagemUrl.isNullOrBlank()) {
+            carregarImagemBase64MuralLocal(post.imagemUrl)
+        } else null
+    }
 
     Scaffold(
         topBar = {
@@ -88,15 +102,13 @@ fun DetalhePostagemScreen(
             // ====================================================================
             // 1. CABEÇALHO DO USUÁRIO (INTEGRADO À API)
             // ====================================================================
-            // Passa dinamicamente o nome e a String Base64 vinda do seu Back-end.
-            // O seu PostUserHeader vai decodificar e remover a foto da mulher!
             PostUserHeader(
                 userName = resident?.name ?: "Vizinho(a)",
                 userPhotoUrl = resident?.photo
             )
 
             // ====================================================================
-            // 2. IMAGEM PRINCIPAL DA POSTAGEM
+            // 2. IMAGEM PRINCIPAL DA POSTAGEM (CORRIGIDO PARA SUPORTAR LINKS E BASE64)
             // ====================================================================
             Box(
                 modifier = Modifier
@@ -104,22 +116,43 @@ fun DetalhePostagemScreen(
                     .aspectRatio(1f)
                     .background(Color(0xFFF5F5F5))
             ) {
-                if (post?.imagemUri != null) {
-                    // Se houver uma URI de imagem local ou web
-                    AsyncImage(
-                        model = post.imagemUri,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    // Imagem de fallback para o corpo do post caso não tenha URI
-                    Image(
-                        painter = painterResource(id = post?.imagemRes ?: R.drawable.mulher),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                when {
+                    // Condição A: Se for um link HTTP da internet (Ex: a imagem do morango)
+                    isPostImgUrlRemota -> {
+                        AsyncImage(
+                            model = post?.imagemUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    // Condição B: Se for uma string Base64 decodificada do banco
+                    bitmapPostImage != null -> {
+                        Image(
+                            bitmap = bitmapPostImage,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    // Condição C: Se for uma URI de mídia local do dispositivo
+                    post?.imagemUri != null -> {
+                        AsyncImage(
+                            model = post.imagemUri,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    // Condição D: Fallback caso o post não possua foto nenhuma
+                    else -> {
+                        Image(
+                            painter = painterResource(id = post?.imagemRes ?: R.drawable.mulher),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
             }
 
@@ -133,5 +166,25 @@ fun DetalhePostagemScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+}
+
+/**
+ * Função utilitária para limpar o cabeçalho e converter o Base64 das fotos do Mural
+ */
+private fun carregarImagemBase64MuralLocal(base64String: String?): ImageBitmap? {
+    if (base64String.isNullOrBlank() || base64String == "string") return null
+    return try {
+        val stringLimpa = if (base64String.contains(",")) {
+            base64String.substring(base64String.indexOf(",") + 1)
+        } else {
+            base64String
+        }.trim()
+
+        val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
+        bitmap?.asImageBitmap()
+    } catch (e: Exception) {
+        null
     }
 }

@@ -52,6 +52,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun saveUserLocally(user: ResidentResponse) {
         try {
+            // Converte todo o objeto (incluindo o novo formato do Bloco e fotos) em JSON String
             val json = gson.toJson(user)
             prefs.edit().putString("saved_user", json).apply()
         } catch (e: Exception) {
@@ -63,7 +64,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val json = prefs.getString("saved_user", null)
         return if (json != null) {
             try {
-                // Converte o JSON de volta para o objeto ResidentResponse
+                // Converte o JSON de volta para o objeto ResidentResponse nativo
                 gson.fromJson(json, ResidentResponse::class.java)
             } catch (e: Exception) {
                 Log.e("PERSISTENCE", "Erro ao ler usuário salvo: ${e.message}")
@@ -102,13 +103,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful && response.body() != null) {
                     val dadosDoBanco = response.body()?.resident
                     dadosDoBanco?.let {
-                        // LOGS DE DEBUG COMPLETO PARA INVESTIGAÇÃO:
+                        // LOGS DE DEBUG COMPLETO PARA INVESTIGAÇÃO NO LOGCAT:
                         Log.d("TESTE_API", "NOME DO BANCO: ${it.name}")
-                        Log.d("TESTE_API", "URL DA FOTO DO BANCO: ${it.photo}")
-                        Log.d("TESTE_API", "QUANTIDADE DE POSTS: ${it.publications?.size}")
+                        Log.d("TESTE_API", "CONTEÚDO DA FOTO EM BASE64 DO BANCO: ${it.photo?.take(50)}...")
+                        Log.d("TESTE_API", "QUANTIDADE DE POSTS RETORNADOS: ${it.publications?.size}")
 
                         _residentData.value = it
-                        saveUserLocally(it) // Atualiza o cache local
+                        saveUserLocally(it) // Atualiza o cache local em SharedPreferences
 
                         // MAPEAMENTO DOS POSTS DA API PARA A TELA:
                         atualizarListaDePosts(it)
@@ -129,7 +130,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
      * Pega a lista "publications" trazida pela API e converte para a lista observável da UI.
      */
     private fun atualizarListaDePosts(resident: ResidentResponse) {
-        _posts.clear() // Limpa os elementos antigos da UI para evitar duplicados
+        _posts.clear() // Limpa os elementos antigos da UI para evitar duplicados ao recarregar
         resident.publications?.forEach { pub ->
             _posts.add(
                 Post(
@@ -163,7 +164,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
                 if (response.isSuccessful) {
                     Log.d("API_HOME", "Post inserido no banco com sucesso!")
-                    // Recarrega o perfil para sincronizar as publicações na hora
+                    // Recarrega o perfil para sincronizar e renderizar as publicações na hora
                     carregarDadosPerfil(token)
                 } else {
                     Log.e("API_HOME", "Servidor recusou a postagem. Código: ${response.code()}")
