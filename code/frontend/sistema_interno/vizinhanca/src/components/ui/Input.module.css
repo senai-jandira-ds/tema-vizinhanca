@@ -17,13 +17,13 @@
 
 .input{
     transition: 0.2s;
-    border: 0px solid rgba(0, 0, 0, 0.00);
+    border: 1px solid rgba(0, 0, 0, 0.00);
   }
 .input:focus{
   
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-color: rgba(0, 0, 0, 0.28);
-  
+
     transform: translateY(-2px);
   
     box-shadow:
