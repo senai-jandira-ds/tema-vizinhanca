@@ -43,6 +43,43 @@
     object-fit: cover;
 }
 
+.saveContainer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.saveButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    width: fit-content;
+    padding: 12px 22px;
+
+    border-radius: 12px;
+
+    background: #10B765;
+    color: white;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.saveButton:hover {
+}
+
+.saveButton:active {
+    transform: scale(0.98);
+}
+
 @media (max-width: 1440px) {
     .condominiumInfoForm {
         width: 45%;
