@@ -18,18 +18,20 @@ function Security() {
             setLoading(true);
             const data = await getReports();
 
-            if (!Array.isArray(data)) {
+            const reports = data?.response?.reports;
+
+            if (!Array.isArray(reports)) {
                 setDadosTabela([]);
                 return;
             }
 
-            const mappedData = data.response.reports.map((report) => ({
-                id: report.id?.toString() || '',
-                nome: report.resident?.name || 'Não identificado',
-                descricao: report.description || '',
-                categoria: formatReportType(report),
-                status: formatReportReason(report.reasonReport?.name) || ''
-            }));
+        const mappedData = reports.map((report) => ({
+            id: report.id?.toString() || '',
+            nome: report.resident?.name || 'Não identificado',
+            descricao: report.description || '',
+            categoria: formatReportType(report),
+            status: report.reasonReport?.name || ''
+        }));
 
             console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);

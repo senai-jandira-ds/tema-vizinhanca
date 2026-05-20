@@ -17,16 +17,13 @@ function Services() {
         try {
             setLoading(true);
             const data = await getActivities();
-            console.log("teste")
-            console.log(";")
-            console.log(data)
+
             if (!Array.isArray(data)) {
                 setDadosTabela([]);
                 return;
             }
 
             const mappedData = data
-                .filter(activity => activity.tipo === 'SERVICE')
                 .map((activity) => ({
                     id: activity.id?.toString() || '',
                     nome: activity.morador || '',
