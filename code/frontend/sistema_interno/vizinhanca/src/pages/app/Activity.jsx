@@ -18,12 +18,12 @@ function Activity() {
             setLoading(true);
             const data = await getActivities();
 
-            if (!Array.isArray(data)) {
+            if (!Array.isArray(data.response.activities)) {
                 setDadosTabela([]);
                 return;
             }
 
-            const mappedData = data.map((activity, index) => ({
+            const mappedData = data.response.activities.map((activity, index) => ({
                 id: activity.idMorador?.toString() || (index + 1).toString(),
                 nome: activity.morador || '',
                 descricao: activity.descricao || '',

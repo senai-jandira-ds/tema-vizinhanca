@@ -13,7 +13,7 @@
 
 .leftContent img {
   width: 6rem;
-  padding-bottom: 5rem;
+  padding-bottom: 1rem;
 }
 
 .SignTitle {
@@ -25,6 +25,7 @@
 }
 
 .back {
+
   width: fit-content;
   font-size: 1.5rem;
   font-weight: 600;
@@ -41,7 +42,6 @@
 .leftMain {
   display: flex;
   flex-direction: column;
-  gap: 25px;
   height: 100%;
   width: 100%;
   align-items: center;
@@ -51,8 +51,9 @@
 .stepContent {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 2.5%;
   width: 100%;
+  height: 100%;
   align-items: center;
   transition: all 0.3s ease;
 }
@@ -163,6 +164,9 @@ p a {
 .stepContent {
   transition: all 0.3s ease;
 }
+.stepContent img{
+  padding: 0;
+}
 
 .slideInRight {
   opacity: 1;
@@ -188,9 +192,6 @@ p a {
 
 @media (max-width: 1440px) {
 
-  .screenContent{
-    max-height: 80%;
-  }
 
   .leftMain img{
     padding: 0;

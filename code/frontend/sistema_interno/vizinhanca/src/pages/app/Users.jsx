@@ -10,10 +10,30 @@ import { formatarCPF } from "../../utils/format";
 function Users() {
     const [loading, setLoading] = useState(true);
     const [dadosTabela, setDadosTabela] = useState([]);
+    const [termoBusca, setTermoBusca] = useState('');
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
 
     useEffect(() => {
         fetchResidents();
     }, []);
+
+    useEffect(() => {
+        if (!termoBusca.trim()) {
+            setDadosFiltrados(dadosTabela);
+            return;
+        }
+
+        const termoLower = termoBusca.toLowerCase();
+        const filtrados = dadosTabela.filter(dado =>
+            dado.nome.toLowerCase().includes(termoLower) ||
+            dado.email.toLowerCase().includes(termoLower) ||
+            dado.apto.toLowerCase().includes(termoLower) ||
+            dado.cpf.toLowerCase().includes(termoLower) ||
+            dado.id.toLowerCase().includes(termoLower) ||
+            dado.status.toLowerCase().includes(termoLower)
+        );
+        setDadosFiltrados(filtrados);
+    }, [termoBusca, dadosTabela]);
 
         const fetchResidents = async () => {
         try {
@@ -40,8 +60,10 @@ function Users() {
 
             console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
+            setDadosFiltrados(mappedData);
         } catch (error) {
             setDadosTabela([]);
+            setDadosFiltrados([]);
         } finally {
             setLoading(false);
         }
@@ -114,11 +136,16 @@ function Users() {
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
                 <FilterOptions/>
-                <Searchbar placeholder="Pesquisar por nome ou email" type="text"  />
+                <Searchbar
+                    placeholder="Pesquisar por nome ou email"
+                    type="text"
+                    value={termoBusca}
+                    onChange={(e) => setTermoBusca(e.target.value)}
+                />
                 </div>
                 <Table
                     columns={colunasTabela}
-                    data={dadosTabela}
+                    data={dadosFiltrados}
                     onCellClick={handleCellClick}
                     showPagination={true}
                     onSubmit={handleSubmitUpdate}

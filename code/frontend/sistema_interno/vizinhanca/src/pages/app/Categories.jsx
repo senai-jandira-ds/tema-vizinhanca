@@ -31,20 +31,6 @@ function Categories() {
     ];
 
     const dadosTabela = [
-        {
-            id: '5524',
-            nome: 'João Pereira',
-            detalhe: 'Preciso de uma furadeira...',
-            tipo: 'Pedido',
-            status: 'Aberto'
-        },
-        {
-            id: '3392',
-            nome: 'Maria Oliveira',
-            detalhe: 'Escada disponível...',
-            tipo: 'Objeto',
-            status: 'Disponível'
-        },
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
