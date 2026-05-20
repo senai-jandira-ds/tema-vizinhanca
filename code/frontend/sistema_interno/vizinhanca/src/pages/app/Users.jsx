@@ -55,7 +55,7 @@ function Users() {
                 telefone: resident.phone || '',
                 cpf: formatarCPF(resident.cpf) || '',
                 status: 'Ativo',
-                apto: `${resident.block || ''} - ${resident.apto || ''}`
+                apto: resident.apartment
             }));
 
             console.log('Dados mapeados:', mappedData);

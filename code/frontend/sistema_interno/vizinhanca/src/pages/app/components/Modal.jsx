@@ -33,12 +33,10 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
   const isEdicao = data?.linha !== null;
   const condominioData = getCondominiumData();
 
-  const [aptoCompleto, setAptoCompleto] = useState(data?.linha?.apto || "");
   const [formData, setFormData] = useState({
     foto: data?.linha?.foto || "",
     nome: data?.linha?.nome || "",
-    apto: (data?.linha?.apto && data?.linha.apto.split('-')[1]) || "",
-    bloco: (data?.linha?.apto && data?.linha.apto.split('-')[0]) || "",
+    apto: data?.linha?.apto || "",
     cpf: (data?.linha?.cpf && data?.linha.cpf.replace(/\D/g, '')) || "",
     email: data?.linha?.email || "",
     telefone: data?.linha?.telefone || "",
@@ -51,29 +49,18 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAptoChange = (value) => {
-    setAptoCompleto(value);
-    const partes = value.split('-');
-    setFormData(prev => ({
-      ...prev,
-      bloco: partes[0] || "",
-      apto: partes[1] || ""
-    }));
-  };
-
   const handleSubmit = () => {
-    const { id, ...dadosSemId } = formData; // Remove o id do objeto
+    const { id, ...dadosSemId } = formData;
 
-    // Mapear campos para inglês (API espera)
     const dadosParaEnviar = {
       photo: dadosSemId.foto || "",
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
-      block: dadosSemId.bloco || "",
-      cpf: dadosSemId.cpf || "", // Já está limpo (sem formatação)
+      cpf: dadosSemId.cpf || "",
       email: dadosSemId.email || "",
       phone: dadosSemId.telefone || "",
       score: dadosSemId.pontuacao || 0,
+      id_block: 1,
       condominium_id: formData.condominium_id
     };
 
@@ -116,9 +103,9 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
 
       <input
         type="text"
-        value={aptoCompleto}
-        onChange={(e) => handleAptoChange(e.target.value)}
-        placeholder="Apartamento (ex: Torre 2-82)"
+        value={formData.apto}
+        onChange={(e) => handleChange('apto', e.target.value)}
+        placeholder="Apartamento"
         className={styles.inputGrande}
       />
 

@@ -23,7 +23,7 @@ function Security() {
                 return;
             }
 
-            const mappedData = data.map((report) => ({
+            const mappedData = data.response.reports.map((report) => ({
                 id: report.id?.toString() || '',
                 nome: report.resident?.name || 'Não identificado',
                 descricao: report.description || '',
