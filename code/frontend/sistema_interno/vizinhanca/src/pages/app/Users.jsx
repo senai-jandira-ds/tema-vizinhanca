@@ -70,6 +70,7 @@ function Users() {
     };
 
     const handleSubmitUpdate = async (id, dados) => {
+        console.log(dados)
         try {
             if (id) {
                 await updateResident(id, dados);

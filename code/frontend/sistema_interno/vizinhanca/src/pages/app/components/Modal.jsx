@@ -61,11 +61,12 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
       phone: dadosSemId.telefone || "",
       score: dadosSemId.pontuacao || 0,
       id_block: 1,
-      condominium_id: formData.condominium_id
+      id_condominium: formData.condominium_id
     };
 
     if (isEdicao) {
       // PUT - Atualizar
+      console.log(dadosParaEnviar)
       onSubmit && onSubmit(id, dadosParaEnviar);
     } else {
       // POST - Criar
