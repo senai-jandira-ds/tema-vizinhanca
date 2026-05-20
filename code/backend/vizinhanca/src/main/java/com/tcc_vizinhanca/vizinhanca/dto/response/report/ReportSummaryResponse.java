@@ -1,12 +1,3 @@
-/***************************************************
- * Objetivo: DTO de resposta responsável por encapsular
- * os detalhes completos de uma denúncia, utilizado
- * nas operações de busca por ID, criação e atualização
- * Data: 15/05/2026
- * Autor: Leonardo Scotti
- * Versão: 1.0.05.26
- * *************************************************/
-
 package com.tcc_vizinhanca.vizinhanca.dto.response.report;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumSummaryResponse;
@@ -22,26 +13,22 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportDetailResponse {
+public class ReportSummaryResponse {
 
     private Long id;
     private String description;
     private ResidentSummaryResponse resident;
-    private CondominiumSummaryResponse condominium;
     private ReasonReportResponse reasonReport;
     private Long objectId;
     private Long serviceId;
     private PublicationSummaryResponse publication;
 
-    public ReportDetailResponse(Report report) {
+    public ReportSummaryResponse(Report report) {
         this.id = report.getId();
         this.description = report.getDescription();
         this.resident = report.getResident() != null
                 ? new ResidentSummaryResponse(report.getResident())
                 : new ResidentSummaryResponse();
-        this.condominium = report.getCondominium() != null
-                ? new CondominiumSummaryResponse(report.getCondominium())
-                : new CondominiumSummaryResponse();
         this.reasonReport = report.getReasonReport() != null
                 ? new ReasonReportResponse(report.getReasonReport())
                 : new ReasonReportResponse();

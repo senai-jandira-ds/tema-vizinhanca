@@ -41,7 +41,7 @@ public class Object {
     @Column(name = "titulo", length = 120, nullable = false)
     private String title;
 
-    @Column(name = "data_limite", nullable = false)
+    @Column(name = "tempo_disponivel", nullable = false)
     private LocalDate deadline;
 
     @Column(name = "descricao", nullable = false, columnDefinition = "TEXT")

@@ -2,6 +2,8 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
@@ -29,6 +31,7 @@ public class CondominiumDetailResponse {
     private List<BlockSummaryResponse> blocks;
     private List<ResidentSummaryResponse> residents;
     private List<ServiceDetailResponse> services;
+    private List<ReportSummaryResponse> reports;
     private CondominiumAddressResponse address;
     private List<ActivityViewDetailResponse> activities;
 
@@ -54,10 +57,15 @@ public class CondominiumDetailResponse {
                 .toList()
                 : new ArrayList<>();
         this.services = condominium.getServices() != null
-            ? condominium.getServices().stream()
-              .map(ServiceDetailResponse::new)
-              .toList()
-            : new ArrayList<>();
+                ? condominium.getServices().stream()
+                  .map(ServiceDetailResponse::new)
+                  .toList()
+                : new ArrayList<>();
+        this.reports = condominium.getReports() != null
+                ? condominium.getReports().stream()
+                  .map(ReportSummaryResponse::new)
+                  .toList()
+                : new ArrayList<>();
         this.address = condominium.getAddress() != null
                 ? new CondominiumAddressResponse(condominium.getAddress())
                 : new CondominiumAddressResponse();
@@ -74,9 +82,24 @@ public class CondominiumDetailResponse {
         this.creation_date = condominium.getCreationDate() != null
                 ? condominium.getCreationDate().toString()
                 : "";
+        this.blocks = condominium.getBlocks() != null
+                ? condominium.getBlocks().stream()
+                  .map(BlockSummaryResponse::new)
+                  .toList()
+                : new ArrayList<>();
         this.residents = condominium.getResidents() != null
                 ? condominium.getResidents().stream()
                   .map(ResidentSummaryResponse::new)
+                  .toList()
+                : new ArrayList<>();
+        this.services = condominium.getServices() != null
+                ? condominium.getServices().stream()
+                  .map(ServiceDetailResponse::new)
+                  .toList()
+                : new ArrayList<>();
+        this.reports = condominium.getReports() != null
+                ? condominium.getReports().stream()
+                  .map(ReportSummaryResponse::new)
                   .toList()
                 : new ArrayList<>();
         this.address = condominium.getAddress() != null

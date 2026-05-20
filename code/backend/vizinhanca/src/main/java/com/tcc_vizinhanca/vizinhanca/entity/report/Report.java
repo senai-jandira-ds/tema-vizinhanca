@@ -9,6 +9,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.report;
 
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
@@ -38,6 +39,10 @@ public class Report {
     @ManyToOne
     @JoinColumn(name = "id_morador", nullable = false)
     private Resident resident;
+
+    @ManyToOne
+    @JoinColumn(name = "id_condominio", nullable = false)
+    private Condominium condominium;
 
     @ManyToOne
     @JoinColumn(name = "id_motivo_denuncia", nullable = false)
