@@ -10,6 +10,7 @@ import {
 import ExportButton from "./ExportBtn";
 import styles from './Table.module.css';
 import SortIcon from './SortIcon';
+import PaginationIcon from '../../../assets/icons/vectorarrow.png';
 import Modal from './Modal';
 
 export default function Table({
@@ -233,60 +234,137 @@ export default function Table({
 
         {showPagination && itemsPerPage > 1 && (
           <div className={styles.paginacaoBotoes}>
-            <button
-              className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(0)}
-              disabled={currentPage === 0}
-            >
-              {'<<'}
-            </button>
-            <button
-              className={`${styles['btn-paginacao']} ${currentPage === 0 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(currentPage - 1)}
-              disabled={currentPage === 0}
-            >
-              {'<'}
-            </button>
 
-            {[...Array(itemsPerPage)].map((_, i) => {
-              if (
-                i === 0 ||
-                i === itemsPerPage - 1 ||
-                (i >= currentPage - 1 && i <= currentPage + 1)
-              ) {
-                return (
-                  <button
-                    key={i}
-                    className={`${styles['btn-paginacao']} ${i === currentPage ? styles.ativo : ''}`}
-                    onClick={() => irParaPagina(i)}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              } else if (
-                i === currentPage - 2 ||
-                i === currentPage + 2
-              ) {
-                return <span key={i} className={styles['paginacao-ellipsis']}>...</span>;
-              }
-              return null;
-            })}
-        
-            <button
-              className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(currentPage + 1)}
-              disabled={currentPage === itemsPerPage - 1}
-            >
-              {'>'}
-            </button>
-            <button
-              className={`${styles['btn-paginacao']} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(itemsPerPage - 1)}
-              disabled={currentPage === itemsPerPage - 1}
-            >
-              {'>>'}
-            </button>
-          </div>
+{/* PRIMEIRA PÁGINA */}
+<button
+  className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === 0 ? styles.inativo : ''}`}
+  onClick={() => irParaPagina(0)}
+  disabled={currentPage === 0}
+>
+  <svg width="7" height="10" viewBox="0 0 7 10" fill="none">
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+
+  <svg width="7" height="10" viewBox="0 0 7 10" fill="none">
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+</button>
+
+{/* PÁGINA ANTERIOR */}
+<button
+  className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === 0 ? styles.inativo : ''}`}
+  onClick={() => irParaPagina(currentPage - 1)}
+  disabled={currentPage === 0}
+>
+  <svg width="7" height="10" viewBox="0 0 7 10" fill="none">
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+</button>
+
+{/* NÚMEROS */}
+{[...Array(itemsPerPage)].map((_, i) => {
+
+  if (
+    i === 0 ||
+    i === itemsPerPage - 1 ||
+    (i >= currentPage - 1 && i <= currentPage + 1)
+  ) {
+
+    return (
+      <button
+        key={i}
+        className={`${styles['btn-paginacao']} ${i === currentPage ? styles.ativo : ''}`}
+        onClick={() => irParaPagina(i)}
+      >
+        {i + 1}
+      </button>
+    );
+  }
+
+  return null;
+})}
+
+{/* PRÓXIMA PÁGINA */}
+<button
+  className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+  onClick={() => irParaPagina(currentPage + 1)}
+  disabled={currentPage === itemsPerPage - 1}
+>
+  <svg
+    width="7"
+    height="10"
+    viewBox="0 0 7 10"
+    fill="none"
+    style={{ transform: "rotate(180deg)" }}
+  >
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+</button>
+
+{/* ÚLTIMA PÁGINA */}
+<button
+  className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+  onClick={() => irParaPagina(itemsPerPage - 1)}
+  disabled={currentPage === itemsPerPage - 1}
+>
+  <svg
+    width="7"
+    height="10"
+    viewBox="0 0 7 10"
+    fill="none"
+    style={{ transform: "rotate(180deg)" }}
+  >
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+
+  <svg
+    width="7"
+    height="10"
+    viewBox="0 0 7 10"
+    fill="none"
+    style={{ transform: "rotate(180deg)" }}
+  >
+    <path
+      d="M5.82593 0.75L1.1603 4.0405C0.897295 4.22869 0.749891 4.48233 0.749891 4.7466C0.749891 5.01088 0.897295 5.26451 1.1603 5.4527L5.82593 8.74321"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+</button>
+
+</div>
         )}
       </div>
 <Modal

@@ -11,6 +11,86 @@
     padding-left: 0;
 }
 
+.headerTop{
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+}
+.headerActions{
+    display: flex;
+    width: 120px;
+    justify-content: space-between;
+    min-width: fit-content;
+    align-items: center;
+    height: 100%;
+}
+.notifications {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.notifications svg {
+    height: 2.1rem;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.notifications svg:hover {
+    transform: scale(1.08);
+}
+
+.notificationsDropdown {
+
+    position: absolute;
+
+    top: 130%;
+    right: 0;
+
+    width: 320px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.08);
+
+    overflow: hidden;
+
+    z-index: 100;
+}
+
+.notificationItem {
+
+    padding: 16px 18px;
+
+    border-bottom: 1px solid #f1f1f1;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+    font-size: 0.95rem;
+}
+
+.notificationItem:last-child {
+    border-bottom: none;
+}
+
+.notificationItem:hover {
+    background-color: #f9fafb;
+}
+.profile{
+    height: 2.7rem;
+    width: 2.7rem;
+    border-radius: 50%;
+    background-color: black;
+    cursor: pointer;
+}
+
 .cardsList{
     display: flex;
     gap: 1.2rem;

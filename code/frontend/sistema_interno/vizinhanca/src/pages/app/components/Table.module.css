@@ -130,11 +130,15 @@ td:hover {
 }
 
 .status-verde {
-    color: #4d7c4d;
+    color: #1fc01f;
 }
 
 .status-azul {
     color: #3b18ff;
+}
+
+.status-amarelo{
+    color: yellow;
 }
 
 .actionsBar {
@@ -153,51 +157,109 @@ td:hover {
 .btnCadastrar {
     background: #2600FF;
     color: white;
-    border: none;
+    border: 2px solid #ffffff00;
     border-radius: 999px;
     padding: 0.5%;
     font-size: 1rem;
     cursor: pointer;
     transition: 0.6s;
     white-space: nowrap;
+    transition: 0.3s ease;
     margin-left: auto;
 }
 
 .btnCadastrar:hover {
-    background: #00c3ff;
-    opacity: 0.9;
+    background-color: #1d00cc;
+    border: 2px solid #ffffff;
+    transform: translateY(-2px) scale(1.01);
+
+    box-shadow:
+        0 10px 30px rgba(38, 0, 255, 0.10),
+        0 4px 8px rgba(38, 0, 255, 0.15);
+}
+.btnCadastrar:active{
+    transition: 0.2s;
+    transform: scale(0.90);
+}
+
+.paginacaoBotoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-paginacao {
-    border: 1px solid #d1d5db;
-    background-color: white;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    border-radius: 50%;
+
+    border: 1px solid #d1d5db;
+
+    background-color: #ffffff;
+
+    color: #000000;
+
     cursor: pointer;
-    font-size: 14px;
-    color: black;
+
+    font-size: 15px;
+    font-weight: 500;
+
+    transition:
+        background-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.btn-paginacao:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.arrowButton {
+    background-color: #2600FF;
+
+    border: none;
+
+    gap: 2px;
+}
+
+.arrowButton:hover {
+    background-color: #1d00cc;
+
+    box-shadow:
+        0 8px 18px rgba(38, 0, 255, 0.25);
 }
 
 .btn-paginacao.ativo {
-    background-color: #3b18ff;
-    color: white;
-    border: none;
+    background-color: #ffffff;
+
+    color: #000000;
+
+    border: 2px solid #2600FF;
+
+    font-weight: 600;
 }
 
+/* BOTÃO DESABILITADO */
 .btn-paginacao.inativo {
-    opacity: 0.5;
+    opacity: 0.45;
+
     cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
 }
 
-.paginacao-ellipsis {
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    color: #6b7280;
+.btn-paginacao svg {
+    flex-shrink: 0;
 }
 
 

@@ -5,18 +5,27 @@
     background-color: #2600FF;
     width: 10%;
     padding: 10px 20px;
-    border: 1px solid #00000018;
+    border: 2px solid #ffffff00;
     border-radius: 20px;
     cursor: pointer;
     color: #ffffff;
     font-weight: 500;
     gap: 10%;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
-.button:hover {
-    border: 2px solid #00c3ff;
-    opacity: 0.9;
+.exportButton:hover {
+    background-color: #1d00cc;
+    border: 2px solid #ffffff;
+    transform: translateY(-2px) scale(1.01);
+
+    box-shadow:
+        0 10px 30px rgba(38, 0, 255, 0.10),
+        0 4px 8px rgba(38, 0, 255, 0.15);
+}
+
+.exportButton:active {
+    transform: scale(0.98);
 }
 
 @media (max-width: 480px) {

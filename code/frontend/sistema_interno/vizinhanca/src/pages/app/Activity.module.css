@@ -31,11 +31,17 @@
 .main h2{
     font-size: 2.2rem;
 }
-.status-azul{
-    color: blue;
+
+.status-verde {
+    color: #1fc01f;
 }
-.status-verde{
-    color: #65804D;
+
+.status-azul {
+    color: #3b18ff;
+}
+
+.status-amarelo{
+    color: rgb(255, 0, 0);
 }
 
 .loading {

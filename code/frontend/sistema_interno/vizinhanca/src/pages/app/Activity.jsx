@@ -8,10 +8,28 @@ import styles from "./Activity.module.css";
 function Activity() {
     const [loading, setLoading] = useState(true);
     const [dadosTabela, setDadosTabela] = useState([]);
+    const [termoBusca, setTermoBusca] = useState('');
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+
 
     useEffect(() => {
         fetchActivities();
-    }, []);
+    }, []);   
+
+    useEffect(() => {
+        if (!termoBusca.trim()) {
+            setDadosFiltrados(dadosTabela);
+            return;
+        }
+
+        const termoLower = termoBusca.toLowerCase();
+        const filtrados = dadosTabela.filter(dado =>
+            dado.nome.toLowerCase().includes(termoLower) ||
+            dado.status.toLowerCase().includes(termoLower)
+        );
+        setDadosFiltrados(filtrados);
+    
+    }, [termoBusca, dadosTabela]);
 
     const fetchActivities = async () => {
         try {
@@ -52,9 +70,9 @@ function Activity() {
             label: 'Status',
             width: 160,
             getCellClass: (status) => {
-                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluído' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'Pendente' || status === 'Em andamento') return styles['status-amarelo'];
+                if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
+                if (status === 'CONCLUIDO' || status === 'FINALIZADO') return styles['status-azul'];
+                if (status === 'PENDENTE' || status === 'EM-ANDAMENTO') return styles['status-amarelo'];
                 return '';
             }
         },
@@ -82,11 +100,16 @@ function Activity() {
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
                     <FilterOptions />
-                    <Searchbar placeholder="Pesquisar Nº ou Nome" type="text" />
+                    <Searchbar
+                    placeholder="Pesquisar por nome ou email"
+                    type="text"
+                    value={termoBusca}
+                    onChange={(e) => setTermoBusca(e.target.value)}
+                />
                 </div>
                 <Table
                     columns={colunasTabela}
-                    data={dadosTabela}
+                    data={dadosFiltrados}
                     onCellClick={handleCellClick}
                     showPagination={true}
                     exportType="atividade-geral"
