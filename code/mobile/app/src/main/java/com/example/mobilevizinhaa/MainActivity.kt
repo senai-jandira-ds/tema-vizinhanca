@@ -4,10 +4,9 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge // Importação para habilitar a StatusBar transparente
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,15 +34,16 @@ import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScree
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
-
-// IMPORT DA NOVA TELA DE CADASTRO
 import com.example.mobilevizinhaa.ui.theme.listaitens.criar.CriarPedidoObjetoScreen
+
+// ADICIONADO: Import da sua tela de Perfil / Configurações
+import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Ativa o comportamento transparente de ponta a ponta (Edge-to-Edge)
+        // Ativa o comportamento transparente de ponta a ponta (Edge-to-Edge) nativo
         enableEdgeToEdge()
 
         setContent {
@@ -57,10 +57,6 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    /** * CENTRALIZAÇÃO DO VIEWMODEL:
-     * Criamos o HomeViewModel aqui para que ele sobreviva às trocas de tela.
-     * Usamos a Factory para permitir que ele acesse o SharedPreferences (contexto).
-     */
     val homeViewModel: HomeViewModel = viewModel(
         factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
             context.applicationContext as Application
@@ -70,19 +66,20 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    Scaffold(
-        // Impede que os componentes da base entrem por baixo das barras virtuais de navegação nativas do Android
-        contentWindowInsets = WindowInsets.systemBars,
-        bottomBar = {
-            // Lógica para esconder a barra em telas de foco (Login, Criação, Chat, Criar Pedido)
-            val showBottomBar = currentRoute != null &&
-                    currentRoute != "login" &&
-                    currentRoute != "publicacao" &&
-                    currentRoute != "criar_pedido" &&
-                    !currentRoute.startsWith("chat_detalhe") &&
-                    !currentRoute.startsWith("detalhe_post")
+    // Define quais telas NÃO devem mostrar a BottomBar do app
+    val esconderBottomBar = currentRoute == null ||
+            currentRoute == "login" ||
+            currentRoute == "publicacao" ||
+            currentRoute == "criar_pedido" ||
+            currentRoute.startsWith("chat_detalhe") ||
+            currentRoute.startsWith("detalhe_post")
 
-            if (showBottomBar) {
+    Scaffold(
+        // CORREÇÃO 1: Definimos os insets como vazios no Scaffold principal.
+        // Isso permite que o conteúdo do NavHost decida se vai ou não invadir a StatusBar.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            if (!esconderBottomBar) {
                 CustomBottomNavBar(navController)
             }
         }
@@ -90,7 +87,10 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = "login",
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                // CORREÇÃO 2: Aplicamos apenas o padding da BottomBar de forma inteligente.
+                // Evita que as telas de formulário fiquem com um buraco branco no topo.
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
 
             // --- TELA DE LOGIN ---
@@ -98,7 +98,6 @@ fun AppNavigation() {
                 LoginScreen(
                     navController = { rota ->
                         navController.navigate(rota) {
-                            // Limpa a pilha para o usuário não voltar para o login com o botão "back"
                             popUpTo("login") { inclusive = true }
                         }
                     },
@@ -106,7 +105,7 @@ fun AppNavigation() {
                 )
             }
 
-            // --- TELA HOME ---
+            // --- TELA HOME (Seu Header azul vai flutuar perfeitamente abaixo dos ícones da barra) ---
             composable("home") {
                 HomeScreen(
                     navController = navController,
@@ -131,6 +130,14 @@ fun AppNavigation() {
             ) { backStackEntry ->
                 val id = backStackEntry.arguments?.getInt("postId") ?: 0
                 DetalhePostagemScreen(id, navController, homeViewModel)
+            }
+
+            // --- ADICIONADO: ROTA DA TELA DE CONFIGURAÇÕES (PERFIL) ---
+            composable("configuracoes") {
+                PerfilScreen(
+                    navController = navController,
+                    viewModel = homeViewModel
+                )
             }
 
             // --- ROTAS SECUNDÁRIAS ---

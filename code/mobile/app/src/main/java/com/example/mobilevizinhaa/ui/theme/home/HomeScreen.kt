@@ -67,7 +67,7 @@ fun HomeScreen(
             ) {
                 InfoCard(
                     titulo = "Meus pedidos",
-                    quantidade = "3",
+                    quantity = "3", // Nome do parâmetro ajustado para bater com o HomeComponents
                     iconeRes = R.drawable.pedido,
                     onAddClick = {
                         navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para pedidos
@@ -75,7 +75,7 @@ fun HomeScreen(
                 )
                 InfoCard(
                     titulo = "Meus objetos",
-                    quantidade = "3",
+                    quantity = "3", // Nome do parâmetro ajustado para bater com o HomeComponents
                     iconeRes = R.drawable.objeto,
                     onAddClick = {
                         navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para objetos
@@ -91,7 +91,7 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // Grade de fotos do Mural (Lê a lista do ViewModel que agora é preenchida pelo banco de dados)
+            // Grade de fotos do Mural (Chama o componente que agora renderiza as URLs do Render)
             PostGridSection(posts = posts) { postId ->
                 navController.navigate("detalhe_post/$postId")
             }

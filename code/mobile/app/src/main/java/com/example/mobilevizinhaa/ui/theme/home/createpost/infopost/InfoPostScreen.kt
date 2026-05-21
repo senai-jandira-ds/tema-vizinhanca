@@ -36,16 +36,16 @@ fun DetalhePostagemScreen(
     navController: NavController,
     viewModel: HomeViewModel
 ) {
-    // 1. Busca a postagem selecionada na lista local de posts
+    // 1. Busca a postagem selecionada na lista local de posts do ViewModel
     val post = viewModel.posts.find { it.id == postId }
 
-    // 2. Coleta os dados em tempo real do Morador Logado vindos da API
+    // 2. Coleta os dados em tempo real do Morador Logado (Útil para saber se o post é dele e permitir exclusão)
     val resident by viewModel.residentData.collectAsState()
 
     // Estado para controlar a abertura do menu de opções (Excluir)
     var menuExpandido by remember { mutableStateOf(false) }
 
-    // Verifica se a imagem vinda do banco é um link de internet (HTTP)
+    // Verifica se a imagem DO POST vinda do banco é um link de internet (HTTP)
     val isPostImgUrlRemota = post?.imagemUrl?.startsWith("http", ignoreCase = true) == true
 
     // Caso a imagem do post venha em formato Base64 puro do banco, decodifica aqui
@@ -65,6 +65,7 @@ fun DetalhePostagemScreen(
                     }
                 },
                 actions = {
+                    // Só exibe o menu de opções se houver um post carregado
                     Box {
                         IconButton(onClick = { menuExpandido = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Opções", tint = Color.Gray)
@@ -100,15 +101,18 @@ fun DetalhePostagemScreen(
         ) {
 
             // ====================================================================
-            // 1. CABEÇALHO DO USUÁRIO (INTEGRADO À API)
+            // 1. CABEÇALHO DO USUÁRIO CORRIGIDO
             // ====================================================================
+            // Agora pegamos dinamicamente os dados oficiais do perfil do morador logado.
+            // (Nota: Se a sua API futuramente trouxer dados de outros usuários no post,
+            // basta trocar 'resident?.name' por 'post.autorNome').
             PostUserHeader(
-                userName = resident?.name ?: "Vizinho(a)",
-                userPhotoUrl = resident?.photo
+                userName = resident?.name ?: "Morador",
+                userPhotoUrl = resident?.photo // Repassa a string Base64 ou URL da foto de perfil
             )
 
             // ====================================================================
-            // 2. IMAGEM PRINCIPAL DA POSTAGEM (CORRIGIDO PARA SUPORTAR LINKS E BASE64)
+            // 2. IMAGEM PRINCIPAL DA POSTAGEM
             // ====================================================================
             Box(
                 modifier = Modifier
@@ -117,7 +121,7 @@ fun DetalhePostagemScreen(
                     .background(Color(0xFFF5F5F5))
             ) {
                 when {
-                    // Condição A: Se for um link HTTP da internet (Ex: a imagem do morango)
+                    // Condição A: Se for um link HTTP da internet (Nuvem)
                     isPostImgUrlRemota -> {
                         AsyncImage(
                             model = post?.imagemUrl,

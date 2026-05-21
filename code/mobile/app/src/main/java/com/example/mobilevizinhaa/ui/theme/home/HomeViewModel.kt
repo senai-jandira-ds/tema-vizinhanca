@@ -2,11 +2,17 @@ package com.example.mobilevizinhaa.ui.theme.home
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
 import com.example.mobilevizinhaa.ui.theme.data.CreatePostRequest
@@ -14,6 +20,8 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 /**
  * Modelo de dados para as postagens do mural (Atualizado de forma segura).
@@ -29,6 +37,9 @@ data class Post(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
+    // Instância do Contexto obtida com segurança através do AndroidViewModel
+    private val context = application.applicationContext
+
     // Gerenciador de armazenamento local (SharedPreferences)
     private val prefs = application.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
@@ -40,6 +51,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+
+    // --- CONTROLE DE FLUXO EM TEMPO REAL ---
+    private val _postCriadoComSucesso = MutableStateFlow(false)
+    val postCriadoComSucesso = _postCriadoComSucesso.asStateFlow()
 
     // --- LISTA DE POSTAGENS REATIVAS ---
     private val _posts = mutableStateListOf<Post>()
@@ -105,7 +120,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     dadosDoBanco?.let {
                         // LOGS DE DEBUG COMPLETO PARA INVESTIGAÇÃO NO LOGCAT:
                         Log.d("TESTE_API", "NOME DO BANCO: ${it.name}")
-                        Log.d("TESTE_API", "CONTEÚDO DA FOTO EM BASE64 DO BANCO: ${it.photo?.take(50)}...")
                         Log.d("TESTE_API", "QUANTIDADE DE POSTS RETORNADOS: ${it.publications?.size}")
 
                         _residentData.value = it
@@ -115,7 +129,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         atualizarListaDePosts(it)
                     }
                 } else {
-                    // LOG PARA EXIBIR ERROS CASO NÃO CONSIGA CONECTAR (Ex: Token Expirado 401 ou Erro de Objeto)
                     Log.e("TESTE_API", "ERRO HTTP: ${response.code()} - ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
@@ -144,10 +157,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * SALVAR NO BANCO DE DADOS DA API:
-     * Envia os dados para o servidor remoto e força a atualização do perfil para atualizar a tela.
+     * SALVAR NO BANCO DE DADOS DA API (INTEGRADO AO SWAGGER E COM ATUALIZAÇÃO EM TEMPO REAL):
+     * Recebe os dados brutos e a Uri local da imagem. Comprime a foto em background para evitar erros
+     * de payload no Render, envia para a API e força a atualização do feed da Home instantaneamente.
      */
-    fun adicionarPostNoBanco(titulo: String, descricao: String, fotoUrlOuBase64: String? = null) {
+    fun adicionarPostNoBanco(titulo: String, descricao: String, uriImagem: Uri?) {
         val token = obterTokenSalvo()
 
         if (token.isEmpty()) {
@@ -156,29 +170,94 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
+            _isLoading.value = true // Ativa o loading durante a inserção
+            _postCriadoComSucesso.value = false // Reseta o estado anterior de sucesso
             try {
-                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
-                val request = CreatePostRequest(title = titulo, description = descricao, photo = fotoUrlOuBase64)
+                // 1. Processa e otimiza a imagem em Base64 de maneira assíncrona
+                val fotoBase64 = if (uriImagem != null) {
+                    otimizarEConverterParaBase64(uriImagem)
+                } else null
 
+                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
+                // 2. Cria o request estruturado idêntico ao exigido pelo Swagger
+                val request = CreatePostRequest(
+                    title = titulo,
+                    description = descricao,
+                    photo = fotoBase64
+                )
+
+                // 3. Envia os dados para a API
                 val response = RetrofitClient.authApi.criarPublicacao(authHeader, request)
 
                 if (response.isSuccessful) {
                     Log.d("API_HOME", "Post inserido no banco com sucesso!")
-                    // Recarrega o perfil para sincronizar e renderizar as publicações na hora
+
+                    // 4. Sincronização em tempo real: Força o feed a atualizar as publicações na hora
                     carregarDadosPerfil(token)
+
+                    // Ativa a flag de sucesso para a View fechar no momento correto
+                    _postCriadoComSucesso.value = true
                 } else {
-                    Log.e("API_HOME", "Servidor recusou a postagem. Código: ${response.code()}")
+                    Log.e("API_HOME", "Servidor recusou a postagem. Código: ${response.code()} - ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Log.e("API_HOME", "Falha de rede ao tentar salvar publicação: ${e.message}")
+            } finally {
+                _isLoading.value = false // Desativa o loading independente do resultado
             }
         }
     }
 
     /**
-     * LOGOUT:
-     * Limpa a memória e o disco para deslogar com segurança.
+     * COMPRESSÃO E REDIMENSIONAMENTO INTERNO DE IMAGENS:
+     * Reduz a escala da imagem para no máximo 800px e aplica 75% de compressão JPEG.
+     * Retorna os bytes limpos em string Base64 sem prefixo HTTP (compatibilidade total com Swagger).
      */
+    private fun otimizarEConverterParaBase64(uri: Uri): String? {
+        return try {
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            val bitmapOriginal = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (bitmapOriginal != null) {
+                val maxDimensao = 800
+                val proporcao = bitmapOriginal.width.toFloat() / bitmapOriginal.height.toFloat()
+
+                var larguraFinal = maxDimensao
+                var alturaFinal = maxDimensao
+                if (proporcao > 1) {
+                    alturaFinal = (maxDimensao / proporcao).toInt()
+                } else {
+                    larguraFinal = (maxDimensao * proporcao).toInt()
+                }
+
+                val bitmapRedimensionado = Bitmap.createScaledBitmap(bitmapOriginal, larguraFinal, alturaFinal, true)
+                val outputStream = ByteArrayOutputStream()
+
+                // Comprime a imagem reduzindo drasticamente o peso físico em bytes
+                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
+                val bytesComprimidos = outputStream.toByteArray()
+
+                // Retorna apenas a String limpa que a maioria dos Swaggers exige (sem metadados)
+                Base64.encodeToString(bytesComprimidos, Base64.DEFAULT)
+                    .trim()
+                    .replace("\n", "")
+                    .replace("\r", "")
+            } else null
+        } catch (e: Exception) {
+            Log.e("IMAGE_OPTIMIZER", "Erro ao otimizar imagem para Base64: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Reseta o estado de sucesso para permitir novas postagens sem fechar a tela direto.
+     */
+    fun resetarEstadoSucesso() {
+        _postCriadoComSucesso.value = false
+    }
+
     fun logout() {
         _residentData.value = null
         _posts.clear()
@@ -200,4 +279,42 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun deletarPost(postId: Int) {
         _posts.removeAll { it.id == postId }
     }
-}
+
+    private fun carregarImagemBase64MuralLocal(base64String: String?): ImageBitmap? {
+        if (base64String.isNullOrBlank() || base64String == "string") return null
+        return try {
+            val stringLimpa = if (base64String.contains(",")) {
+                base64String.substring(base64String.indexOf(",") + 1)
+            } else {
+                base64String
+            }.trim()
+
+            val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
+            bitmap?.asImageBitmap()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // --- FUNÇÃO DE LOGOUT CORRIGIDA NO LUGAR CERTO ---
+    fun deslogar(navController: NavController) {
+        viewModelScope.launch {
+            try {
+                // 1. Limpa o token e dados salvos no SharedPreferences
+                prefs.edit().clear().apply()
+
+                // 2. Reseta o estado do usuário e os posts locais
+                _residentData.value = null
+                _posts.clear()
+
+                // 3. Redireciona para o login e limpa a pilha de telas
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            } catch (e: Exception) {
+                Log.e("HOME_VIEWMODEL", "Erro ao deslogar: ${e.message}")
+            }
+        }
+    }
+} // <- FIM DA CLASSE (Esta chave fecha o arquivo corretamente)

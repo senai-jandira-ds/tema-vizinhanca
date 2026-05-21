@@ -141,7 +141,7 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
 
 // --- 2. INFO CARD ---
 @Composable
-fun InfoCard(titulo: String, quantidade: String, iconeRes: Int, onAddClick: () -> Unit) {
+fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(168.dp)
@@ -151,7 +151,7 @@ fun InfoCard(titulo: String, quantidade: String, iconeRes: Int, onAddClick: () -
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Column {
-                Text(quantidade, fontSize = 38.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(quantity, fontSize = 38.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Text(titulo, fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
             }
             Icon(
@@ -195,9 +195,11 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                     .background(Color(0xFFF0F0F0))
                     .clickable { onPostClick(post.id) }
             ) {
+                // Checa se existe uma URL remota válida que veio do banco do Render
                 val hasRemoteImage = !post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string"
 
                 if (hasRemoteImage) {
+                    // Carrega a foto salva na nuvem da API do Render
                     AsyncImage(
                         model = post.imagemUrl,
                         contentDescription = null,
@@ -205,6 +207,7 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else if (post.imagemUri != null) {
+                    // Fallback para URI temporária local
                     AsyncImage(
                         model = post.imagemUri,
                         contentDescription = null,
@@ -212,6 +215,7 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
+                    // Fallback para recurso estático local ou placeholder com título integrado
                     Image(
                         painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
                         contentDescription = null,
@@ -301,10 +305,7 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
     }
 }
 
-/**
- * Função utilitária local que decodifica strings Base64 do banco de dados
- * e as transforma em ImageBitmaps renderizáveis pelo Jetpack Compose.
- */
+
 fun carregarImagemBase64(base64String: String?): ImageBitmap? {
     if (base64String.isNullOrBlank() || base64String == "string") return null
     return try {
