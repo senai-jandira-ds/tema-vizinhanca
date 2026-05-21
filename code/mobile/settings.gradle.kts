@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "mobile vizinhaça"
 include(":app")
- 

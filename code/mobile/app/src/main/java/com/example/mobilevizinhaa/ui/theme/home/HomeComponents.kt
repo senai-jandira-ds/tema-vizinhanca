@@ -1,6 +1,8 @@
 package com.example.mobilevizinhaa.ui.theme.home
 
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -14,17 +16,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -37,210 +37,252 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// 1. HEADER: Gradiente real e Foto com borda branca flutuante
-
-
+// --- 1. HOME HEADER (ÁREA VERDE COMPLETA) ---
 @Composable
-fun HomeHeader(userName: String, apartment: String) {
-    // 1. Criamos um estado interno aqui dentro.
-    // Ele guarda a foto enquanto o app estiver aberto sem precisar de ViewModel.
+fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null) {
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
-
-    // 2. O "Contrato" que abre a galeria do celular.
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) fotoUri = uri
+    ) { uri: Uri? -> if (uri != null) fotoUri = uri }
+
+    // Identifica se a foto vinda da API é um link remoto HTTP (Nuvem)
+    val isUrlRemota = userPhotoUrl?.startsWith("http", ignoreCase = true) == true
+
+    // Caso NÃO seja link direto HTTP, tenta converter a string assumindo que seja Base64 válido
+    val bitmapPerfil = remember(userPhotoUrl) {
+        if (!isUrlRemota) carregarImagemBase64(userPhotoUrl) else null
     }
 
     Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
-        // Seu fundo azul (Mantido IGUAL)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(GradientBlueStart, GradientBlueEnd)
-                    )
-                )
+                .background(brush = Brush.verticalGradient(
+                    colors = listOf(GradientBlueStart, GradientBlueEnd)
+                ))
                 .padding(horizontal = 24.dp)
         ) {
-            Column(modifier = Modifier.align(Alignment.CenterStart).padding(start = 115.dp, top = 20.dp)) {
-                Text(text = "Olá, $userName!", color = White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                Text(text = apartment, color = White.copy(alpha = 0.9f), fontSize = 16.sp)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 125.dp, top = 20.dp)
+            ) {
+                Text(
+                    text = if (userName.isNotEmpty()) "Olá, $userName!" else "Bem-vindo!",
+                    color = Color.White,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = apartment,
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 15.sp
+                )
             }
+
             IconButton(
-                onClick = { },
+                onClick = { /* Configurações */ },
                 modifier = Modifier.align(Alignment.TopEnd).padding(top = 40.dp)
             ) {
-                Icon(Icons.Default.Settings, contentDescription = null, tint = White, modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.Settings, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
         }
 
-        // A Foto de Perfil (Onde a mágica acontece)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 24.dp, bottom = 15.dp)
+                .padding(start = 24.dp, bottom = 10.dp)
                 .size(110.dp)
-                .shadow(12.dp, CircleShape)
-                .background(White, CircleShape)
-                .padding(6.dp) // Borda branca que você já tinha
+                .shadow(10.dp, CircleShape)
+                .background(Color.White, CircleShape)
+                .padding(5.dp)
                 .clip(CircleShape)
-                // AQUI: Quando clica no círculo, abre a galeria
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
+            // Condição 1: Prioridade se o usuário escolheu uma foto local do dispositivo
             if (fotoUri != null) {
-                // Se o usuário escolheu uma foto, mostra ela
                 AsyncImage(
                     model = fotoUri,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            } else {
-                // Se não escolheu, mantém o cinza que você criou
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // Coloquei um ícone de pessoa só para não ficar o cinza vazio
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(50.dp)
-                    )
+            }
+            // Condição 2: Se a API enviou uma URL HTTP direta (ex: AWS S3, Firebase Storage, Render static)
+            else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = userPhotoUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(id = R.drawable.mulher) // Fallback caso quebre o link
+                )
+            }
+            // Condição 3: Se a API mandou um Base64, renderiza o bitmap decodificado
+            else if (bitmapPerfil != null) {
+                Image(
+                    bitmap = bitmapPerfil,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            // Condição 4: Fallback padrão caso não exista foto cadastrada de nenhum modo
+            else {
+                Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
+                    Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
                 }
             }
         }
     }
 }
 
+// --- 2. INFO CARD ---
 @Composable
-fun InfoCard(title: String, count: String, iconRes: Int) {
+fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
-        modifier = Modifier.width(168.dp).height(135.dp).shadow(8.dp, RoundedCornerShape(18.dp)),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
+        modifier = Modifier
+            .width(168.dp)
+            .height(130.dp)
+            .shadow(6.dp, RoundedCornerShape(18.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Column {
-                Text(text = count, fontSize = 40.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = title, fontSize = 14.sp, color = GrayText)
+                Text(quantity, fontSize = 38.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(titulo, fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
             }
-            // Ícone do topo do card (Ex: prancheta ou caixa)
             Icon(
-                painter = painterResource(id = iconRes),
+                painter = painterResource(id = iconeRes),
                 contentDescription = null,
                 tint = BluePrimary,
-                modifier = Modifier.align(Alignment.TopEnd).size(24.dp)
+                modifier = Modifier.align(Alignment.TopEnd).size(22.dp)
             )
-            // Botão "+" azul no canto inferior
             Box(
-                modifier = Modifier.align(Alignment.BottomEnd).size(38.dp).background(BluePrimary, CircleShape),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(34.dp)
+                    .background(BluePrimary, CircleShape)
+                    .clip(CircleShape)
+                    .clickable { onAddClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = White, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))
             }
         }
     }
 }
 
-// 3. CUSTOM NAVBAR: Com o círculo azul vibrante e logos extraídos do seu drawable
+// --- 3. GRADE DE POSTAGENS STYLE INSTAGRAM (ÁREA VERMELHA COMPLETA) ---
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp),
+        horizontalArrangement = Arrangement.Start,
+        maxItemsInEachRow = 3
+    ) {
+        posts.forEach { post ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.3333f)
+                    .aspectRatio(1f)
+                    .padding(1.dp)
+                    .background(Color(0xFFF0F0F0))
+                    .clickable { onPostClick(post.id) }
+            ) {
+                // Checa se existe uma URL remota válida que veio do banco do Render
+                val hasRemoteImage = !post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string"
+
+                if (hasRemoteImage) {
+                    // Carrega a foto salva na nuvem da API do Render
+                    AsyncImage(
+                        model = post.imagemUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (post.imagemUri != null) {
+                    // Fallback para URI temporária local
+                    AsyncImage(
+                        model = post.imagemUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Fallback para recurso estático local ou placeholder com título integrado
+                    Image(
+                        painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = post.titulo,
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- 4. NAVBAR ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
-    // Ajuste de sintaxe para o Compose aceitar o estado opcional
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
-
     val currentRoute = navBackStackEntry?.value?.destination?.route
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(85.dp),
-        color = White,
-        shadowElevation = 20.dp
+        modifier = Modifier.fillMaxWidth().height(80.dp),
+        color = Color.White,
+        shadowElevation = 25.dp
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // HOME
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.logohome),
-                isSelected = currentRoute == "home",
-                onClick = { if (currentRoute != "home") navController?.navigate("home") }
+            val items = listOf(
+                Triple(R.drawable.home2, "home", "Home"),
+                Triple(R.drawable.pedido2, "pedido", "Pedidos"),
+                Triple(R.drawable.logomural2, "mural", "Mural"),
+                Triple(R.drawable.ranking2, "ranking", "Ranking"),
+                Triple(R.drawable.chat2, "mensagens", "Chat"),
+                Triple(R.drawable.notificacoes2, "notificacoes", "Notificações")
             )
 
-            // PEDIDOS
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.pedido),
-                isSelected = currentRoute == "pedido" || currentRoute == "objeto",
-                onClick = { if (currentRoute != "pedido") navController?.navigate("pedido") }
-            )
-
-            // MURAL
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.logomural),
-                isSelected = currentRoute == "mural",
-                onClick = { navController?.navigate("mural") }
-            )
-
-            // RANKING
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.ranking),
-                isSelected = currentRoute == "ranking",
-                onClick = { navController?.navigate("ranking") }
-            )
-
-            // CHAT
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.chat),
-                isSelected = currentRoute == "mensagens",
-                onClick = { navController?.navigate("mensagens") }
-            )
-
-            // NOTIFICAÇÕES
-            BottomNavItem(
-                painter = painterResource(id = R.drawable.notificacoes),
-                isSelected = currentRoute == "notificacoes",
-                onClick = { navController?.navigate("notificacoes") }
-            )
-        }
-    }
-}
-@Composable
-fun PostGridSection() {
-    // Simulando as fotos (usando o seu drawable 'objeto')
-    val posts = List(6) { R.drawable.mulher }
-
-    // O FlowRow organiza os itens em linhas e pula para a próxima automaticamente
-    FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        maxItemsInEachRow = 3 // Força as 3 colunas do seu design
-    ) {
-        posts.forEach { imageRes ->
-            Box(
-                modifier = Modifier
-                    .size(110.dp) // Tamanho fixo para as fotos da grade
-                    .padding(bottom = 8.dp)
-                    .clip(RoundedCornerShape(12.dp)) // Bordas arredondadas como no Figma
-                    .background(Color.LightGray)
-            ) {
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = "Foto da postagem",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop // Faz a foto preencher o quadrado sem esticar
+            items.forEach { item ->
+                BottomNavItem(
+                    painter = painterResource(id = item.first),
+                    isSelected = currentRoute?.startsWith(item.second) == true,
+                    onClick = {
+                        if (currentRoute != item.second) {
+                            navController?.navigate(item.second) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
                 )
             }
         }
@@ -250,21 +292,32 @@ fun PostGridSection() {
 @Composable
 fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> Unit) {
     Box(
-        modifier = Modifier
-            .size(54.dp)
-            .clip(CircleShape) // Garante que o clique seja circular
-            .clickable { onClick() }, // ADICIONE ISSO AQUI
+        modifier = Modifier.size(50.dp).clip(CircleShape).clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
-            Box(
-                modifier = Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(painter = painter, contentDescription = null, tint = White, modifier = Modifier.size(28.dp))
+            Box(Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape), Alignment.Center) {
+                Icon(painter, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
         } else {
-            Icon(painter = painter, contentDescription = null, tint = GrayText, modifier = Modifier.size(28.dp))
+            Icon(painter, null, tint = Color.Gray, modifier = Modifier.size(26.dp))
         }
+    }
+}
+
+
+fun carregarImagemBase64(base64String: String?): ImageBitmap? {
+    if (base64String.isNullOrBlank() || base64String == "string") return null
+    return try {
+        val stringLimpa = if (base64String.contains(",")) {
+            base64String.substring(base64String.indexOf(",") + 1)
+        } else {
+            base64String
+        }
+        val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
+        bitmap.asImageBitmap()
+    } catch (e: Exception) {
+        null
     }
 }
