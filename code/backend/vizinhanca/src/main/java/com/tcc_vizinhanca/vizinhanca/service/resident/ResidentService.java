@@ -123,7 +123,7 @@ public class ResidentService {
 
         if(photo != null && !photo.isEmpty()){
 
-            if (existingResident.getPhoto() != null && !existingResident.getPhoto().isEmpty()){
+            if (existingResident.getPhoto() != null && !existingResident.getPhoto().equals(photo)){
                 blobStorageService.deleteFile(existingResident.getPhoto());
             }
 

@@ -118,11 +118,15 @@ public class CondominiumController {
     // PUT
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> updateCondominium(
-            @PathVariable Long id, @Valid @RequestBody CondominiumUpdateRequest condominiumUpdateRequest
+            @PathVariable Long id,
+            @Valid @ModelAttribute CondominiumUpdateRequest condominiumUpdateRequest
             ) {
         Condominium condominium = CondominiumMapper.updateEntity(condominiumUpdateRequest, new Condominium());
 
-        Condominium updatedCondominium = condominiumService.setUpdateCondominium(condominium, id);
+        Condominium updatedCondominium = condominiumService.setUpdateCondominium(
+                condominium,
+                condominiumUpdateRequest.getFoto(),
+                id);
 
         CondominiumDetailResponse response = new CondominiumDetailResponse(updatedCondominium);
 

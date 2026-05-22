@@ -11,6 +11,7 @@ package com.tcc_vizinhanca.vizinhanca.service.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
+import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -31,6 +33,8 @@ public class CondominiumService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private BlobStorageService blobStorageService;
 
     // SELECT ALL
     public List<Condominium> getSelectAllCondominiums() {
@@ -73,8 +77,23 @@ public class CondominiumService {
 
     // UPDATE CONDOMINIUM
     @CacheEvict(value = "condominium", key = "#idCondominium")
-    public Condominium setUpdateCondominium(@NonNull Condominium condominium, Long idCondominium) {
+    public Condominium setUpdateCondominium(
+            @NonNull Condominium condominium,
+            MultipartFile photo,
+            Long idCondominium) {
         Condominium existingCondominium = getSelectCondominiumById(idCondominium);
+
+        if (photo != null && !photo.isEmpty()) {
+
+            if (existingCondominium.getPhoto() != null && !existingCondominium.getPhoto().equals(photo)) {
+                blobStorageService.deleteFile(existingCondominium.getPhoto());
+            }
+
+            String photoUrl = blobStorageService
+                    .uploadFile(photo, "condominiums");
+
+            existingCondominium.setPhoto(photoUrl);
+        }
 
         BeanUtils.copyProperties(
                 condominium,
