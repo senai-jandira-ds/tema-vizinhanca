@@ -24,7 +24,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 /**
- * Modelo de dados para as postagens do mural (Atualizado de forma segura).
+ * Modelo de dados para as postagens do mural pessoal do morador.
  */
 data class Post(
     val id: Int,
@@ -32,46 +32,45 @@ data class Post(
     val descricao: String,
     val imagemRes: Int? = null,
     val imagemUri: Uri? = null,
-    val imagemUrl: String? = null // Recebe o link mapeado vindo do banco
+    val imagemUrl: String? = null // Recebe o link final em nuvem gerado pela API
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Instância do Contexto obtida com segurança através do AndroidViewModel
+    // Instância do Contexto obtida de forma segura através da herança de AndroidViewModel
     private val context = application.applicationContext
 
-    // Gerenciador de armazenamento local (SharedPreferences)
+    // Gerenciador de armazenamento local para persistência de tokens e perfil em cache
     private val prefs = application.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
     // --- ESTADO DO USUÁRIO ---
-    // Inicia carregando do disco. Se o usuário já logou antes, os dados aparecem no 1º frame.
+    // Recupera os dados locais instantaneamente para evitar tela em branco ao abrir o App
     private val _residentData = MutableStateFlow<ResidentResponse?>(getSavedUser())
     val residentData = _residentData.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-    // --- CONTROLE DE FLUXO EM TEMPO REAL ---
+    // --- CONTROLE DE SUCESSO DO FORMULÁRIO ---
     private val _postCriadoComSucesso = MutableStateFlow(false)
     val postCriadoComSucesso = _postCriadoComSucesso.asStateFlow()
 
-    // --- LISTA DE POSTAGENS REATIVAS ---
+    // --- LISTA REATIVA DE FOTOS DA TELA HOME ---
     private val _posts = mutableStateListOf<Post>()
     val posts: List<Post> = _posts
 
-    // --- FUNÇÃO AUXILIAR PARA PEGAR O TOKEN SALVO ---
+    // --- RECUPERAR TOKEN DE SEGURANÇA ---
     fun obterTokenSalvo(): String = prefs.getString("auth_token", "") ?: ""
 
-    // --- PERSISTÊNCIA LOCAL (PRIVATE) ---
+    // --- PERSISTÊNCIA E CACHE LOCAL ---
 
     private fun saveUserLocally(user: ResidentResponse) {
         try {
-            // Converte todo o objeto (incluindo o novo formato do Bloco e fotos) em JSON String
             val json = gson.toJson(user)
             prefs.edit().putString("saved_user", json).apply()
         } catch (e: Exception) {
-            Log.e("PERSISTENCE", "Erro ao salvar usuário: ${e.message}")
+            Log.e("PERSISTENCE", "Erro ao salvar usuário no SharedPreferences: ${e.message}")
         }
     }
 
@@ -79,32 +78,27 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val json = prefs.getString("saved_user", null)
         return if (json != null) {
             try {
-                // Converte o JSON de volta para o objeto ResidentResponse nativo
                 gson.fromJson(json, ResidentResponse::class.java)
             } catch (e: Exception) {
-                Log.e("PERSISTENCE", "Erro ao ler usuário salvo: ${e.message}")
+                Log.e("PERSISTENCE", "Erro ao desserializar JSON do cache: ${e.message}")
                 null
             }
         } else null
     }
 
-    // --- AÇÕES PÚBLICAS ---
+    // --- INTEGRAÇÃO COM BACKEND ---
 
     /**
-     * INJEÇÃO MANUAL (Velocidade Máxima):
-     * Chamada pela LoginScreen logo após o sucesso da API de Login.
+     * Vincula as informações do residente vindas da tela de login e inicia os posts.
      */
     fun setResidentData(data: ResidentResponse) {
         _residentData.value = data
         saveUserLocally(data)
-
-        // Se no momento do login já vierem publicações anexadas, renderiza-as imediatamente
         atualizarListaDePosts(data)
     }
 
     /**
-     * SINCRONIZAÇÃO EM BACKGROUND (COM DIAGNÓSTICO DE LOGS):
-     * Busca os dados atualizados usando o Token do Swagger e insere monitoramento no Logcat.
+     * Sincroniza em background os dados mais recentes do perfil e a grade de postagens.
      */
     fun carregarDadosPerfil(token: String) {
         viewModelScope.launch {
@@ -112,27 +106,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // Chamada de API para obter os dados do morador logado (/me/resident)
+                // Consome a rota do Swagger específica do perfil logado
                 val response = RetrofitClient.authApi.getResidentById(authHeader)
 
                 if (response.isSuccessful && response.body() != null) {
                     val dadosDoBanco = response.body()?.resident
                     dadosDoBanco?.let {
-                        // LOGS DE DEBUG COMPLETO PARA INVESTIGAÇÃO NO LOGCAT:
-                        Log.d("TESTE_API", "NOME DO BANCO: ${it.name}")
-                        Log.d("TESTE_API", "QUANTIDADE DE POSTS RETORNADOS: ${it.publications?.size}")
+                        Log.d("TESTE_API", "Usuário autenticado: ${it.name}")
+                        Log.d("TESTE_API", "Quantidade de postagens no perfil: ${it.publications?.size ?: 0}")
 
                         _residentData.value = it
-                        saveUserLocally(it) // Atualiza o cache local em SharedPreferences
-
-                        // MAPEAMENTO DOS POSTS DA API PARA A TELA:
+                        saveUserLocally(it)
                         atualizarListaDePosts(it)
                     }
                 } else {
-                    Log.e("TESTE_API", "ERRO HTTP: ${response.code()} - ${response.errorBody()?.string()}")
+                    Log.e("TESTE_API", "Erro de resposta HTTP: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("TESTE_API", "Falha catastrófica na conexão/rede: ${e.message}")
+                Log.e("TESTE_API", "Falha de comunicação/Rede ao buscar dados: ${e.message}")
             } finally {
                 _isLoading.value = false
             }
@@ -140,79 +131,75 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Pega a lista "publications" trazida pela API e converte para a lista observável da UI.
+     * Converte as publicações brutas do backend para a estrutura de dados renderizada na UI.
      */
     private fun atualizarListaDePosts(resident: ResidentResponse) {
-        _posts.clear() // Limpa os elementos antigos da UI para evitar duplicados ao recarregar
+        _posts.clear() // Limpa referências antigas para prevenir travamento ou itens duplicados
         resident.publications?.forEach { pub ->
             _posts.add(
                 Post(
                     id = pub.id,
                     titulo = pub.title,
-                    descricao = pub.description,
-                    imagemUrl = pub.photo // Puxa a string da foto da publicação mapeada no JSON
+                    descricao = pub.description, // Atribuição corrigida com base nos modelos de dados
+                    imagemUrl = pub.photo
                 )
             )
         }
     }
 
     /**
-     * SALVAR NO BANCO DE DADOS DA API (INTEGRADO AO SWAGGER E COM ATUALIZAÇÃO EM TEMPO REAL):
-     * Recebe os dados brutos e a Uri local da imagem. Comprime a foto em background para evitar erros
-     * de payload no Render, envia para a API e força a atualização do feed da Home instantaneamente.
+     * SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (SWAGGER INTERFACE)
+     * Compacta a foto local, monta o request JSON e dispara para o servidor.
      */
     fun adicionarPostNoBanco(titulo: String, descricao: String, uriImagem: Uri?) {
         val token = obterTokenSalvo()
 
         if (token.isEmpty()) {
-            Log.e("API_HOME", "Erro: Token ausente. Usuário não autenticado para postar.")
+            Log.e("API_HOME", "Operação abortada: Token de autenticação inexistente.")
             return
         }
 
         viewModelScope.launch {
-            _isLoading.value = true // Ativa o loading durante a inserção
-            _postCriadoComSucesso.value = false // Reseta o estado anterior de sucesso
+            _isLoading.value = true
+            _postCriadoComSucesso.value = false
             try {
-                // 1. Processa e otimiza a imagem em Base64 de maneira assíncrona
+                // Executa a compressão e codificação Base64 da imagem de forma assíncrona
                 val fotoBase64 = if (uriImagem != null) {
                     otimizarEConverterParaBase64(uriImagem)
                 } else null
 
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // 2. Cria o request estruturado idêntico ao exigido pelo Swagger
                 val request = CreatePostRequest(
                     title = titulo,
                     description = descricao,
                     photo = fotoBase64
                 )
 
-                // 3. Envia os dados para a API
+                // Envia a publicação para a API do Render
                 val response = RetrofitClient.authApi.criarPublicacao(authHeader, request)
 
                 if (response.isSuccessful) {
-                    Log.d("API_HOME", "Post inserido no banco com sucesso!")
+                    Log.d("API_HOME", "Postagem criada com sucesso no banco de dados!")
 
-                    // 4. Sincronização em tempo real: Força o feed a atualizar as publicações na hora
+                    // Força o aplicativo a buscar a nova lista atualizada e atualizar a Home instantaneamente
                     carregarDadosPerfil(token)
-
-                    // Ativa a flag de sucesso para a View fechar no momento correto
                     _postCriadoComSucesso.value = true
                 } else {
-                    Log.e("API_HOME", "Servidor recusou a postagem. Código: ${response.code()} - ${response.errorBody()?.string()}")
+                    Log.e("API_HOME", "Servidor rejeitou a publicação: ${response.code()} - ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                Log.e("API_HOME", "Falha de rede ao tentar salvar publicação: ${e.message}")
+                Log.e("API_HOME", "Falha crítica de rede ao tentar salvar postagem: ${e.message}")
             } finally {
-                _isLoading.value = false // Desativa o loading independente do resultado
+                _isLoading.value = false
             }
         }
     }
 
     /**
-     * COMPRESSÃO E REDIMENSIONAMENTO INTERNO DE IMAGENS:
-     * Reduz a escala da imagem para no máximo 800px e aplica 75% de compressão JPEG.
-     * Retorna os bytes limpos em string Base64 sem prefixo HTTP (compatibilidade total com Swagger).
+     * COMPRESSÃO INTERNA E REDIMENSIONAMENTO DE IMAGENS
+     * Protege contra estouros de limite de payload HTTP (Error 413) redimensionando a foto
+     * para no máximo 800px e gerando uma String Base64 limpa sem cabeçalhos corrompidos.
      */
     private fun otimizarEConverterParaBase64(uri: Uri): String? {
         return try {
@@ -235,25 +222,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val bitmapRedimensionado = Bitmap.createScaledBitmap(bitmapOriginal, larguraFinal, alturaFinal, true)
                 val outputStream = ByteArrayOutputStream()
 
-                // Comprime a imagem reduzindo drasticamente o peso físico em bytes
+                // Aplica compressão JPEG equilibrando perfeitamente qualidade e tamanho físico
                 bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
                 val bytesComprimidos = outputStream.toByteArray()
 
-                // Retorna apenas a String limpa que a maioria dos Swaggers exige (sem metadados)
+                // Gera string Base64 plana perfeitamente compatível com campos de String do Swagger
                 Base64.encodeToString(bytesComprimidos, Base64.DEFAULT)
                     .trim()
                     .replace("\n", "")
                     .replace("\r", "")
             } else null
         } catch (e: Exception) {
-            Log.e("IMAGE_OPTIMIZER", "Erro ao otimizar imagem para Base64: ${e.message}")
+            Log.e("IMAGE_OPTIMIZER", "Falha interna no processamento de bytes da imagem: ${e.message}")
             null
         }
     }
 
-    /**
-     * Reseta o estado de sucesso para permitir novas postagens sem fechar a tela direto.
-     */
     fun resetarEstadoSucesso() {
         _postCriadoComSucesso.value = false
     }
@@ -264,7 +248,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         prefs.edit().remove("saved_user").apply()
     }
 
-    // --- GESTÃO LOCAL MANTIDA PARA COMPATIBILIDADE ---
+    // --- MÉTODOS DE CONTROLE LOCAL MANTIDOS PARA COMPATIBILIDADE ---
 
     fun adicionarPost(titulo: String, descricao: String, uri: Uri?) {
         val nextId = if (_posts.isEmpty()) 1 else _posts.maxOf { it.id } + 1
@@ -297,24 +281,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // --- FUNÇÃO DE LOGOUT CORRIGIDA NO LUGAR CERTO ---
+    // --- FLUXO COMPLETO E SEGURO DE LOGOUT ---
     fun deslogar(navController: NavController) {
         viewModelScope.launch {
             try {
-                // 1. Limpa o token e dados salvos no SharedPreferences
+                // 1. Limpa chaves, tokens e strings serializadas armazenadas no cache local
                 prefs.edit().clear().apply()
 
-                // 2. Reseta o estado do usuário e os posts locais
+                // 2. Apaga estados reativos e limpa o vetor de imagens da UI
                 _residentData.value = null
                 _posts.clear()
 
-                // 3. Redireciona para o login e limpa a pilha de telas
+                // 3. Modifica a navegação para a tela de Login resetando o histórico
                 navController.navigate("login") {
                     popUpTo(0) { inclusive = true }
                 }
             } catch (e: Exception) {
-                Log.e("HOME_VIEWMODEL", "Erro ao deslogar: ${e.message}")
+                Log.e("HOME_VIEWMODEL", "Erro na execução do encerramento de sessão: ${e.message}")
             }
         }
     }
-} // <- FIM DA CLASSE (Esta chave fecha o arquivo corretamente)
+}

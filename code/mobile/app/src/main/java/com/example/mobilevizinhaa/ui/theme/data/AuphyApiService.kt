@@ -5,7 +5,7 @@ import retrofit2.Response
 import retrofit2.http.*
 
 // ==========================================
-// NOVO MODELO PARA O OBJETO BLOCO (SWAGGER)
+// OBJETO BLOCO (SWAGGER)
 // ==========================================
 data class BlockResponse(
     val id: Int? = null,
@@ -38,31 +38,30 @@ data class UserData(
     val email: String,
     @SerializedName("apartment", alternate = ["apto", "unidade"])
     val apto: String? = null,
-    // CORRIGIDO: Alterado de String? para BlockResponse? para receber o objeto JSON do backend
     val block: BlockResponse? = null,
     val cpf: String? = null,
     val phone: String? = null
 )
 
 // ==========================================
-// 2. MODELOS DE RESIDENTE (CONTA GERAL COM AS PUBLICAÇÕES)
+// 2. MODELOS DE RESIDENTE E POSTAGENS (SWAGGER)
 // ==========================================
 
 /**
- * Modelo das publicações individuais do próprio usuário, vindo do JSON.
+ * Modelo das publicações individuais vinculadas à conta do residente.
+ * Alimenta diretamente a grade de fotos (Mural Pessoal) da HomeScreen.
  */
 data class PublicationResponse(
     val id: Int,
     @SerializedName("photo", alternate = ["photoUrl", "imageUrl"])
-    val photo: String?,       // Mapeamento flexível para capturar a URL da foto do post do Swagger
+    val photo: String?,       // URL remota ou Base64 vindo do banco do Render
     val title: String,        // Título do post
     val description: String,  // Descrição do post
     val creationDate: String?
 )
 
 /**
- * Classe "Envelope" para capturar a resposta do objeto único.
- * Garante que o objeto do morador seja extraído corretamente de dentro da chave "response".
+ * Classe "Envelope" para capturar o objeto de perfil único do Swagger.
  */
 data class SingleResidentResponse(
     val status: Boolean,
@@ -78,13 +77,12 @@ data class ResidentResponse(
     val email: String,
     @SerializedName("apartment", alternate = ["apto", "unidade"])
     val apartment: String?,
-    // CORRIGIDO: Alterado de String? para BlockResponse? para aceitar a estrutura de objeto do condomínio
     val block: BlockResponse?,
     val score: Int?,
     val phone: String? = null,
     @SerializedName("photo", alternate = ["photoUrl", "avatar"])
-    val photo: String? = null, // Mapeamento flexível da foto de perfil (Sincroniza com a Área Verde)
-    val publications: List<PublicationResponse>? = null // Lista de posts do usuário (Sincroniza com a Área Vermelha)
+    val photo: String? = null,
+    val publications: List<PublicationResponse>? = null // Lista de posts específicos deste usuário
 )
 
 data class UpdateResidentRequest(
@@ -92,27 +90,33 @@ data class UpdateResidentRequest(
     val name: String,
     val email: String,
     val apartment: String?,
-    // CORRIGIDO: Modificado para BlockResponse? para manter consistência nas atualizações de perfil
     val block: BlockResponse?,
     val phone: String?
 )
 
 // ==========================================
-// MODELOS PARA CRIAR POSTAGEM NO BANCO
+// 3. MODELOS PARA CRIAR POSTAGEM DO RESIDENTE
 // ==========================================
+
+/**
+ * Objeto enviado no corpo do POST para registrar uma nova publicação do usuário
+ */
 data class CreatePostRequest(
     val title: String,
     val description: String,
-    val photo: String? = null // URL da imagem ou string em Base64 enviado para a API
+    val photo: String? = null // String da imagem (URL ou Base64) obtida no dispositivo
 )
 
+/**
+ * Resposta padrão que a API retorna confirmando que a postagem foi salva
+ */
 data class CreatePostResponse(
     val status: Boolean,
     val message: String
 )
 
 // ==========================================
-// 3. INTERFACE DA API (ROTAS DE RETROFIT)
+// 4. INTERFACE DA API (ROTAS DE RETROFIT)
 // ==========================================
 interface AuthApiService {
 
@@ -120,14 +124,14 @@ interface AuthApiService {
     @POST("api/v1/auth/login/resident")
     suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
 
-    // --- LISTAGEM GERAL ---
+    // --- LISTAGEM GERAL DE RESIDENTES ---
     @GET("api/v1/resident")
     suspend fun listResidents(
         @Header("Authorization") token: String
     ): Response<List<ResidentResponse>>
 
-    // --- BUSCAR DADOS DA CONTA AUTENTICADA (PARA A HOME) ---
-    // Sincroniza os dados do perfil e a lista de posts do usuário logado usando o Token
+    // --- BUSCAR DADOS DA CONTA AUTENTICADA ---
+    // Puxa as informações de perfil (Área Verde) e a lista de posts do usuário (Área Vermelha)
     @GET("api/v1/auth/me/resident")
     suspend fun getResidentById(
         @Header("Authorization") token: String
@@ -140,7 +144,8 @@ interface AuthApiService {
         @Body request: UpdateResidentRequest
     ): Response<ResidentResponse>
 
-    // --- SALVAR NOVA POSTAGEM NO MURAL ---
+    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE ---
+    // Executa o disparo quando o morador preenche o formulário na tela de criação
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,

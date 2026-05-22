@@ -37,9 +37,14 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// --- 1. HOME HEADER (ÁREA VERDE COMPLETA) ---
+// --- 1. HOME HEADER (ÁREA VERDE COMPLETA - CONFIGURADO PARA NAVEGAÇÃO) ---
 @Composable
-fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null) {
+fun HomeHeader(
+    userName: String,
+    apartment: String,
+    userPhotoUrl: String? = null,
+    navController: NavController? = null // Adicionado o parâmetro do NavController
+) {
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -81,8 +86,13 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
                 )
             }
 
+            // AQUI: O botão de engrenagem agora dispara a navegação para a tela de configurações
             IconButton(
-                onClick = { /* Configurações */ },
+                onClick = {
+                    navController?.navigate("configuracoes") {
+                        launchSingleTop = true // Evita abrir a mesma tela várias vezes seguidas
+                    }
+                },
                 modifier = Modifier.align(Alignment.TopEnd).padding(top = 40.dp)
             ) {
                 Icon(Icons.Default.Settings, null, tint = Color.White, modifier = Modifier.size(26.dp))
@@ -110,14 +120,14 @@ fun HomeHeader(userName: String, apartment: String, userPhotoUrl: String? = null
                     contentScale = ContentScale.Crop
                 )
             }
-            // Condição 2: Se a API enviou uma URL HTTP direta (ex: AWS S3, Firebase Storage, Render static)
+            // Condição 2: Se a API enviou uma URL HTTP direta
             else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = userPhotoUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    error = painterResource(id = R.drawable.mulher) // Fallback caso quebre o link
+                    error = painterResource(id = R.drawable.mulher)
                 )
             }
             // Condição 3: Se a API mandou um Base64, renderiza o bitmap decodificado
@@ -175,7 +185,7 @@ fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> 
     }
 }
 
-// --- 3. GRADE DE POSTAGENS STYLE INSTAGRAM (ÁREA VERMELHA COMPLETA) ---
+// --- 3. GRADE DE POSTAGENS STYLE INSTAGRAM ---
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
@@ -195,11 +205,9 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                     .background(Color(0xFFF0F0F0))
                     .clickable { onPostClick(post.id) }
             ) {
-                // Checa se existe uma URL remota válida que veio do banco do Render
                 val hasRemoteImage = !post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string"
 
                 if (hasRemoteImage) {
-                    // Carrega a foto salva na nuvem da API do Render
                     AsyncImage(
                         model = post.imagemUrl,
                         contentDescription = null,
@@ -207,7 +215,6 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else if (post.imagemUri != null) {
-                    // Fallback para URI temporária local
                     AsyncImage(
                         model = post.imagemUri,
                         contentDescription = null,
@@ -215,7 +222,6 @@ fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Fallback para recurso estático local ou placeholder com título integrado
                     Image(
                         painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
                         contentDescription = null,
@@ -273,6 +279,7 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             items.forEach { item ->
                 BottomNavItem(
                     painter = painterResource(id = item.first),
+                    // Aceita "configuracoes" como rota ativa se quisermos destacar o botão home ou manter desmarcado
                     isSelected = currentRoute?.startsWith(item.second) == true,
                     onClick = {
                         if (currentRoute != item.second) {
@@ -304,7 +311,6 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
         }
     }
 }
-
 
 fun carregarImagemBase64(base64String: String?): ImageBitmap? {
     if (base64String.isNullOrBlank() || base64String == "string") return null

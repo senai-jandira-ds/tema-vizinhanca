@@ -24,13 +24,10 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel // Recebe a instância única vinda da MainActivity
 ) {
-    // Observa os dados. Como o ViewModel inicia lendo o disco,
-    // 'resident' já terá valor se o usuário estiver logado.
+    // Observa os dados do ViewModel
     val resident by viewModel.residentData.collectAsState()
     val posts = viewModel.posts
 
-    // GATILHO DE ATUALIZAÇÃO AUTOMÁTICA (CORRIGIDO PARA O ENDPOINT /me/resident):
-    // Dispara em background assim que a tela abre, buscando tudo baseado puramente no Token ativo
     LaunchedEffect(Unit) {
         val tokenSalvo = viewModel.obterTokenSalvo()
         if (tokenSalvo.isNotEmpty()) {
@@ -38,22 +35,23 @@ fun HomeScreen(
         }
     }
 
+    // Mantemos apenas a Box base, pois a MainActivity gerencia a CustomBottomNavBar globalmente
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(GrayBackground) // Certifique-se que GrayBackground está definido em seu Color.kt
+            .background(GrayBackground)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // HEADER INSTANTÂNEO CORRIGIDO:
-            // Passamos 'userPhotoUrl' recebendo a string crua. Sumirá o erro do Android Studio!
+            // Header Dinâmico com clique para configurações/perfil ativado
             HomeHeader(
                 userName = resident?.name ?: "Vizinho(a)",
                 apartment = resident?.apartment?.let { "Apto $it" } ?: "Condomínio",
-                userPhotoUrl = resident?.photo
+                userPhotoUrl = resident?.photo,
+                navController = navController
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -67,18 +65,18 @@ fun HomeScreen(
             ) {
                 InfoCard(
                     titulo = "Meus pedidos",
-                    quantity = "3", // Nome do parâmetro ajustado para bater com o HomeComponents
+                    quantity = "3",
                     iconeRes = R.drawable.pedido,
                     onAddClick = {
-                        navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para pedidos
+                        navController.navigate("criar_pedido")
                     }
                 )
                 InfoCard(
                     titulo = "Meus objetos",
-                    quantity = "3", // Nome do parâmetro ajustado para bater com o HomeComponents
+                    quantity = "3",
                     iconeRes = R.drawable.objeto,
                     onAddClick = {
-                        navController.navigate("criar_pedido") // <--- Abre a tela de cadastro para objetos
+                        navController.navigate("criar_pedido")
                     }
                 )
             }
@@ -91,12 +89,12 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // Grade de fotos do Mural (Chama o componente que agora renderiza as URLs do Render)
+            // Grade de fotos do Mural (exibe as postagens vindas da API)
             PostGridSection(posts = posts) { postId ->
                 navController.navigate("detalhe_post/$postId")
             }
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(110.dp))
         }
 
         // Botão Flutuante (FAB) para criar postagem
