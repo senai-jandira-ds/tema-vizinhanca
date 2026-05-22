@@ -1,0 +1,159 @@
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZTdAdGVzdGUuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3NzkyMTQ2NzAsImV4cCI6MTc3OTMwMTA3MH0.4o58pN5s_lopdomsJ2mGRKYFgsGCcykEQa1a7zpo8J0
+### LoginCondominium
+# @name loginRequest
+POST http://localhost:8080/api/v1/auth/login/condominium
+Content-Type: application/json
+
+{
+  "email": "teste7@teste.com",
+  "password": "testeapi123"
+}
+
+### LoginResident
+# @name loginRequest
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/resident
+Content-Type: application/json
+
+{
+"email": "machado.breno127@gmail.com",
+"password": "18IF$wl#"
+}
+
+
+### ME - CONDOMINIUM
+# @name meCondominium
+GET http://localhost:8080/api/v1/auth/me/condominium
+Authorization: Bearer {{token}}
+
+### ME - RESIDENT
+# @name meResident
+GET http://localhost:8080/api/v1/auth/me/resident
+Authorization: Bearer {{token}}
+
+
+
+### ===== CONDOMINIUM =====
+# @name listCondominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium
+Authorization: Bearer {{token}}
+
+### Search by condominium
+# @name searchResidentsByCondominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium/resident/me
+Authorization: Bearer {{token}}
+
+### Search activities by condominium
+# @name searchActivitiesByCondominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium/activity/me
+Authorization: Bearer {{token}}
+
+### Search by id
+# @name searchCondominium
+GET http://localhost:8080/api/v1/condominium/14
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertCondominium
+POST https://api-vizinhanca.onrender.com/api/v1/condominium
+Content-Type: application/json
+
+{
+  "name": "TESTE CONDOMÍNIO",
+  "cnpj": "12345678910122",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "teste8@teste.com",
+  "password": "testeapi123",
+  "address": {
+    "cep": "01310100",
+    "street": "Avenida Paulista",
+    "neighborhood": "Bela Vista",
+    "number": "1000",
+    "landmark": "Próximo ao MASP",
+    "city": "São Paulo",
+    "state": "SP"
+  }
+}
+
+### Update
+# @name updateCondominium
+PUT https://api-vizinhanca.onrender.com/api/v1/condominium/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bela Vista",
+  "cnpj": "12345678910124",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "contato@scotti.com.br"
+}
+
+### Delete
+# @name deleteCondominium
+DELETE https://api-vizinhanca.onrender.com/api/v1/condominium/11
+Authorization: Bearer {{token}}
+
+
+### ===== RESIDENT =====
+# @name listResident
+GET https://api-vizinhanca.onrender.com/api/v1/resident
+Authorization: Bearer {{token}}
+
+### Search by id
+# @name searchResident
+GET https://api-vizinhanca.onrender.com/api/v1/resident/6
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertResident
+POST https://api-vizinhanca.onrender.com/api/v1/resident
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "photo": "https://i.pravatar.cc/300",
+  "name": "João da Silva",
+  "apartment": "101",
+  "id_block": 1,
+  "cpf": "12345678901",
+  "email": "@email.com",
+  "phone": "11999999999",
+  "score": 0,
+  "id_condominium": 14
+}
+
+### Update
+# @name updateResident
+PUT http://localhost:8080/api/v1/resident/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "foto": "",
+  "nome": "Giovana - TESTE",
+  "apto": "22",
+  "bloco": "B",
+  "cpf": "67890123456",
+  "email": "ricardo.santos@yahoo.com",
+  "telefone": "11904851846",
+  "pontuacao": 0,
+  "condominium_id": 8
+}
+
+### Delete
+# @name deleteResident
+DELETE https://api-vizinhanca.onrender.com/api/v1/resident/62
+Authorization: Bearer {{token}}
+
+
+### ===== PUBLICATION =====
+# @name listPublication
+GET http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertPublication
+POST http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+Content-Type: application/json
