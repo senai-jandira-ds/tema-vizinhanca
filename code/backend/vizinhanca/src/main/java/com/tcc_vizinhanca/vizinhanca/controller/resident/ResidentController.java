@@ -80,14 +80,13 @@ public class ResidentController {
     }
 
     // PUT
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> updateResident(
-            @PathVariable Long id,  @Valid @RequestBody ResidentUpdateRequest residentUpdateRequest
+            @PathVariable Long id,
+            @Valid @ModelAttribute ResidentUpdateRequest residentUpdateRequest
             ) {
 
-        System.out.println(residentUpdateRequest.toString());
-
-        Resident updatedResident = residentService.setUpdateResident(residentUpdateRequest, id);
+        Resident updatedResident = residentService.setUpdateResident(residentUpdateRequest, residentUpdateRequest.getPhoto(),id);
 
         ResidentDetailResponse response = new ResidentDetailResponse(updatedResident);
 

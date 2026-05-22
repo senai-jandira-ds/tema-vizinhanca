@@ -1,12 +1,12 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZTdAdGVzdGUuY29tIiwiaWRfY29uZG9taW5pbyI6MTQsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3NzkyMTQ2NzAsImV4cCI6MTc3OTMwMTA3MH0.4o58pN5s_lopdomsJ2mGRKYFgsGCcykEQa1a7zpo8J0
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaW8iOjEsInRpcG9fcGVyZmlsIjoiQ09ORE9Nw41OSU8iLCJpYXQiOjE3NzkyOTM4MDgsImV4cCI6MTc3OTM4MDIwOH0.hkRm6YPuq8iLiaxCq2AN7GvZmFUxPCE6sEFYpzondNA
 ### LoginCondominium
 # @name loginRequest
-POST http://localhost:8080/api/v1/auth/login/condominium
+POST https://api-vizinhanca.onrender.com/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
-  "email": "teste7@teste.com",
-  "password": "testeapi123"
+  "email": "contato@solarflores.com",
+  "password": "Vizinhanca@2026"
 }
 
 ### LoginResident
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ### ME - CONDOMINIUM
 # @name meCondominium
-GET http://localhost:8080/api/v1/auth/me/condominium
+GET https://api-vizinhanca.onrender.com/api/v1/auth/me/condominium
 Authorization: Bearer {{token}}
 
 ### ME - RESIDENT
@@ -157,3 +157,8 @@ Authorization: Bearer {{token}}
 POST http://localhost:8080/api/v1/publication
 Authorization: Bearer {{token}}
 Content-Type: application/json
+
+### === DENUNCIA ===
+# @name report
+GET https://api-vizinhanca.onrender.com/api/v1/report`
+Authorization: Bearer {{token}}

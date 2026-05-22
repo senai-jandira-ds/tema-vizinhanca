@@ -12,13 +12,14 @@ package com.tcc_vizinhanca.vizinhanca.dto.request.publication;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
 public class PublicationRequest {
 
     @NotBlank(message = "Foto é obrigatória")
-    private String photo;
+    private MultipartFile photo;
 
     @NotBlank(message = "Título é obrigatório")
     private String title;
