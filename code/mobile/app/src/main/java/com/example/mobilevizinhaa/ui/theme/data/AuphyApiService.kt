@@ -94,6 +94,14 @@ data class UpdateResidentRequest(
     val phone: String?
 )
 
+/**
+ * Modelo para atualização exclusiva da foto de perfil via JSON Base64.
+ * Mapeado para bater com o campo esperado pelo backend.
+ */
+data class UpdateProfilePhotoRequest(
+    @SerializedName("photo") val photoBase64: String
+)
+
 // ==========================================
 // 3. MODELOS PARA CRIAR POSTAGEM DO RESIDENTE (JSON / BASE64)
 // ==========================================
@@ -164,9 +172,16 @@ interface AuthApiService {
         @Body request: UpdateResidentRequest
     ): Response<ResidentResponse>
 
+    // --- ATUALIZAR FOTO DE PERFIL DO RESIDENTE AUTENTICADO ---
+    // Corrigido: Agora recebe a data class estruturada em vez da String solta.
+    // Isso remove o bug do JvmSuppressWildcards e padroniza com a API do Scott.
+    @PATCH("api/v1/auth/me/resident/photo")
+    suspend fun actualizarFotoPerfil(
+        @Header("Authorization") token: String,
+        @Body request: UpdateProfilePhotoRequest
+    ): Response<SingleResidentResponse>
+
     // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON PURÍSSIMO) ---
-    // Alterado de @Multipart para envio via @Body em JSON. Isso resolve nativamente o erro 500
-    // de charset incompatível que o OkHttp inseria antes.
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,

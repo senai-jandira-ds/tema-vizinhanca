@@ -16,6 +16,8 @@ import androidx.navigation.NavController
 import com.example.mobilevizinhaa.ui.theme.data.CreatePostRequest
 import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
+import com.example.mobilevizinhaa.ui.theme.data.UpdateProfilePhotoRequest
+import com.example.mobilevizinhaa.ui.theme.data.SingleResidentResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -149,6 +151,63 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     imagemUrl = pub.photo
                 )
             )
+        }
+    }
+
+    /**
+     * ATUALIZAR FOTO DE PERFIL DO USUÁRIO (INTEGRAÇÃO COM A API)
+     * Converte a imagem capturada da galeria local para uma String Base64 otimizada e leve,
+     * enviando estruturada dentro do envelope UpdateProfilePhotoRequest para a API.
+     */
+    fun atualizarFotoPerfil(context: Context, uriImagem: Uri) {
+        val token = obterTokenSalvo()
+
+        if (token.isEmpty()) {
+            Log.e("API_PROFILE", "Operação abortada: Token de autenticação inexistente.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
+                // 1. Processa e otimiza a foto de perfil em background
+                val fotoBase64Pura = withContext(Dispatchers.IO) {
+                    obterStringBase64Otimizada(uriImagem)
+                }
+
+                if (fotoBase64Pura.isNotEmpty()) {
+                    // BLINDAGEM: Adiciona o prefixo padrão Data URI que o banco do Render/Swagger costuma exigir
+                    val fotoBase64ComPrefixo = "data:image/jpeg;base64,$fotoBase64Pura"
+
+                    // 2. Cria o objeto contendo o texto formatado em JSON
+                    val requestBody = UpdateProfilePhotoRequest(photoBase64 = fotoBase64ComPrefixo)
+
+                    Log.d("API_PROFILE", "Enviando requisição para o servidor... Tamanho da string: ${fotoBase64ComPrefixo.length}")
+
+                    // 3. Dispara a requisição PATCH para o servidor
+                    val response = RetrofitClient.authApi.actualizarFotoPerfil(
+                        token = authHeader,
+                        request = requestBody
+                    )
+
+                    if (response.isSuccessful) {
+                        Log.d("API_PROFILE", "SUCESSO: Foto de perfil atualizada no servidor!")
+
+                        // 4. Força o app a baixar os dados atualizados da API e redesenhar a interface
+                        carregarDadosPerfil(token)
+                    } else {
+                        // CAPTURA DE ERRO DETALHADA: Leia isso no Logcat do seu Android Studio se falhar!
+                        val erroCorpo = response.errorBody()?.string()
+                        Log.e("API_PROFILE", "ERRO SERVIDOR [Código ${response.code()}]: $erroCorpo")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("API_PROFILE", "FALHA CRÍTICA DE CONEXÃO: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,18 +41,27 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// --- 1. HOME HEADER (ÁREA AZUL COMPLETA) ---
+// --- 1. HOME HEADER (ÁREA AZUL COMPLETA COM INTEGRAÇÃO DE FOTO) ---
 @Composable
 fun HomeHeader(
     userName: String,
     apartment: String,
     userPhotoUrl: String? = null,
-    navController: NavController? = null
+    navController: NavController? = null,
+    viewModel: HomeViewModel // Adicionado para processar o upload da imagem de perfil
 ) {
+    val context = LocalContext.current
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> if (uri != null) fotoUri = uri }
+    ) { uri: Uri? ->
+        if (uri != null) {
+            fotoUri = uri
+            // INTEGRAÇÃO: Otimiza e envia a foto selecionada imediatamente para a API
+            viewModel.atualizarFotoPerfil(context, uri)
+        }
+    }
 
     val isUrlRemota = userPhotoUrl?.startsWith("http", ignoreCase = true) == true
 
@@ -112,6 +122,7 @@ fun HomeHeader(
             contentAlignment = Alignment.Center
         ) {
             if (fotoUri != null) {
+                // Renderiza o feedback visual imediato da foto local escolhida
                 AsyncImage(
                     model = fotoUri,
                     contentDescription = null,
@@ -178,8 +189,73 @@ fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> 
     }
 }
 
-// --- 3. GRADE DE POSTAGENS CORRIGIDA (NATAL DO COMPOSE EM 3 COLUNAS) ---
+// --- 3. GRADE DE POSTAGENS (3 COLUNAS - QUADRADOS RETOS) ---
+@Composable
+fun PostGridSection(
+    posts: List<Post>,
+    viewModel: HomeViewModel,
+    onPostClick: (Int) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 3000.dp)
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        userScrollEnabled = false
+    ) {
+        items(posts) { post ->
+            val bitmap = remember(post.imagemUrl) {
+                if (post.imagemUrl?.startsWith("/9j") == true) {
+                    viewModel.carregarImagemBase64MuralLocal(post.imagemUrl)
+                } else {
+                    null
+                }
+            }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .background(Color(0xFFE0E0E0))
+                    .clickable { onPostClick(post.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (!post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string") {
+                    AsyncImage(
+                        model = post.imagemUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (post.imagemUri != null) {
+                    AsyncImage(
+                        model = post.imagemUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.objeto),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+        }
+    }
+}
 
 // --- 4. NAVBAR ---
 @Composable
