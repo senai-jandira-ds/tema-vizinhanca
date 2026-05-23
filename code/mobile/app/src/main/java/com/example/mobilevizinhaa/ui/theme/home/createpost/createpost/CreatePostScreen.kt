@@ -183,7 +183,7 @@ fun PublicacaoScreen(
                         } else if (descricao.isBlank()) {
                             Toast.makeText(context, "Por favor, insira uma descrição", Toast.LENGTH_SHORT).show()
                         } else {
-                            // Se todos os campos estiverem preenchidos corretamente, envia para a API
+                            // Se todos os campos estiverem preenchidos corretamente, envia para a API usando JSON/Base64
                             viewModel.adicionarPostNoBanco(
                                 titulo = titulo,
                                 descricao = descricao,
@@ -211,6 +211,3 @@ fun PublicacaoScreen(
     }
 }
 
-// ====================================================================
-// --- COMPONENTE AUXILIAR DE SELEÇÃO DE IMAGEM ---
-// ====================================================================

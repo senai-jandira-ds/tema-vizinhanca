@@ -13,13 +13,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.mobilevizinhaa.ui.theme.data.CreatePostRequest
 import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
-import com.example.mobilevizinhaa.ui.theme.data.CreatePostRequest
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
@@ -32,7 +34,7 @@ data class Post(
     val descricao: String,
     val imagemRes: Int? = null,
     val imagemUri: Uri? = null,
-    val imagemUrl: String? = null // Recebe o link final em nuvem gerado pela API
+    val imagemUrl: String? = null // Recebe o link final em nuvem gerado pela API ou Base64
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -113,7 +115,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     val dadosDoBanco = response.body()?.resident
                     dadosDoBanco?.let {
                         Log.d("TESTE_API", "Usuário autenticado: ${it.name}")
-                        Log.d("TESTE_API", "Quantidade de postagens no perfil: ${it.publications?.size ?: 0}")
+                        Log.d(
+                            "TESTE_API",
+                            "Quantidade de postagens no perfil: ${it.publications?.size ?: 0}"
+                        )
 
                         _residentData.value = it
                         saveUserLocally(it)
@@ -140,7 +145,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 Post(
                     id = pub.id,
                     titulo = pub.title,
-                    descricao = pub.description, // Atribuição corrigida com base nos modelos de dados
+                    descricao = pub.description,
                     imagemUrl = pub.photo
                 )
             )
@@ -148,14 +153,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (SWAGGER INTERFACE)
-     * Compacta a foto local, monta o request JSON e dispara para o servidor.
+     * SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON / BASE64)
+     * Pega os dados estruturados da galeria, converte e reduz para uma String Base64 limpa
+     * e dispara diretamente como Body em JSON para a API do Scott.
      */
     fun adicionarPostNoBanco(titulo: String, descricao: String, uriImagem: Uri?) {
         val token = obterTokenSalvo()
 
         if (token.isEmpty()) {
-            Log.e("API_HOME", "Operação abortada: Token de autenticação inexistente.")
+            Log.e(
+                "API_HOME",
+                "Operação abortada: Token de autenticação inexistente no SharedPreferences."
+            )
             return
         }
 
@@ -163,33 +172,45 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _isLoading.value = true
             _postCriadoComSucesso.value = false
             try {
-                // Executa a compressão e codificação Base64 da imagem de forma assíncrona
-                val fotoBase64 = if (uriImagem != null) {
-                    otimizarEConverterParaBase64(uriImagem)
-                } else null
-
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                val request = CreatePostRequest(
+                // 1. Processa a imagem da galeria em background e transforma em string Base64 compacta
+                val fotoBase64 = withContext(Dispatchers.IO) {
+                    obterStringBase64Otimizada(uriImagem)
+                }
+
+                // 2. Cria o Objeto de Request compatível com o JSON exigido no Swagger do Scott
+                val requestBody = CreatePostRequest(
                     title = titulo,
                     description = descricao,
-                    photo = fotoBase64
+                    photoBase64 = fotoBase64
                 )
 
-                // Envia a publicação para a API do Render
-                val response = RetrofitClient.authApi.criarPublicacao(authHeader, request)
+                // 3. Dispara a requisição POST limpa (sem anotações Multipart)
+                val response = RetrofitClient.authApi.criarPublicacao(
+                    token = authHeader,
+                    request = requestBody
+                )
 
                 if (response.isSuccessful) {
-                    Log.d("API_HOME", "Postagem criada com sucesso no banco de dados!")
+                    Log.d("API_HOME", "Postagem criada com sucesso via JSON no banco de dados!")
 
                     // Força o aplicativo a buscar a nova lista atualizada e atualizar a Home instantaneamente
                     carregarDadosPerfil(token)
                     _postCriadoComSucesso.value = true
                 } else {
-                    Log.e("API_HOME", "Servidor rejeitou a publicação: ${response.code()} - ${response.errorBody()?.string()}")
+                    Log.e(
+                        "API_HOME",
+                        "Servidor rejeitou a publicação: ${response.code()} - ${
+                            response.errorBody()?.string()
+                        }"
+                    )
                 }
             } catch (e: Exception) {
-                Log.e("API_HOME", "Falha crítica de rede ao tentar salvar postagem: ${e.message}")
+                Log.e(
+                    "API_HOME",
+                    "Falha crítica de rede ao tentar salvar postagem via JSON: ${e.message}"
+                )
             } finally {
                 _isLoading.value = false
             }
@@ -197,11 +218,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * COMPRESSÃO INTERNA E REDIMENSIONAMENTO DE IMAGENS
-     * Protege contra estouros de limite de payload HTTP (Error 413) redimensionando a foto
-     * para no máximo 800px e gerando uma String Base64 limpa sem cabeçalhos corrompidos.
+     * OTIMIZAÇÃO DA IMAGEM DA GALERIA E CONVERSÃO PARA BASE64
      */
-    private fun otimizarEConverterParaBase64(uri: Uri): String? {
+    private fun obterStringBase64Otimizada(uri: Uri?): String {
+        if (uri == null) return ""
         return try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
             val bitmapOriginal = BitmapFactory.decodeStream(inputStream)
@@ -219,22 +239,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     larguraFinal = (maxDimensao * proporcao).toInt()
                 }
 
-                val bitmapRedimensionado = Bitmap.createScaledBitmap(bitmapOriginal, larguraFinal, alturaFinal, true)
+                val bitmapRedimensionado =
+                    Bitmap.createScaledBitmap(bitmapOriginal, larguraFinal, alturaFinal, true)
+
+                // Grava os dados comprimidos diretamente em memória (ByteArrayOutputStream)
                 val outputStream = ByteArrayOutputStream()
+                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+                val bytes = outputStream.toByteArray()
+                outputStream.close()
 
-                // Aplica compressão JPEG equilibrando perfeitamente qualidade e tamanho físico
-                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
-                val bytesComprimidos = outputStream.toByteArray()
-
-                // Gera string Base64 plana perfeitamente compatível com campos de String do Swagger
-                Base64.encodeToString(bytesComprimidos, Base64.DEFAULT)
-                    .trim()
-                    .replace("\n", "")
-                    .replace("\r", "")
-            } else null
+                // Codifica os bytes resultantes para string Base64 pura
+                Base64.encodeToString(bytes, Base64.NO_WRAP)
+            } else ""
         } catch (e: Exception) {
-            Log.e("IMAGE_OPTIMIZER", "Falha interna no processamento de bytes da imagem: ${e.message}")
-            null
+            Log.e(
+                "IMAGE_PROCESSOR",
+                "Falha ao processar e extrair Base64 da imagem da galeria: ${e.message}"
+            )
+            ""
         }
     }
 
@@ -252,19 +274,25 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun adicionarPost(titulo: String, descricao: String, uri: Uri?) {
         val nextId = if (_posts.isEmpty()) 1 else _posts.maxOf { it.id } + 1
-        _posts.add(0, Post(
-            id = nextId,
-            titulo = titulo,
-            descricao = descricao,
-            imagemUri = uri
-        ))
+        _posts.add(
+            0, Post(
+                id = nextId,
+                titulo = titulo,
+                descricao = descricao,
+                imagemUri = uri
+            )
+        )
     }
 
     fun deletarPost(postId: Int) {
         _posts.removeAll { it.id == postId }
     }
 
-    private fun carregarImagemBase64MuralLocal(base64String: String?): ImageBitmap? {
+    /**
+     * DECODIFICAÇÃO DE BASE64 PARA RENDERIZAÇÃO LOCAL NA UI
+     * MODIFICADO: Alterado para 'fun' pública para que possa ser acessado pelo arquivo da View (HomeScreen).
+     */
+    fun carregarImagemBase64MuralLocal(base64String: String?): ImageBitmap? {
         if (base64String.isNullOrBlank() || base64String == "string") return null
         return try {
             val stringLimpa = if (base64String.contains(",")) {
@@ -277,6 +305,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
             bitmap?.asImageBitmap()
         } catch (e: Exception) {
+            Log.e("IMAGE_DECODER", "Erro ao decodificar string Base64: ${e.message}")
             null
         }
     }

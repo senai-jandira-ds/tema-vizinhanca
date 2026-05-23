@@ -1,5 +1,7 @@
 package com.example.mobilevizinhaa.ui.theme.login
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,10 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
@@ -35,6 +38,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     homeViewModel: HomeViewModel
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -49,6 +53,15 @@ fun LoginScreen(
     LaunchedEffect(uiState.loginResponse) {
         uiState.loginResponse?.response?.let { loginData ->
             val user = loginData.user
+
+            // ====================================================================
+            // --- CORREÇÃO DE TOKEN DO SHADERPREFERENCES ---
+            // ====================================================================
+            // Captura o token e salva no mesmo arquivo que o HomeViewModel consulta
+            val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("auth_token", loginData.token).apply()
+
+            Log.d("API_HOME", "Token interceptado e salvo no SharedPreferences: ${loginData.token}")
 
             // Cria o objeto contendo o Bloco corrigido vindo do seu modelo da API
             val resident = ResidentResponse(
@@ -127,7 +140,8 @@ fun LoginScreen(
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    viewModel.onLoginClicked { /* Navegação tratada pelo LaunchedEffect */ }
+                    // Dispara a tentativa passando a ação vazia, pois o LaunchedEffect ouve a resposta
+                    viewModel.onLoginClicked { }
                 }
             ),
             isError = uiState.passwordError != null,
@@ -165,7 +179,7 @@ fun LoginScreen(
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 // Chamamos apenas a intenção de logar.
-                // A navegação acontece automaticamente pelo observador lá em cima.
+                // A navegação e o armazenamento acontecem automaticamente pelo observador lá em cima.
                 viewModel.onLoginClicked { }
             },
             modifier = Modifier.fillMaxWidth().height(55.dp),

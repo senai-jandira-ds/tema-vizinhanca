@@ -56,7 +56,7 @@ class LoginViewModel : ViewModel() {
     /**
      * Tenta realizar o login e armazena a resposta completa no estado.
      */
-    fun onLoginClicked(onSuccess: (String) -> Unit) {
+    fun onLoginClicked(onSuccess: (LoginResponse) -> Unit) {
         val currentState = _uiState.value
         val emailValidado = currentState.email.trim()
         val senhaParaValidar = currentState.password
@@ -84,13 +84,11 @@ class LoginViewModel : ViewModel() {
                             )
                         }
 
-                        val token = loginBody.response.token
-                        val userId = loginBody.response.user.id
+                        Log.d("LOGIN_DEBUG", "Sucesso! Usuário autenticado: ${loginBody.response.user.name}")
+                        Log.d("LOGIN_DEBUG", "Token emitido: ${loginBody.response.token}")
 
-                        Log.d("LOGIN_DEBUG", "Sucesso! Usuário: ${loginBody.response.user.name}")
-
-                        // Executa o callback passando o padrão de rota simples
-                        onSuccess("home")
+                        // Executa o callback passando o objeto completo de resposta para a view tratar o cache
+                        onSuccess(loginBody)
 
                     } else {
                         val erroApi = when (response.code()) {

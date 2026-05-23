@@ -1,7 +1,12 @@
 package com.example.mobilevizinhaa.ui.theme.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -12,10 +17,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
@@ -24,7 +32,7 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel // Recebe a instância única vinda da MainActivity
 ) {
-    // Observa os dados do ViewModel
+    // Observa os dados reativos do ViewModel
     val resident by viewModel.residentData.collectAsState()
     val posts = viewModel.posts
 
@@ -35,7 +43,6 @@ fun HomeScreen(
         }
     }
 
-    // Mantemos apenas a Box base, pois a MainActivity gerencia a CustomBottomNavBar globalmente
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -56,7 +63,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Seção de Cards de Atalho com o parâmetro de clique configurado
+            // Seção de Cards de Atalho
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,10 +96,14 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // Grade de fotos do Mural (exibe as postagens vindas da API)
-            PostGridSection(posts = posts) { postId ->
-                navController.navigate("detalhe_post/$postId")
-            }
+            // Chamada da seção de fotos em 3 colunas quadradas e retas
+            PostGridSection(
+                posts = posts,
+                viewModel = viewModel,
+                onPostClick = { postId ->
+                    navController.navigate("detalhe_post/$postId")
+                }
+            )
 
             Spacer(modifier = Modifier.height(110.dp))
         }
@@ -111,6 +122,76 @@ fun HomeScreen(
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("Criar postagem", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+/**
+ * COMPONENTE DA GRADE DE POSTAGENS - 3 COLUNAS QUADRADAS E RETAS
+ */
+@Composable
+fun PostGridSection(
+    posts: List<Post>,
+    viewModel: HomeViewModel,
+    onPostClick: (Int) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 3000.dp) // Define um limite alto para a expansão do Grid
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp), // Espaçamento horizontal original de 12.dp
+        verticalArrangement = Arrangement.spacedBy(12.dp),   // Espaçamento vertical de 12.dp
+        userScrollEnabled = false // CRÍTICO: Delega o controle de rolagem para a Column principal
+    ) {
+        items(posts) { post ->
+            val bitmap = remember(post.imagemUrl) {
+                if (post.imagemUrl?.startsWith("/9j") == true) {
+                    viewModel.carregarImagemBase64MuralLocal(post.imagemUrl)
+                } else {
+                    null
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f) // Mantém a proporção estritamente 1:1 (Quadrada)
+                    .background(Color(0xFFE0E0E0)) // Removido o .clip para deixar os cantos retos
+                    .clickable { onPostClick(post.id) },
+                contentAlignment = Alignment.Center
+            ) {
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop // Recorta mantendo o preenchimento total
+                    )
+                } else if (!post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string") {
+                    AsyncImage(
+                        model = post.imagemUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (post.imagemUri != null) {
+                    AsyncImage(
+                        model = post.imagemUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.objeto),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
         }
     }
 }

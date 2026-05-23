@@ -54,7 +54,7 @@ data class UserData(
 data class PublicationResponse(
     val id: Int,
     @SerializedName("photo", alternate = ["photoUrl", "imageUrl"])
-    val photo: String?,       // URL remota ou Base64 vindo do banco do Render
+    val photo: String?,       // URL remota retornada pelo banco do Render
     val title: String,        // Título do post
     val description: String,  // Descrição do post
     val creationDate: String?
@@ -95,24 +95,45 @@ data class UpdateResidentRequest(
 )
 
 // ==========================================
-// 3. MODELOS PARA CRIAR POSTAGEM DO RESIDENTE
+// 3. MODELOS PARA CRIAR POSTAGEM DO RESIDENTE (JSON / BASE64)
 // ==========================================
 
 /**
- * Objeto enviado no corpo do POST para registrar uma nova publicação do usuário
+ * O que o aplicativo ENVIA no corpo (Body) da requisição para criar a publicação.
+ * Mapeado exatamente igual ao modelo JSON exigido pelo Swagger do Scott.
  */
 data class CreatePostRequest(
-    val title: String,
-    val description: String,
-    val photo: String? = null // String da imagem (URL ou Base64) obtida no dispositivo
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("photo") val photoBase64: String // A foto convertida da galeria em texto Base64
 )
 
 /**
- * Resposta padrão que a API retorna confirmando que a postagem foi salva
+ * Resposta padrão expandida que a API retorna confirmando que a postagem foi salva,
+ * contendo metadados completos do servidor e os detalhes do objeto criado.
  */
 data class CreatePostResponse(
     val status: Boolean,
-    val message: String
+    @SerializedName("status_code") val statusCode: Int,
+    val developer: String?,
+    @SerializedName("api_description") val apiDescription: String?,
+    val version: String?,
+    @SerializedName("request_date") val requestDate: String?,
+    val message: String,
+    val response: CreatePostDataResponse?
+)
+
+/**
+ * Detalhes do registro inserido no Banco de Dados que o servidor retorna
+ */
+data class CreatePostDataResponse(
+    val id: Int,
+    val photo: String?, // Link final gerado pelo servidor da imagem (.jpg)
+    val title: String,
+    val description: String,
+    val creationDate: String?,
+    val residentId: Int?,
+    val residentName: String?
 )
 
 // ==========================================
@@ -131,7 +152,6 @@ interface AuthApiService {
     ): Response<List<ResidentResponse>>
 
     // --- BUSCAR DADOS DA CONTA AUTENTICADA ---
-    // Puxa as informações de perfil (Área Verde) e a lista de posts do usuário (Área Vermelha)
     @GET("api/v1/auth/me/resident")
     suspend fun getResidentById(
         @Header("Authorization") token: String
@@ -144,8 +164,9 @@ interface AuthApiService {
         @Body request: UpdateResidentRequest
     ): Response<ResidentResponse>
 
-    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE ---
-    // Executa o disparo quando o morador preenche o formulário na tela de criação
+    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON PURÍSSIMO) ---
+    // Alterado de @Multipart para envio via @Body em JSON. Isso resolve nativamente o erro 500
+    // de charset incompatível que o OkHttp inseria antes.
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,

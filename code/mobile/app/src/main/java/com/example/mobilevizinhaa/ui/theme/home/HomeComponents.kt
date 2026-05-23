@@ -9,6 +9,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,23 +40,21 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// --- 1. HOME HEADER (ÁREA VERDE COMPLETA - CONFIGURADO PARA NAVEGAÇÃO) ---
+// --- 1. HOME HEADER (ÁREA AZUL COMPLETA) ---
 @Composable
 fun HomeHeader(
     userName: String,
     apartment: String,
     userPhotoUrl: String? = null,
-    navController: NavController? = null // Adicionado o parâmetro do NavController
+    navController: NavController? = null
 ) {
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? -> if (uri != null) fotoUri = uri }
 
-    // Identifica se a foto vinda da API é um link remoto HTTP (Nuvem)
     val isUrlRemota = userPhotoUrl?.startsWith("http", ignoreCase = true) == true
 
-    // Caso NÃO seja link direto HTTP, tenta converter a string assumindo que seja Base64 válido
     val bitmapPerfil = remember(userPhotoUrl) {
         if (!isUrlRemota) carregarImagemBase64(userPhotoUrl) else null
     }
@@ -86,11 +87,10 @@ fun HomeHeader(
                 )
             }
 
-            // AQUI: O botão de engrenagem agora dispara a navegação para a tela de configurações
             IconButton(
                 onClick = {
                     navController?.navigate("configuracoes") {
-                        launchSingleTop = true // Evita abrir a mesma tela várias vezes seguidas
+                        launchSingleTop = true
                     }
                 },
                 modifier = Modifier.align(Alignment.TopEnd).padding(top = 40.dp)
@@ -111,7 +111,6 @@ fun HomeHeader(
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
-            // Condição 1: Prioridade se o usuário escolheu uma foto local do dispositivo
             if (fotoUri != null) {
                 AsyncImage(
                     model = fotoUri,
@@ -119,9 +118,7 @@ fun HomeHeader(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            }
-            // Condição 2: Se a API enviou uma URL HTTP direta
-            else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
+            } else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = userPhotoUrl,
                     contentDescription = null,
@@ -129,18 +126,14 @@ fun HomeHeader(
                     contentScale = ContentScale.Crop,
                     error = painterResource(id = R.drawable.mulher)
                 )
-            }
-            // Condição 3: Se a API mandou um Base64, renderiza o bitmap decodificado
-            else if (bitmapPerfil != null) {
+            } else if (bitmapPerfil != null) {
                 Image(
                     bitmap = bitmapPerfil,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            }
-            // Condição 4: Fallback padrão caso não exista foto cadastrada de nenhum modo
-            else {
+            } else {
                 Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
                     Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
                 }
@@ -185,71 +178,8 @@ fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> 
     }
 }
 
-// --- 3. GRADE DE POSTAGENS STYLE INSTAGRAM ---
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun PostGridSection(posts: List<Post>, onPostClick: (Int) -> Unit) {
-    FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 2.dp),
-        horizontalArrangement = Arrangement.Start,
-        maxItemsInEachRow = 3
-    ) {
-        posts.forEach { post ->
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.3333f)
-                    .aspectRatio(1f)
-                    .padding(1.dp)
-                    .background(Color(0xFFF0F0F0))
-                    .clickable { onPostClick(post.id) }
-            ) {
-                val hasRemoteImage = !post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string"
+// --- 3. GRADE DE POSTAGENS CORRIGIDA (NATAL DO COMPOSE EM 3 COLUNAS) ---
 
-                if (hasRemoteImage) {
-                    AsyncImage(
-                        model = post.imagemUrl,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else if (post.imagemUri != null) {
-                    AsyncImage(
-                        model = post.imagemUri,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = post.imagemRes ?: R.drawable.mulher),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .background(Color.Black.copy(alpha = 0.6f))
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = post.titulo,
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 4.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 // --- 4. NAVBAR ---
 @Composable
@@ -279,7 +209,6 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             items.forEach { item ->
                 BottomNavItem(
                     painter = painterResource(id = item.first),
-                    // Aceita "configuracoes" como rota ativa se quisermos destacar o botão home ou manter desmarcado
                     isSelected = currentRoute?.startsWith(item.second) == true,
                     onClick = {
                         if (currentRoute != item.second) {

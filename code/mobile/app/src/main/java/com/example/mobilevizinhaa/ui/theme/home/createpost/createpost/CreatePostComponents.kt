@@ -23,72 +23,43 @@ import coil.compose.AsyncImage
 @Composable
 fun ImagePickerCard(
     selectedImageUri: Uri?,
-    onPickImage: () -> Unit
+    onPickImage: () -> Unit // MODIFICADO: Corrigido de '() -> Modifier' para '() -> Unit'
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(180.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selectedImageUri == null) Color(0xFFF0F4FF) else Color.Transparent)
-            .border(
-                width = 2.dp,
-                color = if (selectedImageUri == null) Color(0xFF3867F5).copy(alpha = 0.3f) else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
+            .background(Color(0xFFF7F7F9))
+            .border(1.dp, Color(0xFFDCDCE0), RoundedCornerShape(16.dp))
             .clickable { onPickImage() },
         contentAlignment = Alignment.Center
     ) {
         if (selectedImageUri != null) {
-            // --- ESTADO: IMAGEM SELECIONADA ---
-            Box(modifier = Modifier.fillMaxSize()) {
-                AsyncImage(
-                    model = selectedImageUri,
-                    contentDescription = "Pré-visualização da imagem escolhida",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-
-                // Etiqueta escura semi-transparente indicando re-seleção
-                Surface(
-                    color = Color.Black.copy(alpha = 0.6f),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(12.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    Text(
-                        text = "Trocar Foto",
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            // Renderiza a pré-visualização da imagem selecionada pelo usuário
+            AsyncImage(
+                model = selectedImageUri,
+                contentDescription = "Imagem selecionada",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
         } else {
-            // --- ESTADO PADRÃO: PLACEHOLDER AZUL DE ADICIONAR ---
+            // Exibe o layout padrão convidando a abrir a galeria
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.AddAPhoto,
-                    contentDescription = "Ícone de Câmera",
-                    modifier = Modifier.size(42.dp),
-                    tint = Color(0xFF3867F5)
+                    imageVector = Icons.Filled.AddAPhoto,
+                    contentDescription = "Ícone adicionar foto",
+                    tint = Color(0xFF3867F5),
+                    modifier = Modifier.size(42.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Adicionar imagem",
-                    color = Color(0xFF3867F5),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
-                Text(
-                    text = "Clique para abrir a galeria",
+                    text = "Toque para selecionar da galeria",
                     color = Color.Gray,
-                    fontSize = 12.sp
+                    fontSize = 14.sp
                 )
             }
         }
