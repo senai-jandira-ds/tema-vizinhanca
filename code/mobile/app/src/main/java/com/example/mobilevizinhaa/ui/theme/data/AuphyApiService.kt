@@ -1,8 +1,13 @@
 package com.example.mobilevizinhaa.ui.theme.data
 
 import com.google.gson.annotations.SerializedName
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.util.concurrent.TimeUnit
 
 // ==========================================
 // OBJETO BLOCO (SWAGGER)
@@ -54,7 +59,7 @@ data class UserData(
 data class PublicationResponse(
     val id: Int,
     @SerializedName("photo", alternate = ["photoUrl", "imageUrl"])
-    val photo: String?,       // URL remota retornada pelo banco do Render
+    val photo: String?,       // URL remota ou Base64 retornada pelo banco do Render
     val title: String,        // Título do post
     val description: String,  // Descrição do post
     val creationDate: String?
@@ -62,11 +67,12 @@ data class PublicationResponse(
 
 /**
  * Classe "Envelope" para capturar o objeto de perfil único do Swagger.
+ * Usada tanto na busca (GET) quanto na atualização cadastral (PUT).
  */
 data class SingleResidentResponse(
     val status: Boolean,
     val message: String,
-    @SerializedName("response", alternate = ["data"])
+    @SerializedName("response", alternate = ["data", "resident"]) // COMPLEMENTADO: Mapeia se o backend envelopar como 'resident' ou 'data'
     val resident: ResidentResponse
 )
 
@@ -80,26 +86,23 @@ data class ResidentResponse(
     val block: BlockResponse?,
     val score: Int?,
     val phone: String? = null,
-    @SerializedName("photo", alternate = ["photoUrl", "avatar"])
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) // COMPLEMENTADO: Garante compatibilidade caso mude para avatar ou photoUrl
     val photo: String? = null,
     val publications: List<PublicationResponse>? = null // Lista de posts específicos deste usuário
 )
 
+/**
+ * Modelo de Payload para Atualização do Residente.
+ * Atualizado para incluir o campo 'photo' que transportará o Base64 da galeria no PUT oficial.
+ */
 data class UpdateResidentRequest(
     val id: Int,
     val name: String,
     val email: String,
     val apartment: String?,
     val block: BlockResponse?,
-    val phone: String?
-)
-
-/**
- * Modelo para atualização exclusiva da foto de perfil via JSON Base64.
- * Mapeado para bater com o campo esperado pelo backend.
- */
-data class UpdateProfilePhotoRequest(
-    @SerializedName("photo") val photoBase64: String
+    val phone: String?,
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) val photo: String? = null // COMPLEMENTADO: Suporte a mapeamentos alternativos de foto no PUT
 )
 
 // ==========================================
@@ -113,7 +116,7 @@ data class UpdateProfilePhotoRequest(
 data class CreatePostRequest(
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
-    @SerializedName("photo") val photoBase64: String // A foto convertida da galeria em texto Base64
+    @SerializedName("photo", alternate = ["photoBase64"]) val photoBase64: String // COMPLEMENTADO: Evita erro se a propriedade variar no JSON
 )
 
 /**
@@ -128,7 +131,7 @@ data class CreatePostResponse(
     val version: String?,
     @SerializedName("request_date") val requestDate: String?,
     val message: String,
-    val response: CreatePostDataResponse?
+    @SerializedName("response", alternate = ["data"]) val response: CreatePostDataResponse? // COMPLEMENTADO: Captura caso mude para 'data'
 )
 
 /**
@@ -136,7 +139,7 @@ data class CreatePostResponse(
  */
 data class CreatePostDataResponse(
     val id: Int,
-    val photo: String?, // Link final gerado pelo servidor da imagem (.jpg)
+    @SerializedName("photo", alternate = ["photoUrl"]) val photo: String?, // COMPLEMENTADO: Mapeia o retorno da imagem com segurança
     val title: String,
     val description: String,
     val creationDate: String?,
@@ -165,20 +168,11 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<SingleResidentResponse>
 
-    // --- ATUALIZAR DADOS DO PERFIL ---
+    // --- ATUALIZAR CONTA E FOTO DO PERFIL (PUT PRINCIPAL - CORRIGIDO) ---
     @PUT("api/v1/resident")
     suspend fun updateResident(
         @Header("Authorization") token: String,
         @Body request: UpdateResidentRequest
-    ): Response<ResidentResponse>
-
-    // --- ATUALIZAR FOTO DE PERFIL DO RESIDENTE AUTENTICADO ---
-    // Corrigido: Agora recebe a data class estruturada em vez da String solta.
-    // Isso remove o bug do JvmSuppressWildcards e padroniza com a API do Scott.
-    @PATCH("api/v1/auth/me/resident/photo")
-    suspend fun actualizarFotoPerfil(
-        @Header("Authorization") token: String,
-        @Body request: UpdateProfilePhotoRequest
     ): Response<SingleResidentResponse>
 
     // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON PURÍSSIMO) ---

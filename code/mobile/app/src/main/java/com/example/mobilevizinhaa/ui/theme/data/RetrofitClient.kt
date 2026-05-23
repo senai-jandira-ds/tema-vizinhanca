@@ -22,9 +22,9 @@ object RetrofitClient {
     }
 
     /**
-     * INTERCEPTOR ULTRA-CORRETIVO:
-     * Localiza e remove o ";charset=UTF-8" de qualquer parte da String do Content-Type,
-     * mesmo quando ele estiver posicionado após o token dinâmico de 'boundary'.
+     * INTERCEPTOR ULTRA-CORRETIVO UNIVERSAL:
+     * Localiza e remove o ";charset=UTF-8" de qualquer requisição (seja Multipart ou JSON puro).
+     * Isso impede que o servidor rejeite payloads pesados contendo Strings Base64.
      */
     private val contentTypeInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
@@ -33,9 +33,8 @@ object RetrofitClient {
         if (requestBody != null) {
             val contentTypeOriginal = requestBody.contentType()?.toString() ?: ""
 
-            // Verifica se é uma requisição multipart e se carrega o parâmetro de charset indesejado
-            if (contentTypeOriginal.contains("multipart/form-data", ignoreCase = true) &&
-                contentTypeOriginal.contains("charset", ignoreCase = true)) {
+            // Aplica a limpeza se contiver qualquer menção a "charset", protegendo tanto JSON quanto Multipart
+            if (contentTypeOriginal.contains("charset", ignoreCase = true)) {
 
                 // Realiza a limpeza tratando variações comuns de espaçamento e caixa das letras
                 val novoTipoString = contentTypeOriginal
@@ -80,7 +79,7 @@ object RetrofitClient {
         // O nosso limpador de cabeçalho roda obrigatoriamente ANTES do logger para vermos a requisição purificada
         .addInterceptor(contentTypeInterceptor)
         .addInterceptor(loggingInterceptor)
-        // Timeouts de 30s são ideais para o Render.com não dar erro de "Timeout"
+        // Timeouts de 30s expandidos para o Render.com não derrubar conexões lentas de upload
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)

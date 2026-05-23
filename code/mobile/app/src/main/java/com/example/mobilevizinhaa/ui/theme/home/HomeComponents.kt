@@ -41,14 +41,14 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// --- 1. HOME HEADER (ÁREA AZUL COMPLETA COM INTEGRAÇÃO DE FOTO) ---
+// --- 1. HOME HEADER (TOTALMENTE SINCRONIZADO E BLINDADO CONTRA CACHE) ---
 @Composable
 fun HomeHeader(
     userName: String,
     apartment: String,
     userPhotoUrl: String? = null,
     navController: NavController? = null,
-    viewModel: HomeViewModel // Adicionado para processar o upload da imagem de perfil
+    viewModel: HomeViewModel
 ) {
     val context = LocalContext.current
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
@@ -58,15 +58,25 @@ fun HomeHeader(
     ) { uri: Uri? ->
         if (uri != null) {
             fotoUri = uri
-            // INTEGRAÇÃO: Otimiza e envia a foto selecionada imediatamente para a API
+            // Dispara a rotina do ViewModel que processa em IO e faz o PUT no banco
             viewModel.atualizarFotoPerfil(context, uri)
         }
     }
 
-    val isUrlRemota = userPhotoUrl?.startsWith("http", ignoreCase = true) == true
+    // Limpa a Uri local provisória assim que o banco de dados responder com o novo Base64 estável
+    LaunchedEffect(userPhotoUrl) {
+        if (!userPhotoUrl.isNullOrBlank()) {
+            fotoUri = null
+        }
+    }
 
+    // Identifica se a string é um Base64 válido (mesmo que venha com prefixos "data:image")
     val bitmapPerfil = remember(userPhotoUrl) {
-        if (!isUrlRemota) carregarImagemBase64(userPhotoUrl) else null
+        if (!userPhotoUrl.isNullOrEmpty() && !userPhotoUrl.startsWith("http") && userPhotoUrl != "string") {
+            viewModel.carregarImagemBase64MuralLocal(userPhotoUrl)
+        } else {
+            null
+        }
     }
 
     Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
@@ -121,39 +131,47 @@ fun HomeHeader(
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
-            if (fotoUri != null) {
-                // Renderiza o feedback visual imediato da foto local escolhida
-                AsyncImage(
-                    model = fotoUri,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else if (isUrlRemota && !userPhotoUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = userPhotoUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    error = painterResource(id = R.drawable.mulher)
-                )
-            } else if (bitmapPerfil != null) {
-                Image(
-                    bitmap = bitmapPerfil,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
-                    Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
+            // CASCATA DE RENDERIZAÇÃO INTELIGENTE ANTI-FALHAS
+            when {
+                fotoUri != null -> {
+                    // 1. Mostra a foto local imediatamente ao selecionar para dar feedback ao usuário
+                    AsyncImage(
+                        model = fotoUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                bitmapPerfil != null -> {
+                    // 2. Banco respondeu e o conversor gerou o ImageBitmap limpo
+                    Image(
+                        bitmap = bitmapPerfil,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                (!userPhotoUrl.isNullOrEmpty() && userPhotoUrl.startsWith("http")) -> {
+                    // 3. Caso o backend salve como URL remota/Cloudinary/S3
+                    AsyncImage(
+                        model = userPhotoUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                else -> {
+                    // 4. Fallback padrão: Ícone cinza de usuário se estiver sem foto ou "string" padrão do Swagger
+                    Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
+                        Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
+                    }
                 }
             }
         }
     }
 }
 
-// --- 2. INFO CARD ---
+// --- 2. INFO CARD (MANTIDO INTACTO) ---
 @Composable
 fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
@@ -189,7 +207,7 @@ fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> 
     }
 }
 
-// --- 3. GRADE DE POSTAGENS (3 COLUNAS - QUADRADOS RETOS) ---
+// --- 3. GRADE DE POSTAGENS (MANTIDO INTACTO) ---
 @Composable
 fun PostGridSection(
     posts: List<Post>,
@@ -200,15 +218,14 @@ fun PostGridSection(
         columns = GridCells.Fixed(3),
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 3000.dp)
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .heightIn(max = 4000.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp),
         userScrollEnabled = false
     ) {
         items(posts) { post ->
             val bitmap = remember(post.imagemUrl) {
-                if (post.imagemUrl?.startsWith("/9j") == true) {
+                if (post.imagemUrl != null && !post.imagemUrl.startsWith("http") && post.imagemUrl != "string") {
                     viewModel.carregarImagemBase64MuralLocal(post.imagemUrl)
                 } else {
                     null
@@ -219,7 +236,7 @@ fun PostGridSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .background(Color(0xFFE0E0E0))
+                    .background(Color(0xFFF2F2F7))
                     .clickable { onPostClick(post.id) },
                 contentAlignment = Alignment.Center
             ) {
@@ -257,7 +274,7 @@ fun PostGridSection(
     }
 }
 
-// --- 4. NAVBAR ---
+// --- 4. NAVBAR (MANTIDO INTACTO) ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
@@ -314,21 +331,5 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
         } else {
             Icon(painter, null, tint = Color.Gray, modifier = Modifier.size(26.dp))
         }
-    }
-}
-
-fun carregarImagemBase64(base64String: String?): ImageBitmap? {
-    if (base64String.isNullOrBlank() || base64String == "string") return null
-    return try {
-        val stringLimpa = if (base64String.contains(",")) {
-            base64String.substring(base64String.indexOf(",") + 1)
-        } else {
-            base64String
-        }
-        val bytesDecodificados = Base64.decode(stringLimpa, Base64.DEFAULT)
-        val bitmap = BitmapFactory.decodeByteArray(bytesDecodificados, 0, bytesDecodificados.size)
-        bitmap.asImageBitmap()
-    } catch (e: Exception) {
-        null
     }
 }

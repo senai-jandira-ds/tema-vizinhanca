@@ -16,7 +16,7 @@ import androidx.navigation.NavController
 import com.example.mobilevizinhaa.ui.theme.data.CreatePostRequest
 import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
-import com.example.mobilevizinhaa.ui.theme.data.UpdateProfilePhotoRequest
+import com.example.mobilevizinhaa.ui.theme.data.UpdateResidentRequest
 import com.example.mobilevizinhaa.ui.theme.data.SingleResidentResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -155,15 +155,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * ATUALIZAR FOTO DE PERFIL DO USUÁRIO (INTEGRAÇÃO COM A API)
-     * Converte a imagem capturada da galeria local para uma String Base64 otimizada e leve,
-     * enviando estruturada dentro do envelope UpdateProfilePhotoRequest para a API.
+     * ATUALIZAR FOTO DE PERFIL DO USUÁRIO (AJUSTADO PARA FORMATO COMPATÍVEL COM O BACKEND)
+     * Converte a imagem capturada da galeria local para uma String Base64 pura,
+     * monta o objeto UpdateResidentRequest mesclando os dados locais existentes e envia
+     * para a rota oficial de atualização cadastral via PUT.
      */
     fun atualizarFotoPerfil(context: Context, uriImagem: Uri) {
         val token = obterTokenSalvo()
+        val usuarioAtual = _residentData.value
 
         if (token.isEmpty()) {
             Log.e("API_PROFILE", "Operação abortada: Token de autenticação inexistente.")
+            return
+        }
+
+        if (usuarioAtual == null) {
+            Log.e("API_PROFILE", "Operação abortada: Dados cadastrais locais do residente não carregados.")
             return
         }
 
@@ -172,39 +179,52 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // 1. Processa e otimiza a foto de perfil em background
-                val fotoBase64Pura = withContext(Dispatchers.IO) {
-                    obterStringBase64Otimizada(uriImagem)
-                }
+                // 1. Processa e otimiza a foto de perfil em background de forma segura
+                val fotoBase64Pura = obterStringBase64Otimizada(uriImagem)
 
                 if (fotoBase64Pura.isNotEmpty()) {
-                    // BLINDAGEM: Adiciona o prefixo padrão Data URI que o banco do Render/Swagger costuma exigir
-                    val fotoBase64ComPrefixo = "data:image/jpeg;base64,$fotoBase64Pura"
+                    // 2. Cria o Payload completo usando a String Pura (sem o cabeçalho data:image)
+                    val requestBody = UpdateResidentRequest(
+                        id = usuarioAtual.id,
+                        name = usuarioAtual.name ?: "",
+                        email = usuarioAtual.email,
+                        apartment = usuarioAtual.apartment,
+                        block = usuarioAtual.block,
+                        phone = usuarioAtual.phone,
+                        photo = fotoBase64Pura
+                    )
 
-                    // 2. Cria o objeto contendo o texto formatado em JSON
-                    val requestBody = UpdateProfilePhotoRequest(photoBase64 = fotoBase64ComPrefixo)
+                    Log.d("API_PROFILE", "Iniciando requisição PUT. Tamanho da string de imagem: ${fotoBase64Pura.length}")
 
-                    Log.d("API_PROFILE", "Enviando requisição para o servidor... Tamanho da string: ${fotoBase64ComPrefixo.length}")
-
-                    // 3. Dispara a requisição PATCH para o servidor
-                    val response = RetrofitClient.authApi.actualizarFotoPerfil(
+                    // 3. Dispara a requisição para o método oficial de atualização (updateResident)
+                    val response = RetrofitClient.authApi.updateResident(
                         token = authHeader,
                         request = requestBody
                     )
 
-                    if (response.isSuccessful) {
-                        Log.d("API_PROFILE", "SUCESSO: Foto de perfil atualizada no servidor!")
+                    if (response.isSuccessful && response.body() != null) {
+                        Log.d("API_PROFILE", "✅ SUCESSO: Foto de perfil persistida e salva no banco de dados!")
 
-                        // 4. Força o app a baixar os dados atualizados da API e redesenhar a interface
-                        carregarDadosPerfil(token)
+                        // Extrai o morador atualizado diretamente de dentro do envelope de resposta
+                        val moradorAtualizadoPeloBanco = response.body()?.resident
+
+                        moradorAtualizadoPeloBanco?.let { novoPerfil ->
+                            // Atualiza o estado da tela em tempo real
+                            _residentData.value = novoPerfil
+
+                            // Salva no SharedPreferences na hora para que o dado persista ao recarregar a página
+                            saveUserLocally(novoPerfil)
+
+                            // Atualiza os posts se necessário
+                            atualizarListaDePosts(novoPerfil)
+                        }
                     } else {
-                        // CAPTURA DE ERRO DETALHADA: Leia isso no Logcat do seu Android Studio se falhar!
                         val erroCorpo = response.errorBody()?.string()
-                        Log.e("API_PROFILE", "ERRO SERVIDOR [Código ${response.code()}]: $erroCorpo")
+                        Log.e("API_PROFILE", "❌ ERRO AO SALVAR IMAGEM [Código ${response.code()}]: $erroCorpo")
                     }
                 }
             } catch (e: Exception) {
-                Log.e("API_PROFILE", "FALHA CRÍTICA DE CONEXÃO: ${e.message}", e)
+                Log.e("API_PROFILE", "❌ FALHA CRÍTICA DE COMUNICAÇÃO COM O SERVIDOR: ${e.message}", e)
             } finally {
                 _isLoading.value = false
             }
@@ -214,7 +234,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON / BASE64)
      * Pega os dados estruturados da galeria, converte e reduz para uma String Base64 limpa
-     * e dispara diretamente como Body em JSON para a API do Scott.
+     * e dispara diretamente como Body em JSON para a API.
      */
     fun adicionarPostNoBanco(titulo: String, descricao: String, uriImagem: Uri?) {
         val token = obterTokenSalvo()
@@ -234,11 +254,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
                 // 1. Processa a imagem da galeria em background e transforma em string Base64 compacta
-                val fotoBase64 = withContext(Dispatchers.IO) {
-                    obterStringBase64Otimizada(uriImagem)
-                }
+                val fotoBase64 = obterStringBase64Otimizada(uriImagem)
 
-                // 2. Cria o Objeto de Request compatível com o JSON exigido no Swagger do Scott
+                // 2. Cria o Objeto de Request compatível com o JSON exigido no Swagger
                 val requestBody = CreatePostRequest(
                     title = titulo,
                     description = descricao,
@@ -278,16 +296,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * OTIMIZAÇÃO DA IMAGEM DA GALERIA E CONVERSÃO PARA BASE64
+     * Forçado a rodar estritamente sob a thread Dispatchers.IO para evitar congelamento de UI
+     * e jank de frames detectados no Logcat do aparelho. Teto fixado em 500px.
      */
-    private fun obterStringBase64Otimizada(uri: Uri?): String {
-        if (uri == null) return ""
-        return try {
+    private suspend fun obterStringBase64Otimizada(uri: Uri?): String = withContext(Dispatchers.IO) {
+        if (uri == null) return@withContext ""
+        try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
             val bitmapOriginal = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
 
             if (bitmapOriginal != null) {
-                val maxDimensao = 800
+                val maxDimensao = 500
                 val proporcao = bitmapOriginal.width.toFloat() / bitmapOriginal.height.toFloat()
 
                 var larguraFinal = maxDimensao
@@ -301,13 +321,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val bitmapRedimensionado =
                     Bitmap.createScaledBitmap(bitmapOriginal, larguraFinal, alturaFinal, true)
 
-                // Grava os dados comprimidos diretamente em memória (ByteArrayOutputStream)
                 val outputStream = ByteArrayOutputStream()
-                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
                 val bytes = outputStream.toByteArray()
                 outputStream.close()
 
-                // Codifica os bytes resultantes para string Base64 pura
                 Base64.encodeToString(bytes, Base64.NO_WRAP)
             } else ""
         } catch (e: Exception) {
@@ -349,7 +367,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * DECODIFICAÇÃO DE BASE64 PARA RENDERIZAÇÃO LOCAL NA UI
-     * MODIFICADO: Alterado para 'fun' pública para que possa ser acessado pelo arquivo da View (HomeScreen).
+     * Esta mesma função serve de forma gêmea tanto para as publicações do mural quanto para a foto de perfil.
      */
     fun carregarImagemBase64MuralLocal(base64String: String?): ImageBitmap? {
         if (base64String.isNullOrBlank() || base64String == "string") return null
