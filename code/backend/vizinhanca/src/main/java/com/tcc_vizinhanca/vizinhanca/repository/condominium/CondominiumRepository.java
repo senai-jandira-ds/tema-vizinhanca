@@ -17,14 +17,19 @@ import java.util.Optional;
 
 public interface CondominiumRepository   extends JpaRepository<Condominium, Long> {
 
+    @Query("SELECT DISTINCT c FROM Condominium c LEFT JOIN FETCH c.address WHERE c.email = :email")
     Optional<Condominium> findByEmail(String email);
+
+    @Query("""
+    SELECT DISTINCT c FROM Condominium c LEFT JOIN FETCH c.blocks LEFT JOIN FETCH c.residents r LEFT JOIN FETCH r.block
+    LEFT JOIN FETCH c.services s LEFT JOIN FETCH s.category LEFT JOIN FETCH s.resident LEFT JOIN FETCH c.reports LEFT JOIN FETCH c.address
+    WHERE c.email = :email
+    """)
+    Optional<Condominium> findDetailedByEmail(@Param("email") String email);
+
     boolean existsByCnpj(String cnpj);
     boolean existsByEmail(String email);
 
-    @Query("SELECT DISTINCT c FROM Condominium c " +
-            "LEFT JOIN FETCH c.residents r " +
-            "LEFT JOIN FETCH r.block " +
-            "LEFT JOIN FETCH c.address " +
-            "WHERE c.id = :id")
+    @Query("SELECT DISTINCT c FROM Condominium c LEFT JOIN FETCH c.residents r LEFT JOIN FETCH r.block LEFT JOIN FETCH c.address WHERE c.id = :id")
     Optional<Condominium> findByIdWithDetails(@Param("id") Long id);
 }

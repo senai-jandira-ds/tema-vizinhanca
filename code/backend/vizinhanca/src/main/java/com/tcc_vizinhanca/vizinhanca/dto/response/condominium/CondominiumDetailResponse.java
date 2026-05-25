@@ -46,26 +46,10 @@ public class CondominiumDetailResponse {
         this.creation_date = condominium.getCreationDate() != null
                 ? condominium.getCreationDate().toString()
                 : "";
-        this.blocks = condominium.getBlocks() != null
-                ? condominium.getBlocks().stream()
-                    .map(BlockSummaryResponse::new)
-                    .toList()
-                : new ArrayList<>();
-        this.residents = condominium.getResidents() != null
-                ? condominium.getResidents().stream()
-                .map(ResidentSummaryResponse::new)
-                .toList()
-                : new ArrayList<>();
-        this.services = condominium.getServices() != null
-                ? condominium.getServices().stream()
-                  .map(ServiceDetailResponse::new)
-                  .toList()
-                : new ArrayList<>();
-        this.reports = condominium.getReports() != null
-                ? condominium.getReports().stream()
-                  .map(ReportSummaryResponse::new)
-                  .toList()
-                : new ArrayList<>();
+        this.blocks = new ArrayList<>();
+        this.residents = new ArrayList<>();
+        this.services = new ArrayList<>();
+        this.reports = new ArrayList<>();
         this.address = condominium.getAddress() != null
                 ? new CondominiumAddressResponse(condominium.getAddress())
                 : new CondominiumAddressResponse();

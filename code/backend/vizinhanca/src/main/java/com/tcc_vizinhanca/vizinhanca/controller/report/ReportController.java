@@ -15,6 +15,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import com.tcc_vizinhanca.vizinhanca.mapper.report.ReportMapper;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.report.ReportService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,14 +67,18 @@ public class ReportController {
             @Valid @RequestBody ReportRequest reportRequest,
             HttpServletRequest request) {
 
-        String token = request.getHeader("Authorization").substring(7);
-        String email = jwtService.extrairUsername(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
         Report report = ReportMapper.toEntity(reportRequest);
 
         Report newReport = reportService.setInsertReport(
                 report,
-                email,
+                user.email(),
                 reportRequest.getReasonReportId(),
                 reportRequest.getObjectId(),
                 reportRequest.getServiceId(),

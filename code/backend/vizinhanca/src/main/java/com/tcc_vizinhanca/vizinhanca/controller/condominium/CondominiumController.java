@@ -11,6 +11,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,11 +60,14 @@ public class CondominiumController {
     public ResponseEntity<ApiResponse<List<ResidentSummaryResponse>>> listAllResidentsByCondominium(
             HttpServletRequest request
     ) {
-        String token = request.getHeader("Authorization").substring(7);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        Long idCondominio = jwtService.extrairIdCondominio(token);
-
-        List<Resident> residents = residentService.getSelectResidentsByCondominiumId(idCondominio);
+        List<Resident> residents = residentService.getSelectResidentsByCondominiumId(user.idCondominium());
 
         List<ResidentSummaryResponse> response = residents.stream()
                 .map(ResidentSummaryResponse::new)
@@ -76,11 +81,14 @@ public class CondominiumController {
     public  ResponseEntity<ApiResponse<ActivityViewResponse>> listAllActivitiesByCondominium(
             HttpServletRequest request
     ) {
-        String token = request.getHeader("Authorization").substring(7);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        Long idCondominium = jwtService.extrairIdCondominio(token);
-
-        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(idCondominium);
+        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(user.idCondominium());
 
         ActivityViewResponse response = new ActivityViewResponse(activities);
 

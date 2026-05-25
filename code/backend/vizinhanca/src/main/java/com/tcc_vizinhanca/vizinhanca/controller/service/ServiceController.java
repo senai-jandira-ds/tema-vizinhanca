@@ -13,6 +13,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.service.ServiceService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,10 +42,14 @@ public class ServiceController {
     // GET ALL BY CONDOMINIUM
     @GetMapping
     public ResponseEntity<ApiResponse<ServiceResponse>> listAllServices(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        Long condominiumId = jwtService.extrairIdCondominio(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        List<Service> services = serviceService.getSelectAllServicesByCondominiumId(condominiumId);
+        List<Service> services = serviceService.getSelectAllServicesByCondominiumId(user.idCondominium());
 
         return ResponseEntity.ok(ResponseUtil.success(
                 new ServiceResponse(services), "Serviços retornados com sucesso!"));
@@ -53,10 +59,14 @@ public class ServiceController {
     @GetMapping("/status/{status}")
     public ResponseEntity<ApiResponse<ServiceResponse>> listServicesByStatus(
             @PathVariable String status, HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        Long condominiumId = jwtService.extrairIdCondominio(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        List<Service> services = serviceService.getSelectServicesByStatus(condominiumId, status);
+        List<Service> services = serviceService.getSelectServicesByStatus(user.idCondominium(), status);
 
         return ResponseEntity.ok(ResponseUtil.success(
                 new ServiceResponse(services), "Serviços filtrados por status retornados com sucesso!"));
@@ -66,10 +76,14 @@ public class ServiceController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<ServiceResponse>> listServicesByCategory(
             @PathVariable Long categoryId, HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        Long condominiumId = jwtService.extrairIdCondominio(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        List<Service> services = serviceService.getSelectServicesByCategory(condominiumId, categoryId);
+        List<Service> services = serviceService.getSelectServicesByCategory(user.idCondominium(), categoryId);
 
         return ResponseEntity.ok(ResponseUtil.success(
                 new ServiceResponse(services), "Serviços filtrados por categoria retornados com sucesso!"));
@@ -102,10 +116,12 @@ public class ServiceController {
     public ResponseEntity<ApiResponse<ServiceDetailResponse>> insertService(
             @Valid @RequestBody ServiceCreateRequest request,
             HttpServletRequest httpRequest) {
-
-        String token = httpRequest.getHeader("Authorization").substring(7);
-        Long residentId = jwtService.extrairIdCondominio(token); // trocar para extrairIdMorador
-        Long condominiumId = jwtService.extrairIdCondominio(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
         Service service = new Service();
         service.setPhoto(request.getPhoto());
@@ -115,7 +131,7 @@ public class ServiceController {
         service.setDescription(request.getDescription());
         service.setStatus(request.getStatus());
 
-        Service saved = serviceService.setInsertService(service, residentId, condominiumId, request.getCategoryId());
+        Service saved = serviceService.setInsertService(service, user.idResident(), user.idCondominium(), request.getCategoryId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseUtil.success(new ServiceDetailResponse(saved), "Serviço criado com sucesso!"));

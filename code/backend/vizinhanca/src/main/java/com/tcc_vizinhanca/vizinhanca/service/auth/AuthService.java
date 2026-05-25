@@ -12,6 +12,7 @@ package com.tcc_vizinhanca.vizinhanca.service.auth;
 import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.LoginCondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
@@ -46,7 +47,7 @@ public class AuthService {
     @Autowired
     private ActivityViewService activityViewService;
 
-    public AuthResponse<CondominiumDetailResponse> loginCondominium(String email, String password){
+    public AuthResponse<LoginCondominiumResponse> loginCondominium(String email, String password){
 
         Condominium condominium = condominiumRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -62,15 +63,22 @@ public class AuthService {
         String token = jwtService.gerarToken(
                 condominium.getEmail(),
                 condominium.getId(),
+                null,
                 "CONDOMÍNIO");
 
-        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(
-                condominium.getId()
-        );
 
-        CondominiumDetailResponse condominiumDetailResponse = new CondominiumDetailResponse(condominium, activities);
+        List<ActivityViewDetailResponse> activities =
+                activityViewService
+                        .getSelectActivitiesViewByCondominiumId(
+                                condominium.getId()
+                        )
+                        .stream()
+                        .map(ActivityViewDetailResponse::new)
+                        .toList();
 
-        return new AuthResponse<>(token, condominiumDetailResponse);
+        LoginCondominiumResponse loginCondominiumResponse = new LoginCondominiumResponse(condominium, activities);
+
+        return new AuthResponse<>(token, loginCondominiumResponse);
     }
 
     public AuthResponse<ResidentDetailResponse> loginResident(String email, String password) {
@@ -89,6 +97,7 @@ public class AuthService {
         String token = jwtService.gerarToken(
                 resident.getEmail(),
                 resident.getCondominium().getId(),
+                resident.getId(),
                 "MORADOR");
 
         ResidentDetailResponse userResponse = new ResidentDetailResponse(resident);

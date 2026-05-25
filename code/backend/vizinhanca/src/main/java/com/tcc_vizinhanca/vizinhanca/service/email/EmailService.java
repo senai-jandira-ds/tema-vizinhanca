@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public class EmailService {
 
@@ -34,7 +36,8 @@ public class EmailService {
         this.sender = sender;
     }
 
-    public Boolean sendWelcomeEmail(String to, String name, String password) {
+    @Async
+    public CompletableFuture<Boolean> sendWelcomeEmail(String to, String name, String password) {
         try {
             EmailMessage message = new EmailMessage()
                     .setSenderAddress(sender)
@@ -44,11 +47,11 @@ public class EmailService {
 
             emailClient.beginSend(message).waitForCompletion();
 
-            return true;
+            return CompletableFuture.completedFuture(true);
         } catch (Exception e) {
             System.out.println("Erro ao enviar email: " +e.getMessage());
 
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
     }

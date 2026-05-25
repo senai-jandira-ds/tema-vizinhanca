@@ -28,50 +28,54 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
+
+        this.key = Keys.hmacShaKeyFor(
+                SECRET.getBytes()
+        );
     }
 
-    public String gerarToken(String username, Long idCondominio, String tipoPerfil) {
+    public String gerarToken(
+            String username,
+            Long idCondominium,
+            Long idResident,
+            String typePerfil
+    ) {
+
         return Jwts.builder()
                 .setSubject(username)
-                .claim("id_condominio", idCondominio)
-                .claim("tipo_perfil", tipoPerfil)
+                .claim("id_condominium", idCondominium)
+                .claim("id_morador", idResident)
+                .claim("tipo_perfil", typePerfil)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .setExpiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + 86400000
+                        )
+                )
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims extrairClaims(String token) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (Exception e) {
-            return null;
-        }
+
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public boolean validarToken(String token) {
-        return extrairClaims(token) != null;
-    }
 
-    public String extrairUsername(String token) {
-        Claims claims = extrairClaims(token);
-        return claims != null ? claims.getSubject() : null;
-    }
+        try {
 
-    public Long extrairIdCondominio(String token) {
-        Claims claims = extrairClaims(token);
-        if (claims == null) return null;
-        Object value = claims.get("id_condominio");
-        return value != null ? Long.valueOf(value.toString()) : null;
-    }
+            extrairClaims(token);
+            return true;
 
-    public String extrairTipoPerfil(String token) {
-        Claims claims = extrairClaims(token);
-        return claims != null ? claims.get("tipo_perfil", String.class) : null;
+        } catch (Exception ex) {
+
+            return false;
+        }
     }
 }
