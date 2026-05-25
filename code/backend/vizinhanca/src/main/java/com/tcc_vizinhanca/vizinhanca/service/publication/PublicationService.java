@@ -14,13 +14,16 @@ import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.publication.PublicationRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
+import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Blob;
 import java.util.List;
 
 @Service
@@ -31,6 +34,9 @@ public class PublicationService {
 
     @Autowired
     private ResidentRepository residentRepository;
+
+    @Autowired
+    private BlobStorageService blobStorageService;
 
     // SELECT ALL
     public List<Publication> getSelectAllPublications(){
@@ -45,10 +51,24 @@ public class PublicationService {
                         "Publicação não encontrada no banco de dados!"));
     }
 
-    public Publication setInsertPublication(@NonNull Publication publication, String email) {
+    public Publication setInsertPublication(
+            @NonNull Publication publication,
+            MultipartFile photo,
+            String email) {
         Resident resident = residentRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Morador não encontrado!"));
+
+        if (photo != null && !photo.isEmpty()) {
+
+            String photoUrl = blobStorageService
+                    .uploadFile(
+                            photo,
+                            "publications"
+                    );
+
+            publication.setPhoto(photoUrl);
+        }
 
         publication.setId(null);
         publication.setResident(resident);
@@ -58,8 +78,26 @@ public class PublicationService {
     }
 
     // UPDATE PUBLICATION
-    public Publication setUpdatePublication(@NonNull Publication publication, Long idPublication){
+    public Publication setUpdatePublication(
+            @NonNull Publication publication,
+            MultipartFile photo,
+            Long idPublication){
         Publication existingPublication = getSelectPublicationById(idPublication);
+
+        if (photo != null && !photo.isEmpty()) {
+
+            if (existingPublication.getPhoto() != null && !existingPublication.getPhoto().equals(photo)) {
+                 blobStorageService.deleteFile(existingPublication.getPhoto());
+            }
+
+            String photoUrl = blobStorageService
+                    .uploadFile(
+                            photo,
+                            "publications"
+                    );
+
+            publication.setPhoto(photoUrl);
+        }
 
         BeanUtils.copyProperties(publication, existingPublication, "id", "creationDate");
         existingPublication.setId(idPublication);

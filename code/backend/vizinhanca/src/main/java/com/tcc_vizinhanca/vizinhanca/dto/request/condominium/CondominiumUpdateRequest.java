@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -19,7 +20,7 @@ public class CondominiumUpdateRequest {
 
     @JsonProperty("photo")
     @NotBlank(message = "Foto é obrigatório")
-    private String foto;
+    private MultipartFile foto;
 
     @JsonProperty("amount_blocks")
     @NotNull(message = "Quantidade de blocos é obrigatória")

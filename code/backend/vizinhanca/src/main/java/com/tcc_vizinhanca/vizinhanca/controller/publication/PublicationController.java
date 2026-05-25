@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,14 +62,18 @@ public class PublicationController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PublicationDetailResponse>> insertPublication(
-            @Valid @RequestBody PublicationRequest publicationRequest,
+            @Valid @ModelAttribute PublicationRequest publicationRequest,
             HttpServletRequest request) {
 
         String token = request.getHeader("Authorization").substring(7);
         String email = jwtService.extrairUsername(token);
 
         Publication publication = PublicationMapper.toEntity(publicationRequest);
-        Publication newPublication = publicationService.setInsertPublication(publication, email);
+        Publication newPublication = publicationService.setInsertPublication(
+                publication,
+                publicationRequest.getPhoto(),
+                email
+        );
 
         PublicationDetailResponse response = new PublicationDetailResponse(newPublication);
 
@@ -77,13 +82,19 @@ public class PublicationController {
     }
 
     // PUT
-    @PutMapping("{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PublicationDetailResponse>> updatePublication(
-            @Valid @RequestBody PublicationRequest publicationRequest, @PathVariable Long id
+            @Valid @ModelAttribute PublicationRequest publicationRequest,
+            @PathVariable Long id
             ) {
-        Publication publication = PublicationMapper.updateEntity(publicationRequest, new Publication());
+        Publication publication = PublicationMapper
+                .updateEntity(publicationRequest, new Publication());
 
-        Publication updatedPublication = publicationService.setUpdatePublication(publication, id);
+        Publication updatedPublication = publicationService
+                .setUpdatePublication(
+                        publication,
+                        publicationRequest.getPhoto(),
+                        id);
 
         PublicationDetailResponse response = new PublicationDetailResponse(updatedPublication);
 
@@ -91,7 +102,7 @@ public class PublicationController {
     }
 
     // DELETE
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deletePublication(@PathVariable Long id) {
         publicationService.setDeletePublication(id);
 

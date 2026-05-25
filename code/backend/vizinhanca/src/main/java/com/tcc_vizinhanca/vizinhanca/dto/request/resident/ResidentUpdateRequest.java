@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
 public class ResidentUpdateRequest {
 
-    private String photo;
+    private MultipartFile photo;
 
     @NotBlank(message = "Nome é obrigatório")
     private String name;

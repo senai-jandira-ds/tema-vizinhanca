@@ -18,12 +18,14 @@ import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.email.EmailService;
+import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -45,6 +47,9 @@ public class ResidentService {
 
     @Autowired
     private BlockService blockService;
+
+    @Autowired
+    private BlobStorageService blobStorageService;
 
     // SELECT ALL
     public List<Resident> getSelectAllResidents(){
@@ -109,8 +114,24 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
-    public Resident setUpdateResident(@NonNull ResidentUpdateRequest dto, Long idResident) {
+    public Resident setUpdateResident(
+            @NonNull ResidentUpdateRequest dto,
+            MultipartFile photo,
+            Long idResident) {
+
         Resident existingResident = getSelectResidentById(idResident);
+
+        if(photo != null && !photo.isEmpty()){
+
+            if (existingResident.getPhoto() != null && !existingResident.getPhoto().equals(photo)){
+                blobStorageService.deleteFile(existingResident.getPhoto());
+            }
+
+            String newPhoto = blobStorageService
+                    .uploadFile(photo, "residents");
+
+            existingResident.setPhoto(newPhoto);
+        }
 
         if (dto.getCpf() != null && !dto.getCpf().equals(existingResident.getCpf())) {
             if (residentRepository.existsByCpf(dto.getCpf())) {

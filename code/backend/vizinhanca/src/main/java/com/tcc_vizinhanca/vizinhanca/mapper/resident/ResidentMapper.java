@@ -23,8 +23,6 @@ public class ResidentMapper {
     }
 
     public static Resident updateEntity(ResidentUpdateRequest dto, Resident entity, Block block) {
-
-        if (dto.getPhone() != null) entity.setPhoto(dto.getPhoto());
         if (dto.getName() != null) entity.setName(dto.getName());
         if (dto.getApartment() != null) entity.setApartment(dto.getApartment());
         if (dto.getCpf() != null) entity.setCpf(dto.getCpf());
