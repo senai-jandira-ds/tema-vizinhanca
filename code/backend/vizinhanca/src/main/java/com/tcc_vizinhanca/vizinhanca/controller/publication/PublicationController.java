@@ -15,6 +15,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.publication.PublicationDetailR
 import com.tcc_vizinhanca.vizinhanca.dto.response.publication.PublicationResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
 import com.tcc_vizinhanca.vizinhanca.mapper.publication.PublicationMapper;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.publication.PublicationService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,18 +64,22 @@ public class PublicationController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PublicationDetailResponse>> insertPublication(
-            @Valid @ModelAttribute PublicationRequest publicationRequest,
-            HttpServletRequest request) {
+            @Valid @ModelAttribute PublicationRequest publicationRequest
+    ) {
 
-        String token = request.getHeader("Authorization").substring(7);
-        String email = jwtService.extrairUsername(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
         Publication publication = PublicationMapper.toEntity(publicationRequest);
+
         Publication newPublication = publicationService.setInsertPublication(
-                publication,
-                publicationRequest.getPhoto(),
-                email
-        );
+                        publication,
+                        publicationRequest.getPhoto(),
+                        user.email()
+                );
 
         PublicationDetailResponse response = new PublicationDetailResponse(newPublication);
 

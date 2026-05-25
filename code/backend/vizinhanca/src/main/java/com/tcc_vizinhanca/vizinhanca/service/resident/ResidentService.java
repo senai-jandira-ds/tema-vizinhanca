@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ResidentService {
@@ -97,11 +98,11 @@ public class ResidentService {
         resident.setPassword(passwordEncoder.encode(rawPassword));
         resident.setIsActive(true);
 
-        Boolean emailSent = emailService.sendWelcomeEmail(
+        boolean emailSent = emailService.sendWelcomeEmail(
                 resident.getEmail(),
                 resident.getName(),
                 rawPassword
-        );
+        ).join();
 
         if (!emailSent) {
             throw new ResponseStatusException(

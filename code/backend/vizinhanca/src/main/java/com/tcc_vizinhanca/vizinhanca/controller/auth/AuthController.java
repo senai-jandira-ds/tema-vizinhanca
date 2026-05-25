@@ -4,10 +4,12 @@ import com.tcc_vizinhanca.vizinhanca.dto.auth.LoginRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.LoginCondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.auth.AuthService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
@@ -18,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +31,6 @@ import java.util.List;
 public class AuthController {
 
     private final AuthService authService;
-
-    @Autowired
-    private JwtService jwtService;
 
     @Autowired
     private CondominiumService condominiumService;
@@ -46,9 +46,10 @@ public class AuthController {
     }
 
     @PostMapping("/login/condominium")
-    public ResponseEntity<ApiResponse<AuthResponse<CondominiumDetailResponse>>> loginCondominium(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse<LoginCondominiumResponse>>> loginCondominium(@RequestBody LoginRequest request) {
 
-        AuthResponse<CondominiumDetailResponse> response = authService.loginCondominium(request.getEmail(), request.getPassword());
+
+        AuthResponse<LoginCondominiumResponse> response = authService.loginCondominium(request.getEmail(), request.getPassword());
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Usuário logado com sucesso!"));
 
@@ -67,10 +68,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> meCondominium(
             HttpServletRequest request) {
 
-        String token = request.getHeader("Authorization").substring(7);
-        String email = jwtService.extrairUsername(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        Condominium condominium = condominiumService.getSelectCondominiumByEmail(email);
+        Condominium condominium = condominiumService.getDetailedCondominiumByEmail(user.email());
         List<ActivityView> activities = activityViewService
                 .getSelectActivitiesViewByCondominiumId(condominium.getId());
 
@@ -84,10 +89,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<ResidentDetailResponse>> meResident(
             HttpServletRequest request) {
 
-        String token = request.getHeader("Authorization").substring(7);
-        String email = jwtService.extrairUsername(token);
+        AuthenticatedUser user =
+                (AuthenticatedUser)
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getPrincipal();
 
-        Resident resident = residentService.getSelectResidentByEmail(email);
+        Resident resident = residentService.getSelectResidentByEmail(user.email());
 
         ResidentDetailResponse response = new ResidentDetailResponse(resident);
 

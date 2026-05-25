@@ -17,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ResidentSummaryResponse {
     private Long id;
+    private String photo;
     private String name;
     private String apartment;
     private String cpf;
@@ -28,6 +29,7 @@ public class ResidentSummaryResponse {
 
     public ResidentSummaryResponse(Resident resident) {
         this.id = resident.getId();
+        this.photo = resident.getPhoto();
         this.name = resident.getName();
         this.apartment = resident.getApartment();
         this.cpf = resident.getCpf();

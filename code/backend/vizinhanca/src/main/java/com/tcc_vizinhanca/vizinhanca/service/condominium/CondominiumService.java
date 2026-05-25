@@ -56,6 +56,17 @@ public class CondominiumService {
                         HttpStatus.NOT_FOUND, "Condomínio não encontrado!"));
     }
 
+    public Condominium getDetailedCondominiumByEmail(String email) {
+        return condominiumRepository
+                .findDetailedByEmail(email)
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Condomínio não encontrado."
+                        )
+                );
+    }
+
     // INSERT CONDOMINIUM
     public Condominium setInsertCondominium(@NonNull Condominium condominium) {
         condominium.setId(null);
