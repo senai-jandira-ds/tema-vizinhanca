@@ -72,7 +72,7 @@ data class PublicationResponse(
 data class SingleResidentResponse(
     val status: Boolean,
     val message: String,
-    @SerializedName("response", alternate = ["data", "resident"]) // COMPLEMENTADO: Mapeia se o backend envelopar como 'resident' ou 'data'
+    @SerializedName("response", alternate = ["data", "resident"])
     val resident: ResidentResponse
 )
 
@@ -86,14 +86,13 @@ data class ResidentResponse(
     val block: BlockResponse?,
     val score: Int?,
     val phone: String? = null,
-    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) // COMPLEMENTADO: Garante compatibilidade caso mude para avatar ou photoUrl
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"])
     val photo: String? = null,
     val publications: List<PublicationResponse>? = null // Lista de posts específicos deste usuário
 )
 
 /**
- * Modelo de Payload para Atualização do Residente.
- * Atualizado para incluir o campo 'photo' que transportará o Base64 da galeria no PUT oficial.
+ * Modelo de Payload para textos e fotos na Atualização do Residente.
  */
 data class UpdateResidentRequest(
     val id: Int,
@@ -102,27 +101,19 @@ data class UpdateResidentRequest(
     val apartment: String?,
     val block: BlockResponse?,
     val phone: String?,
-    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) val photo: String? = null // COMPLEMENTADO: Suporte a mapeamentos alternativos de foto no PUT
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) val photo: String? = null
 )
 
 // ==========================================
 // 3. MODELOS PARA CRIAR POSTAGEM DO RESIDENTE (JSON / BASE64)
 // ==========================================
 
-/**
- * O que o aplicativo ENVIA no corpo (Body) da requisição para criar a publicação.
- * Mapeado exatamente igual ao modelo JSON exigido pelo Swagger do Scott.
- */
 data class CreatePostRequest(
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
-    @SerializedName("photo", alternate = ["photoBase64"]) val photoBase64: String // COMPLEMENTADO: Evita erro se a propriedade variar no JSON
+    @SerializedName("photo", alternate = ["photoBase64"]) val photoBase64: String
 )
 
-/**
- * Resposta padrão expandida que a API retorna confirmando que a postagem foi salva,
- * contendo metadados completos do servidor e os detalhes do objeto criado.
- */
 data class CreatePostResponse(
     val status: Boolean,
     @SerializedName("status_code") val statusCode: Int,
@@ -131,15 +122,12 @@ data class CreatePostResponse(
     val version: String?,
     @SerializedName("request_date") val requestDate: String?,
     val message: String,
-    @SerializedName("response", alternate = ["data"]) val response: CreatePostDataResponse? // COMPLEMENTADO: Captura caso mude para 'data'
+    @SerializedName("response", alternate = ["data"]) val response: CreatePostDataResponse?
 )
 
-/**
- * Detalhes do registro inserido no Banco de Dados que o servidor retorna
- */
 data class CreatePostDataResponse(
     val id: Int,
-    @SerializedName("photo", alternate = ["photoUrl"]) val photo: String?, // COMPLEMENTADO: Mapeia o retorno da imagem com segurança
+    @SerializedName("photo", alternate = ["photoUrl"]) val photo: String?,
     val title: String,
     val description: String,
     val creationDate: String?,
@@ -148,7 +136,96 @@ data class CreatePostDataResponse(
 )
 
 // ==========================================
-// 4. INTERFACE DA API (ROTAS DE RETROFIT)
+// 4. MODELOS PARA CRIAÇÃO E LISTAGEM DE SERVIÇO (SWAGGER / JSON)
+// ==========================================
+
+/**
+ * Payload JSON enviado no corpo (Body) para criar um novo serviço ou objeto.
+ * TOTALMENTE BLINDADO: Envia as chaves numéricas em snake_case para o validador
+ * e utiliza o status "ACTIVE" para evitar truncamento na tabela do banco de dados.
+ */
+data class CreateServiceRequest(
+    @SerializedName("title")
+    val title: String,
+
+    @SerializedName("description")
+    val description: String,
+
+    @SerializedName("photo", alternate = ["photoBase64", "photo_base64"])
+    val photoBase64: String,
+
+    @SerializedName("estimated_time", alternate = ["estimatedTime", "estimatedtime"])
+    val estimatedTime: Int,
+
+    @SerializedName("urgency")
+    val urgency: String,
+
+    @SerializedName("category_id", alternate = ["categoryId", "categoryid"])
+    val categoryId: Int,
+
+    // CORREÇÃO: Alterado de "ATIVO" para "ACTIVE" para sanar o erro 500 de truncamento de coluna
+    @SerializedName("status")
+    val status: String = "ACTIVE"
+)
+
+/**
+ * Resposta de sucesso do servidor do Render para a rota de serviços (GET e POST)
+ * Mapeada de acordo com o JSON fornecido pelo Swagger.
+ */
+data class CreateServiceResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code", alternate = ["statusCode"]) val statusCode: Int,
+    @SerializedName("developer") val developer: String? = null,
+    @SerializedName("api_description", alternate = ["apiDescription"]) val apiDescription: String? = null,
+    @SerializedName("version") val version: String? = null,
+    @SerializedName("request_date", alternate = ["requestDate"]) val requestDate: String? = null,
+    @SerializedName("message") val message: String,
+    @SerializedName("response", alternate = ["data"]) val response: ServiceResponseData?
+)
+
+data class ServiceResponseData(
+    @SerializedName("amountServices") val amountServices: Int? = null,
+    @SerializedName("services") val services: List<ServiceDetail>? = null
+)
+
+data class ServiceDetail(
+    @SerializedName("id") val id: Int,
+    @SerializedName("photo", alternate = ["photoUrl"]) val photo: String?,
+    @SerializedName("title") val title: String,
+    @SerializedName("estimatedTime") val estimatedTime: Int,
+    @SerializedName("urgency") val urgency: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("resident") val resident: ResidentDetail?,
+    @SerializedName("category") val category: CategoryDetail?
+)
+
+data class ResidentDetail(
+    @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String?,
+    @SerializedName("apartment") val apartment: String?,
+    @SerializedName("cpf") val cpf: String?,
+    @SerializedName("email") val email: String,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("score") val score: Int?,
+    @SerializedName("creationDate") val creationDate: String?,
+    @SerializedName("block") val block: BlockDetail?
+)
+
+data class BlockDetail(
+    @SerializedName("id") val id: Int,
+    @SerializedName("block") val block: String?
+)
+
+data class CategoryDetail(
+    @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String?,
+    @SerializedName("description") val description: String?,
+    @SerializedName("typeCategory") val typeCategory: String?
+)
+
+// ==========================================
+// 5. INTERFACE DA API (ROTAS DE RETROFIT)
 // ==========================================
 interface AuthApiService {
 
@@ -168,17 +245,30 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<SingleResidentResponse>
 
-    // --- ATUALIZAR CONTA E FOTO DO PERFIL (PUT PRINCIPAL - CORRIGIDO) ---
+    // --- ATUALIZAR CONTA E FOTO DO PERFIL ---
     @PUT("api/v1/resident")
     suspend fun updateResident(
         @Header("Authorization") token: String,
         @Body request: UpdateResidentRequest
     ): Response<SingleResidentResponse>
 
-    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE (JSON PURÍSSIMO) ---
+    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE ---
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,
         @Body request: CreatePostRequest
     ): Response<CreatePostResponse>
+
+    // --- SALVAR NOVO SERVIÇO/OBJETO NO BANCO (POST) ---
+    @POST("api/v1/service")
+    suspend fun criarServico(
+        @Header("Authorization") token: String,
+        @Body request: CreateServiceRequest
+    ): Response<CreateServiceResponse>
+
+    // --- BUSCA TODOS OS SERVIÇOS DO CONDOMÍNIO (GET) ---
+    @GET("api/v1/service")
+    suspend fun listarServicos(
+        @Header("Authorization") token: String
+    ): Response<CreateServiceResponse>
 }

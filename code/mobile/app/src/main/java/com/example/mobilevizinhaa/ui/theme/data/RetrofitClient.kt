@@ -6,6 +6,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Interceptor
 import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.Buffer
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -23,8 +24,8 @@ object RetrofitClient {
 
     /**
      * INTERCEPTOR ULTRA-CORRETIVO UNIVERSAL:
-     * Localiza e remove o ";charset=UTF-8" de qualquer requisição (seja Multipart ou JSON puro).
-     * Isso impede que o servidor rejeite payloads pesados contendo Strings Base64.
+     * Mantido exatamente como o seu original para garantir estabilidade completa
+     * nas telas de Login, Perfil e Publicação (Multipart).
      */
     private val contentTypeInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
@@ -33,10 +34,8 @@ object RetrofitClient {
         if (requestBody != null) {
             val contentTypeOriginal = requestBody.contentType()?.toString() ?: ""
 
-            // Aplica a limpeza se contiver qualquer menção a "charset", protegendo tanto JSON quanto Multipart
             if (contentTypeOriginal.contains("charset", ignoreCase = true)) {
 
-                // Realiza a limpeza tratando variações comuns de espaçamento e caixa das letras
                 val novoTipoString = contentTypeOriginal
                     .replace(";charset=UTF-8", "", ignoreCase = true)
                     .replace("; charset=UTF-8", "", ignoreCase = true)
@@ -45,7 +44,6 @@ object RetrofitClient {
 
                 val novoContentType = novoTipoString.toMediaTypeOrNull()
 
-                // Reconstrói o corpo da requisição com a nova etiqueta de Content-Type limpa
                 val novoRequestBody = object : RequestBody() {
                     override fun contentType() = novoContentType
                     override fun contentLength() = requestBody.contentLength()
@@ -60,26 +58,23 @@ object RetrofitClient {
             }
         }
 
-        // Devolve a requisição pronta e limpa para seguir viagem para o servidor
         return@Interceptor chain.proceed(originalRequest)
     }
 
     /**
-     * Configuração do Gson personalizada:
-     * .setLenient() ajuda a aceitar JSONs mal formatados que alguns servidores enviam.
+     * Configuração do Gson personalizada.
      */
     private val gson = GsonBuilder()
         .setLenient()
         .create()
 
     /**
-     * Configuração do Cliente HTTP (OkHttp)
+     * 1. CLIENTE HTTP PADRÃO (Usado por todas as outras telas do App)
+     * Risco Zero: Preserva o fluxo intocado com o interceptor universal.
      */
     private val okHttpClient = OkHttpClient.Builder()
-        // O nosso limpador de cabeçalho roda obrigatoriamente ANTES do logger para vermos a requisição purificada
         .addInterceptor(contentTypeInterceptor)
         .addInterceptor(loggingInterceptor)
-        // Timeouts de 30s expandidos para o Render.com não derrubar conexões lentas de upload
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
@@ -87,21 +82,52 @@ object RetrofitClient {
         .build()
 
     /**
-     * Instância do Retrofit.
+     * 2. CLIENTE HTTP SEGURO (Exclusivo para a criação de Serviços)
+     * Deixa o Gson trabalhar sem interceptores de escrita de fluxo intermediário,
+     * garantindo que o JSON vá 100% preenchido para a API do Leonardo Scotti.
+     */
+    private val okHttpClientParaServico = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor) // Mantém o log ativo para você acompanhar
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .build()
+
+    /**
+     * Instância do Retrofit Padrão.
      */
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            // Usando o conversor GSON com a configuração que definimos acima
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
     /**
-     * Nosso serviço de Autenticação e Residentes.
+     * Instância do Retrofit Limpa (Nova).
+     */
+    private val retrofitParaServico: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClientParaServico)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+
+    /**
+     * SERVIÇO PRINCIPAL: Usado para Login, Buscar Perfil, Criar Publicações, etc.
      */
     val authApi: AuthApiService by lazy {
         retrofit.create(AuthApiService::class.java)
+    }
+
+    /**
+     * SERVIÇO EXCLUSIVO: Criada especificamente para a rota de serviços,
+     * evitando o bug do JSON em branco (Erro 400).
+     */
+    val authApiParaServico: AuthApiService by lazy {
+        retrofitParaServico.create(AuthApiService::class.java)
     }
 }

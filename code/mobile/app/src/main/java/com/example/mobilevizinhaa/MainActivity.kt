@@ -34,9 +34,11 @@ import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScree
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
-import com.example.mobilevizinhaa.ui.theme.listaitens.criar.CriarPedidoObjetoScreen
 
-// ADICIONADO: Import da sua tela de Perfil / Configurações
+// CORRIGIDO: Import atualizado apontando para o novo pacote da tela de serviços
+import com.example.mobilevizinhaa.ui.theme.home.createobjeto.CriarPedidoObjetoScreen
+
+// Import da sua tela de Perfil / Configurações
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 
 class MainActivity : ComponentActivity() {
@@ -75,8 +77,7 @@ fun AppNavigation() {
             currentRoute.startsWith("detalhe_post")
 
     Scaffold(
-        // CORREÇÃO 1: Definimos os insets como vazios no Scaffold principal.
-        // Isso permite que o conteúdo do NavHost decida se vai ou não invadir a StatusBar.
+        // Insets vazios no Scaffold principal para o conteúdo fluir livremente
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (!esconderBottomBar) {
@@ -88,8 +89,7 @@ fun AppNavigation() {
             navController = navController,
             startDestination = "login",
             modifier = Modifier
-                // CORREÇÃO 2: Aplicamos apenas o padding da BottomBar de forma inteligente.
-                // Evita que as telas de formulário fiquem com um buraco branco no topo.
+                // Aplica apenas o padding da BottomBar para proteger a interface de cortes
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
 
@@ -105,7 +105,7 @@ fun AppNavigation() {
                 )
             }
 
-            // --- TELA HOME (Seu Header azul vai flutuar perfeitamente abaixo dos ícones da barra) ---
+            // --- TELA HOME ---
             composable("home") {
                 HomeScreen(
                     navController = navController,
@@ -118,9 +118,12 @@ fun AppNavigation() {
                 PublicacaoScreen(navController, homeViewModel)
             }
 
-            // --- NOVA TELA: CRIAÇÃO DE PEDIDO OU OBJETO ---
+            // --- TELA DE CRIAÇÃO DE PEDIDO OU OBJETO (Mapeado com o HomeViewModel para Token) ---
             composable("criar_pedido") {
-                CriarPedidoObjetoScreen(navController = navController)
+                CriarPedidoObjetoScreen(
+                    navController = navController,
+                    homeViewModel = homeViewModel
+                )
             }
 
             // --- DETALHE DA POSTAGEM ---
@@ -132,7 +135,7 @@ fun AppNavigation() {
                 DetalhePostagemScreen(id, navController, homeViewModel)
             }
 
-            // --- ADICIONADO: ROTA DA TELA DE CONFIGURAÇÕES (PERFIL) ---
+            // --- ROTA DA TELA DE CONFIGURAÇÕES (PERFIL) ---
             composable("configuracoes") {
                 PerfilScreen(
                     navController = navController,

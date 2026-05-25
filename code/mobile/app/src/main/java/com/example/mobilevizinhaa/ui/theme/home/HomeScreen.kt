@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
-import com.example.mobilevizinhaa.ui.theme.*
+import com.example.mobilevizinhaa.ui.theme.BluePrimary
+import com.example.mobilevizinhaa.ui.theme.GrayBackground
 
 @Composable
 fun HomeScreen(
@@ -35,6 +36,7 @@ fun HomeScreen(
     val posts = viewModel.posts
     val focusManager = LocalFocusManager.current
 
+    // Sincroniza os dados do perfil em segundo plano assim que a Home abre
     LaunchedEffect(Unit) {
         val tokenSalvo = viewModel.obterTokenSalvo()
         if (tokenSalvo.isNotEmpty()) {
@@ -53,7 +55,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
 
-            // Item 1: Header Dinâmico
+            // Item 1: Header Dinâmico de Perfil
             item(span = { GridItemSpan(3) }) {
                 HomeHeader(
                     userName = resident?.name ?: "Vizinho(a)",
@@ -64,12 +66,12 @@ fun HomeScreen(
                 )
             }
 
-            // Item 2: Espaçador
+            // Item 2: Espaçador Estrutural
             item(span = { GridItemSpan(3) }) {
                 Spacer(modifier = Modifier.height(30.dp))
             }
 
-            // Item 3: Seção de Cards
+            // Item 3: Seção reativa de Cards (Pedidos e Objetos vinculados à nova rota de serviços)
             item(span = { GridItemSpan(3) }) {
                 Row(
                     modifier = Modifier
@@ -83,7 +85,7 @@ fun HomeScreen(
                         iconeRes = R.drawable.pedido,
                         onAddClick = {
                             focusManager.clearFocus()
-                            navController.navigate("criar_pedido")
+                            navController.navigate("criar_pedido") // Abre a tela CreateServiceScreen
                         }
                     )
                     InfoCard(
@@ -92,13 +94,13 @@ fun HomeScreen(
                         iconeRes = R.drawable.objeto,
                         onAddClick = {
                             focusManager.clearFocus()
-                            navController.navigate("criar_pedido")
+                            navController.navigate("criar_pedido") // Abre a tela CreateServiceScreen
                         }
                     )
                 }
             }
 
-            // Item 4: Título Postagens
+            // Item 4: Título da Seção do Mural
             item(span = { GridItemSpan(3) }) {
                 Text(
                     text = "Postagens",
@@ -109,7 +111,7 @@ fun HomeScreen(
                 )
             }
 
-            // Item 5: Grade de Fotos do loop (Otimizada e Limpa)
+            // Item 5: Grade reativa de Fotos em formato 3x3
             posts.forEach { post ->
                 item {
                     val bitmap = remember(post.imagemUrl) {
@@ -165,7 +167,7 @@ fun HomeScreen(
             }
         }
 
-        // Botão Flutuante (FAB)
+        // Botão Flutuante (FAB) para criar novas publicações comuns no mural
         ExtendedFloatingActionButton(
             onClick = {
                 focusManager.clearFocus()
