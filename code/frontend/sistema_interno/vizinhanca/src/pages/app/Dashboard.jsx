@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Card from "../../components/ui/Card";
+import { getCondominiumData } from "../../services/authService";
+import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType } from "../../services/activityService";
 import Table from "./components/Table";
 import styles from "./Dashboard.module.css";
 
@@ -7,12 +9,51 @@ function Dashboard() {
 
     const [showNotifications, setShowNotifications] = useState(false);
 
+    const condominiumData = getCondominiumData()
+    console.log("informacoes do condominio")
+
+    console.log(condominiumData)
+
     const cards = [
-        { id: 1, title: "Usuários", quantity: 10, color: "#10B765", to: "users" },
-        { id: 2, title: "Pedidos", quantity: 5, color: "#A99817", to: "services" },
-        { id: 3, title: "Objetos", quantity: 2, color: "#2EA9F5", to: "services" },
-        { id: 4, title: "Denúncias", quantity: 1, color: "#FF1111", to: "reports" },
+        {
+            id: 1,
+            title: "Usuários",
+            quantity: condominiumData?.residents?.length || 0,
+            color: "#10B765",
+            to: "users"
+        },
+        {
+            id: 2,
+            title: "Pedidos",
+            quantity: condominiumData?.services?.length || 0,
+            color: "#A99817",
+            to: "services"
+        },
+        {
+            id: 3,
+            title: "Objetos",
+            quantity: condominiumData?.activities?.filter(
+                (item) => item.tipo === "Objeto"
+            ).length || 0,
+            color: "#2EA9F5",
+            to: "services"
+        },
+        {
+            id: 4,
+            title: "Denúncias",
+            quantity: condominiumData?.reports?.length || 0,
+            color: "#FF1111",
+            to: "reports"
+        },
     ];
+
+    const mappedData = condominiumData.activities.map((activity, index) => ({
+        id: activity.idMorador?.toString() || (index + 1).toString(),
+        nome: activity.morador || '',
+        detalhe: activity.descricao || '',
+        tipo: formatActivityType(activity.tipo),
+        status: formatActivityStatus(activity.status),
+    }));
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
@@ -31,13 +72,7 @@ function Dashboard() {
         },
     ];
 
-    const dadosTabela = [
-        { id: '5524', nome: 'João Pereira', detalhe: 'Preciso de uma furadeira por 1...', tipo: 'Pedido', status: 'Aberto' },
-        { id: '3392', nome: 'Maria Oliveira', detalhe: 'Escada disponível para emprést..', tipo: 'Objeto', status: 'Disponível' },
-        { id: '3393', nome: 'Pedro Santos', detalhe: 'Posso ajudar com a mudança hoje', tipo: 'Interação', status: 'Concluído' },
-        { id: '3394', nome: 'Ana Costa', detalhe: 'Preciso de ajuda com jardim...', tipo: 'Pedido', status: 'Aberto' },
-        { id: '3395', nome: 'Carlos Lima', detalhe: 'Ferramentas emprestadas', tipo: 'Objeto', status: 'Disponível' },
-    ];
+    const dadosTabela = mappedData
 
     const handleCellClick = (valor, colunaId, linha) => {
         console.log('Clicou na célula:', { valor, colunaId, linha });
@@ -125,6 +160,7 @@ function Dashboard() {
                     onCellClick={handleCellClick}
                     showPagination={true}
                     showExport={false}
+                    pageSize={6}
                 />
             </main>
         </>

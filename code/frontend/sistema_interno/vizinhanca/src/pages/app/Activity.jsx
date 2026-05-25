@@ -112,6 +112,7 @@ function Activity() {
                     data={dadosFiltrados}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    modalType="servico"
                     exportType="atividade-geral"
                 />
             </main>

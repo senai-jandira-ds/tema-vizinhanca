@@ -20,10 +20,8 @@ export default function Modal({ isOpen, onClose, data, type = 'usuario', onSubmi
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalContent}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}> 
           {renderContent()}
-        </div>
       </div>
     </div>
   );
@@ -34,7 +32,7 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
   const condominioData = getCondominiumData();
 
   const [formData, setFormData] = useState({
-    foto: data?.linha?.foto || "",
+    foto: data?.linha?.photo || "",
     nome: data?.linha?.nome || "",
     apto: data?.linha?.apto || "",
     cpf: (data?.linha?.cpf && data?.linha.cpf.replace(/\D/g, '')) || "",
@@ -53,7 +51,7 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
     const { id, ...dadosSemId } = formData;
 
     const dadosParaEnviar = {
-      photo: dadosSemId.foto || "",
+      photo: dadosSemId.photo || "",
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
       cpf: dadosSemId.cpf || "",
@@ -83,12 +81,12 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
   };
 
   return (
-    <>
+    <div className={styles.user}>
       {!isEdicao && (
         <img
           className={styles.avatar}
-          src="https://i.pravatar.cc/300"
-          alt=""
+          src={formData.foto}
+          alt="Foto de perfil do usuário"
         />
       )}
 
@@ -159,18 +157,20 @@ function UsuarioModal({ data, onClose, onSubmit, onDelete }) {
         )}
         <button className={styles.finalizar} onClick={handleSubmit}>{isEdicao ? 'Finalizar' : 'Cadastrar'}</button>
       </div>
-    </>
+    </div>
   );
 }
 
-function ServicoModal({ data }) {
+function ServicoModal({ data, onClose }) {
+
   return (
-    <>
+
+    <div className={styles.service}>
       <h1>Detalhes do Serviço</h1>
 
       <input
         type="text"
-        defaultValue={data?.linha?.tipo || ""}
+        defaultValue={data?.linha?.categoria || ""}
         placeholder="Tipo de Serviço"
         className={styles.inputGrande}
       />
@@ -185,7 +185,7 @@ function ServicoModal({ data }) {
       <div className={styles.row}>
         <input
           type="text"
-          defaultValue={data?.linha?.solicitante || ""}
+          value={data?.linha?.nome || ""}
           placeholder="Solicitante"
           className={styles.inputMedio}
         />
@@ -205,10 +205,10 @@ function ServicoModal({ data }) {
       />
 
       <div className={styles.buttons}>
-        <button className={styles.cancelar}>Cancelar</button>
+      <button className={styles.cancelar} onClick={onClose}>Cancelar</button>
         <button className={styles.finalizar}>Finalizar</button>
       </div>
-    </>
+    </div>
   );
 }
 

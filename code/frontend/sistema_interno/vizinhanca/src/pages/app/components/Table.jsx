@@ -10,19 +10,18 @@ import {
 import ExportButton from "./ExportBtn";
 import styles from './Table.module.css';
 import SortIcon from './SortIcon';
-import PaginationIcon from '../../../assets/icons/vectorarrow.png';
 import Modal from './Modal';
 
 export default function Table({
   columns = [],
   data = [],
   onCellClick = null,
-  exportType = "",
+  exportType = null,
   showPagination = false,
   showExport = true,
   pageSize = 8,
   maxHeight = null,
-  modalType = 'usuario',
+  modalType = '',
   onSubmit = null,
   onDelete = null,
   onCadastrarNovo = null

@@ -89,6 +89,7 @@ function Security() {
                     data={dadosTabela}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    modalType="denuncia"
                     exportType="denuncias"
                 />
             </main>
