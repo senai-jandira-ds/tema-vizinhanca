@@ -83,7 +83,7 @@ public class AuthService {
 
     public AuthResponse<ResidentDetailResponse> loginResident(String email, String password) {
 
-        Resident resident = residentRepository.findByEmail(email)
+        Resident resident = residentRepository.findByEmailWithPublications(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
                 ));

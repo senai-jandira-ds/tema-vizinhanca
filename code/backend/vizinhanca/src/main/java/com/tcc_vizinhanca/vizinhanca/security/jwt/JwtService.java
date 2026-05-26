@@ -44,8 +44,8 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("id_condominium", idCondominium)
-                .claim("id_morador", idResident)
-                .claim("tipo_perfil", typePerfil)
+                .claim("id_resident", idResident)
+                .claim("type_perfil", typePerfil)
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(

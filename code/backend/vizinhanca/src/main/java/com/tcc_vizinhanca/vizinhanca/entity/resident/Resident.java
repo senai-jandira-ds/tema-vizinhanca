@@ -12,6 +12,7 @@ package com.tcc_vizinhanca.vizinhanca.entity.resident;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
+import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -66,13 +67,20 @@ public class Resident {
 
     @ManyToOne
     @JoinColumn(name = "id_bloco")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Block block;
 
     @OneToMany(mappedBy = "resident",  fetch = FetchType.LAZY)
     private Set<Publication> publications = new HashSet<>();
 
+    @OneToMany(mappedBy = "resident", fetch = FetchType.LAZY)
+    private Set<Service> services = new HashSet<>();
+
     @ManyToOne
     @JoinColumn( name = "id_condominio")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Condominium condominium;
 
     @PrePersist

@@ -18,6 +18,8 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,34 +41,29 @@ public class PublicationService {
     private BlobStorageService blobStorageService;
 
     // SELECT ALL
-    public List<Publication> getSelectAllPublications(){
-        return publicationRepository.findAll();
+    public Page<Publication> getSelectAllPublications(Pageable pageable) {
+        return publicationRepository.findAll(pageable);
     }
 
     // SELECT BY ID
-    public Publication getSelectPublicationById(Long id){
+    public Publication getSelectPublicationById(Long id) {
         return publicationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Publicação não encontrada no banco de dados!"));
+                        HttpStatus.NOT_FOUND, "Publicação não encontrada no banco de dados!"));
     }
 
+    // INSERT PUBLICATION
     public Publication setInsertPublication(
             @NonNull Publication publication,
             MultipartFile photo,
             String email) {
+
         Resident resident = residentRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Morador não encontrado!"));
 
         if (photo != null && !photo.isEmpty()) {
-
-            String photoUrl = blobStorageService
-                    .uploadFile(
-                            photo,
-                            "publications"
-                    );
-
+            String photoUrl = blobStorageService.uploadFile(photo, "publications");
             publication.setPhoto(photoUrl);
         }
 
@@ -81,21 +78,15 @@ public class PublicationService {
     public Publication setUpdatePublication(
             @NonNull Publication publication,
             MultipartFile photo,
-            Long idPublication){
+            Long idPublication) {
+
         Publication existingPublication = getSelectPublicationById(idPublication);
 
         if (photo != null && !photo.isEmpty()) {
-
-            if (existingPublication.getPhoto() != null && !existingPublication.getPhoto().equals(photo)) {
-                 blobStorageService.deleteFile(existingPublication.getPhoto());
+            if (existingPublication.getPhoto() != null) {
+                blobStorageService.deleteFile(existingPublication.getPhoto());
             }
-
-            String photoUrl = blobStorageService
-                    .uploadFile(
-                            photo,
-                            "publications"
-                    );
-
+            String photoUrl = blobStorageService.uploadFile(photo, "publications");
             publication.setPhoto(photoUrl);
         }
 
@@ -106,11 +97,11 @@ public class PublicationService {
     }
 
     // DELETE PUBLICATION
-    public void setDeletePublication(Long idPublication){
-        if (!publicationRepository.existsById(idPublication)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Publicação não encontrada no Banco de Dados!");
+    public void setDeletePublication(Long idPublication) {
+        if (!publicationRepository.existsById(idPublication)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Publicação não encontrada no Banco de Dados!");
         }
-
         publicationRepository.deleteById(idPublication);
     }
 }

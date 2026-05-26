@@ -96,7 +96,7 @@ public class AuthController {
                                 .getAuthentication()
                                 .getPrincipal();
 
-        Resident resident = residentService.getSelectResidentByEmail(user.email());
+        Resident resident = residentService.getDetailedResidentByEmail(user.email());
 
         ResidentDetailResponse response = new ResidentDetailResponse(resident);
 

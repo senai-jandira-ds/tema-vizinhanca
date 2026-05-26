@@ -9,7 +9,13 @@
 package com.tcc_vizinhanca.vizinhanca.repository.report;
 
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
+
+    Page<Report> findAll(Pageable pageable);
+
+    Page<Report> findByCondominiumId(Long condominiumId, Pageable pageable);
 }

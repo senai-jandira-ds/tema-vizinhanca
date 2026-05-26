@@ -18,6 +18,8 @@ import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,23 +42,23 @@ public class ServiceService {
     private CategoryService categoryService;
 
     // SELECT ALL BY CONDOMINIUM
-    public List<Service> getSelectAllServicesByCondominiumId(Long condominiumId) {
-        return serviceRepository.findByCondominiumId(condominiumId);
+    public Page<Service> getSelectAllServicesByCondominiumId(Long condominiumId, Pageable pageable) {
+        return serviceRepository.findByCondominiumId(condominiumId, pageable);
     }
 
     // SELECT BY RESIDENT
-    public List<Service> getSelectServicesByResidentId(Long residentId) {
-        return serviceRepository.findByResidentId(residentId);
+    public Page<Service> getSelectServicesByResidentId(Long residentId, Pageable pageable) {
+        return serviceRepository.findByResidentId(residentId, pageable);
     }
 
     // SELECT BY STATUS
-    public List<Service> getSelectServicesByStatus(Long condominiumId, String status) {
-        return serviceRepository.findByCondominiumIdAndStatus(condominiumId, status);
+    public Page<Service> getSelectServicesByStatus(Long condominiumId, String status, Pageable pageable) {
+        return serviceRepository.findByCondominiumIdAndStatus(condominiumId, status, pageable);
     }
 
     // SELECT BY CATEGORY
-    public List<Service> getSelectServicesByCategory(Long condominiumId, Long categoryId) {
-        return serviceRepository.findByCondominiumIdAndCategoryId(condominiumId, categoryId);
+    public Page<Service> getSelectServicesByCategory(Long condominiumId, Long categoryId, Pageable pageable) {
+        return serviceRepository.findByCondominiumIdAndCategoryId(condominiumId, categoryId, pageable);
     }
 
     // SELECT BY ID

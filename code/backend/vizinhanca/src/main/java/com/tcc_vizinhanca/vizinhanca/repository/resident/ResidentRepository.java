@@ -9,15 +9,57 @@
 package com.tcc_vizinhanca.vizinhanca.repository.resident;
 
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ResidentRepository extends JpaRepository<Resident,Long> {
 
+    @Query("SELECT DISTINCT r FROM Resident r LEFT JOIN FETCH r.publications p WHERE r.email = :email")
+    Optional<Resident> findByEmailWithPublications(@Param("email") String email);
+
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.block
+    LEFT JOIN FETCH r.condominium
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithBasicDetailsByEmail(
+            @Param("email") String email
+    );
+
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.publications
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithPublicationsByEmail(
+            @Param("email") String email
+    );
+
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.services s
+    LEFT JOIN FETCH s.category
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithServicesByEmail(
+            @Param("email") String email
+    );
+
     Optional<Resident> findByEmail(String email);
-    List<Resident> findByCondominiumId(Long condominiumId);
+
+    Page<Resident> findByCondominiumId(Long condominiumId, Pageable pageable);
+
+    Page<Resident> findAll(Pageable pageable);
+
     boolean existsByCpf(String cpf);
-    boolean existsByEmail(String email);
 }
