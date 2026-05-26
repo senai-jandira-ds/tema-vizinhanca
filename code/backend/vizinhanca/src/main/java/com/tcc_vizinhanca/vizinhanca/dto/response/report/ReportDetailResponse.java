@@ -12,6 +12,7 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.report;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.publication.PublicationSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class ReportDetailResponse {
     private CondominiumSummaryResponse condominium;
     private ReasonReportResponse reasonReport;
     private Long objectId;
-    private Long serviceId;
+    private ServiceSummaryResponse service;
     private PublicationSummaryResponse publication;
 
     public ReportDetailResponse(Report report) {
@@ -48,9 +49,9 @@ public class ReportDetailResponse {
         this.objectId = report.getObject() != null
                 ? report.getObject().getId()
                 : 0;
-        this.serviceId = report.getService() != null
-                ? report.getService().getId()
-                : 0;
+        this.service = report.getService() != null
+                ? new ServiceSummaryResponse(report.getService())
+                : new ServiceSummaryResponse();
         this.publication = report.getPublication() != null
                 ? new PublicationSummaryResponse(report.getPublication())
                 : new PublicationSummaryResponse();
