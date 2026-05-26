@@ -9,6 +9,8 @@
 package com.tcc_vizinhanca.vizinhanca.repository.service;
 
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +28,20 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
 
     @Query("SELECT s FROM Service s WHERE s.condominium.id = :condominiumId AND s.category.id = :categoryId")
     List<Service> findByCondominiumIdAndCategoryId(@Param("condominiumId") Long condominiumId, @Param("categoryId") Long categoryId);
+
+    Page<Service> findByCondominiumId(Long condominiumId, Pageable pageable);
+
+    Page<Service> findByResidentId(Long residentId, Pageable pageable);
+
+    @Query("SELECT s FROM Service s WHERE s.condominium.id = :condominiumId AND s.status = :status")
+    Page<Service> findByCondominiumIdAndStatus(
+            @Param("condominiumId") Long condominiumId,
+            @Param("status") String status,
+            Pageable pageable);
+
+    @Query("SELECT s FROM Service s WHERE s.condominium.id = :condominiumId AND s.category.id = :categoryId")
+    Page<Service> findByCondominiumIdAndCategoryId(
+            @Param("condominiumId") Long condominiumId,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable);
 }

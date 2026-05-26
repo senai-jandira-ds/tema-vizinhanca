@@ -10,6 +10,7 @@ package com.tcc_vizinhanca.vizinhanca.controller.service;
 import com.tcc_vizinhanca.vizinhanca.dto.request.service.ServiceCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.service.ServiceUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
@@ -21,6 +22,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,77 +41,81 @@ public class ServiceController {
     @Autowired
     private ServiceService serviceService;
 
-    @Autowired
-    private JwtService jwtService;
-
-    // GET ALL BY CONDOMINIUM
+    // GET ALL BY CONDOMINIUM — ex: GET /api/v1/service?page=0&size=20
     @GetMapping
-    public ResponseEntity<ApiResponse<ServiceResponse>> listAllServices(HttpServletRequest request) {
-        AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+    public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listAllServices(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
 
-        List<Service> services = serviceService.getSelectAllServicesByCondominiumId(user.idCondominium());
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Service> services = serviceService.getSelectAllServicesByCondominiumId(user.idCondominium(), pageable);
 
         return ResponseEntity.ok(ResponseUtil.success(
-                new ServiceResponse(services), "Serviços retornados com sucesso!"));
+                new PageResponse<>(services, ServiceDetailResponse::new),
+                "Serviços retornados com sucesso!"));
     }
 
     // GET BY STATUS
     @GetMapping("/status/{status}")
-    public ResponseEntity<ApiResponse<ServiceResponse>> listServicesByStatus(
-            @PathVariable String status, HttpServletRequest request) {
-        AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+    public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listServicesByStatus(
+            @PathVariable String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
 
-        List<Service> services = serviceService.getSelectServicesByStatus(user.idCondominium(), status);
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Service> services = serviceService.getSelectServicesByStatus(user.idCondominium(), status, pageable);
 
         return ResponseEntity.ok(ResponseUtil.success(
-                new ServiceResponse(services), "Serviços filtrados por status retornados com sucesso!"));
+                new PageResponse<>(services, ServiceDetailResponse::new),
+                "Serviços filtrados por status retornados com sucesso!"));
     }
 
     // GET BY CATEGORY
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<ApiResponse<ServiceResponse>> listServicesByCategory(
-            @PathVariable Long categoryId, HttpServletRequest request) {
-        AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+    public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listServicesByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
 
-        List<Service> services = serviceService.getSelectServicesByCategory(user.idCondominium(), categoryId);
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Service> services = serviceService.getSelectServicesByCategory(user.idCondominium(), categoryId, pageable);
 
         return ResponseEntity.ok(ResponseUtil.success(
-                new ServiceResponse(services), "Serviços filtrados por categoria retornados com sucesso!"));
+                new PageResponse<>(services, ServiceDetailResponse::new),
+                "Serviços filtrados por categoria retornados com sucesso!"));
     }
 
     // GET BY RESIDENT
     @GetMapping("/resident/{residentId}")
-    public ResponseEntity<ApiResponse<ServiceResponse>> listServicesByResident(
-            @PathVariable Long residentId) {
+    public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listServicesByResident(
+            @PathVariable Long residentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<Service> services = serviceService.getSelectServicesByResidentId(residentId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Service> services = serviceService.getSelectServicesByResidentId(residentId, pageable);
 
         return ResponseEntity.ok(ResponseUtil.success(
-                new ServiceResponse(services), "Serviços do morador retornados com sucesso!"));
+                new PageResponse<>(services, ServiceDetailResponse::new),
+                "Serviços do morador retornados com sucesso!"));
     }
 
     // GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ServiceDetailResponse>> searchServiceById(
-            @PathVariable("id") Long id) {
-
+    public ResponseEntity<ApiResponse<ServiceDetailResponse>> searchServiceById(@PathVariable Long id) {
         Service service = serviceService.getSelectServiceById(id);
-
         return ResponseEntity.ok(ResponseUtil.success(
                 new ServiceDetailResponse(service), "Serviço encontrado com sucesso!"));
     }
@@ -116,12 +125,9 @@ public class ServiceController {
     public ResponseEntity<ApiResponse<ServiceDetailResponse>> insertService(
             @Valid @RequestBody ServiceCreateRequest request,
             HttpServletRequest httpRequest) {
+
         AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Service service = new Service();
         service.setPhoto(request.getPhoto());
@@ -131,7 +137,8 @@ public class ServiceController {
         service.setDescription(request.getDescription());
         service.setStatus(request.getStatus());
 
-        Service saved = serviceService.setInsertService(service, user.idResident(), user.idCondominium(), request.getCategoryId());
+        Service saved = serviceService.setInsertService(
+                service, user.idResident(), user.idCondominium(), request.getCategoryId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseUtil.success(new ServiceDetailResponse(saved), "Serviço criado com sucesso!"));
@@ -161,7 +168,6 @@ public class ServiceController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteService(@PathVariable Long id) {
         serviceService.setDeleteServiceById(id);
-
         return ResponseEntity.ok(ResponseUtil.success(null, "Serviço deletado com sucesso!"));
     }
 }

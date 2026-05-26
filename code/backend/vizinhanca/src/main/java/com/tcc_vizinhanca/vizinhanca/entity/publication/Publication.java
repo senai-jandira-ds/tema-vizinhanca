@@ -42,12 +42,16 @@ public class Publication {
     @Column(name = "data_criacao")
     private LocalDateTime creationDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_morador", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Resident resident;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_condominio", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Condominium condominium;
 
     @PrePersist

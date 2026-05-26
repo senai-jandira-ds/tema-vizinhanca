@@ -3,6 +3,7 @@ package com.tcc_vizinhanca.vizinhanca.controller.condominium;
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
@@ -21,6 +22,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,9 +42,6 @@ public class CondominiumController {
     private CondominiumService condominiumService;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
     private ResidentService residentService;
 
     @Autowired
@@ -49,74 +51,65 @@ public class CondominiumController {
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
         List<Condominium> condominiums = condominiumService.getSelectAllCondominiums();
-
         CondominiumResponse response = new CondominiumResponse(condominiums);
-
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de condomínios retornada com sucesso!"));
     }
 
-    // GET RESIDENTS
+    // GET RESIDENTS — ex: GET /api/v1/condominium/resident/me?page=0&size=20
     @GetMapping("/resident/me")
-    public ResponseEntity<ApiResponse<List<ResidentSummaryResponse>>> listAllResidentsByCondominium(
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllResidentsByCondominium(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
         AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<Resident> residents = residentService.getSelectResidentsByCondominiumId(user.idCondominium());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Resident> residents = residentService
+                .getSelectResidentsByCondominiumId(user.idCondominium(), pageable);
 
-        List<ResidentSummaryResponse> response = residents.stream()
-                .map(ResidentSummaryResponse::new)
-                .toList();
+        PageResponse<ResidentSummaryResponse> response =
+                new PageResponse<>(residents, ResidentSummaryResponse::new);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
 
     // GET ACTIVITIES
     @GetMapping("/activity/me")
-    public  ResponseEntity<ApiResponse<ActivityViewResponse>> listAllActivitiesByCondominium(
-            HttpServletRequest request
-    ) {
-        AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+    public ResponseEntity<ApiResponse<ActivityViewResponse>> listAllActivitiesByCondominium(
+            HttpServletRequest request) {
 
-        List<ActivityView> activities = activityViewService.getSelectActivitiesViewByCondominiumId(user.idCondominium());
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<ActivityView> activities = activityViewService
+                .getSelectActivitiesViewByCondominiumId(user.idCondominium());
 
         ActivityViewResponse response = new ActivityViewResponse(activities);
-
         return ResponseEntity.ok(ResponseUtil.success(response, "Atividades encontradas com sucesso!"));
     }
 
     // GET BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> searchCondominiumById(@PathVariable("id") Long idCondominium) {
+    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> searchCondominiumById(
+            @PathVariable("id") Long idCondominium) {
 
         Condominium condominium = condominiumService.getSelectCondominiumById(idCondominium);
-
         List<ActivityView> activities = activityViewService
                 .getSelectActivitiesViewByCondominiumId(idCondominium);
 
         CondominiumDetailResponse response = new CondominiumDetailResponse(condominium, activities);
-
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio encontrado com sucesso!"));
     }
 
     // POST
     @PostMapping
-    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(@Valid @RequestBody CondominiumCreateRequest condominiumCreateRequest) {
+    public ResponseEntity<ApiResponse<CondominiumDetailResponse>> insertCondominium(
+            @Valid @RequestBody CondominiumCreateRequest condominiumCreateRequest) {
 
         Condominium condominium = CondominiumMapper.toEntity(condominiumCreateRequest);
-
         Condominium newCondominium = condominiumService.setInsertCondominium(condominium);
-
         CondominiumDetailResponse response = new CondominiumDetailResponse(newCondominium);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -127,17 +120,13 @@ public class CondominiumController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CondominiumDetailResponse>> updateCondominium(
             @PathVariable Long id,
-            @Valid @ModelAttribute CondominiumUpdateRequest condominiumUpdateRequest
-            ) {
-        Condominium condominium = CondominiumMapper.updateEntity(condominiumUpdateRequest, new Condominium());
+            @Valid @ModelAttribute CondominiumUpdateRequest condominiumUpdateRequest) {
 
+        Condominium condominium = CondominiumMapper.updateEntity(condominiumUpdateRequest, new Condominium());
         Condominium updatedCondominium = condominiumService.setUpdateCondominium(
-                condominium,
-                condominiumUpdateRequest.getFoto(),
-                id);
+                condominium, condominiumUpdateRequest.getFoto(), id);
 
         CondominiumDetailResponse response = new CondominiumDetailResponse(updatedCondominium);
-
         return ResponseEntity.ok(ResponseUtil.success(response, "Condomínio atualizado com sucesso!"));
     }
 
@@ -145,7 +134,6 @@ public class CondominiumController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCondominium(@PathVariable Long id) {
         condominiumService.setDeleteCondominiumById(id);
-
         return ResponseEntity.ok(ResponseUtil.success(null, "Condomínio deletado com sucesso!"));
     }
 }

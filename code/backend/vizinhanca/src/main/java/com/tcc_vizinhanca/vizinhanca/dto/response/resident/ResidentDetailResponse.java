@@ -41,7 +41,7 @@ public class ResidentDetailResponse {
         this.score = resident.getScore();
         this.block = resident.getBlock() != null
                 ? new BlockSummaryResponse(resident.getBlock())
-                : null;
+                : new BlockSummaryResponse();
         this.creationDate = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
                 : "";
@@ -52,6 +52,6 @@ public class ResidentDetailResponse {
                 : List.of();
         this.condominium = resident.getCondominium() != null
                 ? new CondominiumSummaryResponse(resident.getCondominium())
-                : null;
+                : new CondominiumSummaryResponse();
     }
 }

@@ -22,6 +22,8 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,25 +55,21 @@ public class ResidentService {
     private BlobStorageService blobStorageService;
 
     // SELECT ALL
-    public List<Resident> getSelectAllResidents(){
-        return residentRepository.findAll();
+    public Page<Resident> getSelectAllResidents(Pageable pageable) {
+        return residentRepository.findAll(pageable);
     }
 
     // SELECT BY ID
-    public Resident getSelectResidentById(@NonNull Long id){
-        Resident resident = residentRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!"));
-
-        return resident;
+    public Resident getSelectResidentById(@NonNull Long id) {
+        return residentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!"));
     }
 
     // SELECT BY CONDOMINIUM ID
-    public List<Resident> getSelectResidentsByCondominiumId(Long idCondominium) {
-
+    public Page<Resident> getSelectResidentsByCondominiumId(Long idCondominium, Pageable pageable) {
         Condominium condominium = condominiumService.getSelectCondominiumById(idCondominium);
-
-        return residentRepository
-                .findByCondominiumId(condominium.getId());
+        return residentRepository.findByCondominiumId(condominium.getId(), pageable);
     }
 
     // SELECT BY EMAIL
@@ -89,27 +87,12 @@ public class ResidentService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado!");
         }
 
-//        if (residentRepository.existsByEmail(resident.getEmail())) {
-//            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
-//        }
-
         String rawPassword = PasswordGeneratorUtils.generateSecure(8);
 
         resident.setPassword(passwordEncoder.encode(rawPassword));
         resident.setIsActive(true);
 
-        boolean emailSent = emailService.sendWelcomeEmail(
-                resident.getEmail(),
-                resident.getName(),
-                rawPassword
-        ).join();
-
-        if (!emailSent) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Erro ao enviar email. Erro na SERVICE."
-            );
-        }
+        emailService.sendWelcomeEmail(resident.getEmail(), resident.getName(), rawPassword);
 
         return residentRepository.save(resident);
     }
@@ -122,15 +105,11 @@ public class ResidentService {
 
         Resident existingResident = getSelectResidentById(idResident);
 
-        if(photo != null && !photo.isEmpty()){
-
-            if (existingResident.getPhoto() != null && !existingResident.getPhoto().equals(photo)){
+        if (photo != null && !photo.isEmpty()) {
+            if (existingResident.getPhoto() != null) {
                 blobStorageService.deleteFile(existingResident.getPhoto());
             }
-
-            String newPhoto = blobStorageService
-                    .uploadFile(photo, "residents");
-
+            String newPhoto = blobStorageService.uploadFile(photo, "residents");
             existingResident.setPhoto(newPhoto);
         }
 
@@ -139,12 +118,6 @@ public class ResidentService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado!");
             }
         }
-
-//        if (dto.getEmail() != null && !dto.getEmail().equals(existingResident.getEmail())) {
-//            if (residentRepository.existsByEmail(dto.getEmail())) {
-//                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado!");
-//            }
-//        }
 
         Block block = dto.getIdBlock() != null
                 ? blockService.getSelectBlockById(dto.getIdBlock())
@@ -156,11 +129,11 @@ public class ResidentService {
     }
 
     // DELETE RESIDENT
-    public void setDeleteResidentById(Long idResident){
+    public void setDeleteResidentById(Long idResident) {
         if (!residentRepository.existsById(idResident)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Morador não  encontrado no Banco de Dados!");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!");
         }
-
         residentRepository.deleteById(idResident);
     }
 }

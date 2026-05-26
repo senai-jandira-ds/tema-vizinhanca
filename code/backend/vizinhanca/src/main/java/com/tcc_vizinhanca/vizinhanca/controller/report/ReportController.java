@@ -11,6 +11,7 @@ package com.tcc_vizinhanca.vizinhanca.controller.report;
 
 import com.tcc_vizinhanca.vizinhanca.dto.request.report.ReportRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
@@ -23,6 +24,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,15 +43,16 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
-    @Autowired
-    private JwtService jwtService;
-
-    // GET ALL
+    // GET ALL — ex: GET /api/v1/report?page=0&size=20
     @GetMapping
-    public ResponseEntity<ApiResponse<ReportResponse>> listAllReports() {
-        List<Report> reports = reportService.getSelectAllReports();
-
-        ReportResponse response = new ReportResponse(reports);
+    public ResponseEntity<ApiResponse<PageResponse<ReportDetailResponse>>> listAllReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Report> reports = reportService.getSelectAllReports(pageable);
+        PageResponse<ReportDetailResponse> response =
+                new PageResponse<>(reports, ReportDetailResponse::new);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de denúncias retornada com sucesso!"));
     }
@@ -55,7 +61,6 @@ public class ReportController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ReportDetailResponse>> searchReportById(@PathVariable Long id) {
         Report report = reportService.getSelectReportById(id);
-
         ReportDetailResponse response = new ReportDetailResponse(report);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Denúncia encontrada com sucesso!"));
@@ -68,23 +73,15 @@ public class ReportController {
             HttpServletRequest request) {
 
         AuthenticatedUser user =
-                (AuthenticatedUser)
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getPrincipal();
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Report report = ReportMapper.toEntity(reportRequest);
-
         Report newReport = reportService.setInsertReport(
-                report,
-                user.email(),
+                report, user.email(),
                 reportRequest.getReasonReportId(),
                 reportRequest.getObjectId(),
                 reportRequest.getServiceId(),
-                reportRequest.getPublicationId()
-        );
-
+                reportRequest.getPublicationId());
         ReportDetailResponse response = new ReportDetailResponse(newReport);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -99,9 +96,7 @@ public class ReportController {
 
         Report existing = reportService.getSelectReportById(id);
         Report report = ReportMapper.updateEntity(reportRequest, existing);
-
         Report updatedReport = reportService.setUpdateReport(report, id);
-
         ReportDetailResponse response = new ReportDetailResponse(updatedReport);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Denúncia atualizada com sucesso!"));
@@ -111,7 +106,6 @@ public class ReportController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteReport(@PathVariable Long id) {
         reportService.setDeleteReport(id);
-
         return ResponseEntity.ok(ResponseUtil.success(null, "Denúncia deletada com sucesso!"));
     }
 }
