@@ -6,9 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,41 +38,52 @@ import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScree
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
-
-// CORRIGIDO: Import atualizado apontando para o novo pacote da tela de serviços
-import com.example.mobilevizinhaa.ui.theme.home.createobjeto.CriarPedidoObjetoScreen
-
-// Import da sua tela de Perfil / Configurações
+import com.example.mobilevizinhaa.ui.theme.home.createservice.CriarPedidoObjetoScreen
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
+
+// INTEGRADO: Import do seu tema para envelopar a navegação global
+import com.example.mobilevizinhaa.ui.theme.MobileVizinhaçaTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Ativa o comportamento transparente de ponta a ponta (Edge-to-Edge) nativo
         enableEdgeToEdge()
 
         setContent {
-            AppNavigation()
+            val context = LocalContext.current
+
+            // Instancia o HomeViewModel centralizado aqui na MainActivity para escutar o SharedPreferences
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                    context.applicationContext as Application
+                )
+            )
+
+            // 1. Observa reativamente o estado do tema salvo nas configurações
+            val modoEscuroAtivo by homeViewModel.isDarkMode.collectAsState()
+
+            // 2. Aplica o Tema customizado em TODAS as rotas e telas do App
+            MobileVizinhaçaTheme(isDarkMode = modoEscuroAtivo) {
+                // Surface força o contêiner base a assumir a cor de fundo correta (Claro/Escuro)
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation(homeViewModel = homeViewModel)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(homeViewModel: HomeViewModel) {
     val navController = rememberNavController()
-    val context = LocalContext.current
-
-    val homeViewModel: HomeViewModel = viewModel(
-        factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
-            context.applicationContext as Application
-        )
-    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Define quais telas NÃO devem mostrar a BottomBar do app
     val esconderBottomBar = currentRoute == null ||
             currentRoute == "login" ||
             currentRoute == "publicacao" ||
@@ -77,8 +92,9 @@ fun AppNavigation() {
             currentRoute.startsWith("detalhe_post")
 
     Scaffold(
-        // Insets vazios no Scaffold principal para o conteúdo fluir livremente
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        // Garante que o Scaffold use o fundo do tema do MaterialTheme para não sobrepor telas brancas
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (!esconderBottomBar) {
                 CustomBottomNavBar(navController)
@@ -89,7 +105,6 @@ fun AppNavigation() {
             navController = navController,
             startDestination = "login",
             modifier = Modifier
-                // Aplica apenas o padding da BottomBar para proteger a interface de cortes
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
 
@@ -118,7 +133,7 @@ fun AppNavigation() {
                 PublicacaoScreen(navController, homeViewModel)
             }
 
-            // --- TELA DE CRIAÇÃO DE PEDIDO OU OBJETO (Mapeado com o HomeViewModel para Token) ---
+            // --- CRIAÇÃO DE PEDIDO OU OBJETO ---
             composable("criar_pedido") {
                 CriarPedidoObjetoScreen(
                     navController = navController,

@@ -1,4 +1,4 @@
-package com.example.mobilevizinhaa.ui.theme.`configuraçoes`
+package com.example.mobilevizinhaa.ui.theme.configuraçoes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,12 +10,9 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +33,12 @@ fun PerfilScreen(
     // 1. Puxa o token que o login guardou no SharedPreferences
     val token = viewModel.obterTokenSalvo()
 
+    // Controle do Estado para abrir/fechar o Diálogo de Seleção de Tema
+    var exibirDialogoTema by remember { mutableStateOf(false) }
+
+    // INTEGRADO: Coleta o estado real e persistente do modo escuro diretamente do seu ViewModel
+    val modoEscuroAtivo by viewModel.isDarkMode.collectAsState()
+
     // 2. Dispara a busca automática assim que a tela abre
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) {
@@ -46,19 +49,19 @@ fun PerfilScreen(
     // 3. Coleta o estado de maneira estável
     val resident by viewModel.residentData.collectAsState()
 
+    // Ao clicar em "Tema", abre o pop-up interno gerenciado pelo estado acima
     val listaDeOpcoes = listOf(
-        Triple(Icons.Default.Settings, "Configurações") { navController.navigate("sub_configuracoes") },
-        Triple(Icons.Default.Notifications, "Notificações") { navController.navigate("sub_notificacoes") },
+        Triple(Icons.Default.Palette, "Tema") { exibirDialogoTema = true },
+        Triple(Icons.Default.Notifications, "Notificações") { navController.navigate("notificacoes") },
         Triple(Icons.Default.Lock, "Privacidade") { navController.navigate("sub_privacidade") },
         Triple(Icons.Default.HelpOutline, "Ajuda") { navController.navigate("sub_ajuda") }
     )
 
-    // CORREÇÃO: Removemos o Scaffold interno. A Box principal preenche o espaço
-    // respeitando o recuo inferior controlado pela MainActivity.
+    // A Box altera sua cor de fundo dinamicamente baseada no tema salvo no ViewModel
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(GrayBackground)
+            .background(if (modoEscuroAtivo) Color(0xFF121212) else GrayBackground)
     ) {
         Column(
             modifier = Modifier
@@ -94,13 +97,14 @@ fun PerfilScreen(
                     .padding(horizontal = 20.dp)
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (modoEscuroAtivo) Color(0xFF1E1E1E) else Color.White
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -129,6 +133,64 @@ fun PerfilScreen(
             }
             // Um spacer ligeiramente maior no fim para o conteúdo não morrer colado na barra inferior
             Spacer(modifier = Modifier.height(110.dp))
+        }
+
+        // --- DIÁLOGO POP-UP SELETOR DE TEMA PERSISTENTE ---
+        if (exibirDialogoTema) {
+            AlertDialog(
+                onDismissRequest = { exibirDialogoTema = false },
+                title = {
+                    Text(
+                        text = "Escolha o Tema",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = Color.Black
+                    )
+                },
+                text = {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = !modoEscuroAtivo,
+                                onClick = {
+                                    viewModel.alternarTema(false) // Grava permanentemente "false" (Modo Claro) nas preferências do App
+                                    exibirDialogoTema = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Modo Claro", fontSize = 16.sp, color = Color.Black)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = modoEscuroAtivo,
+                                onClick = {
+                                    viewModel.alternarTema(true) // Grava permanentemente "true" (Modo Escuro) nas preferências do App
+                                    exibirDialogoTema = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Modo Escuro", fontSize = 16.sp, color = Color.Black)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { exibirDialogoTema = false }) {
+                        Text("Cancelar", color = Color(0xFF42A5F5), fontWeight = FontWeight.Bold)
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                containerColor = Color.White
+            )
         }
     }
 }

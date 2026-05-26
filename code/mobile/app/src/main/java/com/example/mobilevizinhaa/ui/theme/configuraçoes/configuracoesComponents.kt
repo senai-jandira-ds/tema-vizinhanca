@@ -26,7 +26,6 @@ import com.example.mobilevizinhaa.ui.theme.GradientBlueStart
 @Composable
 fun ProfileHeader(userName: String, userEmail: String, apartment: String) {
     Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
-        // Fundo com Degradê igual ao da Home/Publicação
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -116,10 +115,10 @@ private fun MetricItem(quantidade: String, legenda: String) {
     }
 }
 
-// --- COMPONENTE 2: MENU DE OPÇÕES EM LISTA ---
+
 @Composable
 fun ProfileOptionMenu(
-    options: List<Triple<ImageVector, String, () -> Unit>> // Mudado de Int para ImageVector para segurança contra crashes de resource
+    options: List<Triple<ImageVector, String, () -> Unit>>
 ) {
     Card(
         modifier = Modifier
@@ -154,7 +153,7 @@ fun ProfileOptionMenu(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = option.second,
+                        text = option.second, // Exibe de forma limpa o que for passado por parâmetro
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black,
@@ -168,7 +167,7 @@ fun ProfileOptionMenu(
                     )
                 }
 
-                // Linha divisória fina entre os itens (menos no último) - CORRIGIDO .cmdp para .dp
+                // Linha divisória fina entre os itens (menos no último)
                 if (index < options.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),

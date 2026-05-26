@@ -1,4 +1,4 @@
-package com.example.mobilevizinhaa.ui.theme.home.createobjeto
+package com.example.mobilevizinhaa.ui.theme.home.createservice
 
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -27,12 +27,14 @@ fun SeletorImagemComponent(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(180.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFE0E0E0))
+            .background(if (isDark) Color(0xFF2D2C30) else Color(0xFFE0E0E0))
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -48,7 +50,7 @@ fun SeletorImagemComponent(
                 text = "Adicione uma imagem",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.Gray
+                color = if (isDark) Color.Gray else Color.DarkGray
             )
         }
     }
@@ -57,15 +59,21 @@ fun SeletorImagemComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownCategoriasComponent(
-    categorias: List<CategoryDetail>, // INTEGRADO: Usa diretamente o modelo CategoryDetail do Swagger
+    categorias: List<CategoryDetail>,
     categoriaSelecionada: CategoryDetail?,
     onCategorySelected: (CategoryDetail) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expandida by remember { mutableStateOf(false) }
+    val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(text = "Categoria", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+        Text(
+            text = "Categoria",
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         ExposedDropdownMenuBox(
             expanded = expandida,
             onExpandedChange = { expandida = !expandida }
@@ -75,28 +83,45 @@ fun DropdownCategoriasComponent(
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandida) },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+                // AJUSTADO: Âncora limpa para evitar problemas de compatibilidade
+                modifier = Modifier.menuAnchor(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3867F5),
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black
+                    unfocusedBorderColor = if (isDark) Color(0xFF444444) else Color(0xFFE0E0E0),
+                    focusedTextColor = if (isDark) Color.White else Color.Black,
+                    unfocusedTextColor = if (isDark) Color.White else Color.Black
                 )
             )
+            // CORRIGIDO: Removido o .exposedDropdownSize() que causava o esmagamento na Row
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
-                modifier = Modifier.exposedDropdownSize()
+                modifier = Modifier
+                    .width(200.dp) // Define uma largura estável para a caixinha do menu flutuante
+                    .background(if (isDark) Color(0xFF2D2C30) else Color.White)
             ) {
-                categorias.forEach { cat ->
+                if (categorias.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text(cat.name ?: "Sem Nome") },
-                        onClick = {
-                            onCategorySelected(cat)
-                            expandida = false
-                        }
+                        text = { Text("Carregando...", color = Color.Gray) },
+                        onClick = {}
                     )
+                } else {
+                    categorias.forEach { cat ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = cat.name ?: "Sem Nome",
+                                    color = if (isDark) Color.White else Color.Black,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                            onClick = {
+                                onCategorySelected(cat)
+                                expandida = false
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -112,9 +137,15 @@ fun DropdownDuracaoComponent(
     modifier: Modifier = Modifier
 ) {
     var expandida by remember { mutableStateOf(false) }
+    val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(text = "Duração Estimada", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+        Text(
+            text = "Duração Estimada",
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         ExposedDropdownMenuBox(
             expanded = expandida,
             onExpandedChange = { expandida = !expandida }
@@ -123,24 +154,32 @@ fun DropdownDuracaoComponent(
                 value = tempoSelecionado?.first ?: "Selecione",
                 onValueChange = {},
                 readOnly = true,
-                trailingIcon = { Icon(Icons.Default.AccessTime, null, tint = Color.Gray) },
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+                trailingIcon = { Icon(Icons.Default.AccessTime, null, tint = if (isDark) Color.Gray else Color.DarkGray) },
+                modifier = Modifier.menuAnchor(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3867F5),
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black
+                    unfocusedBorderColor = if (isDark) Color(0xFF444444) else Color(0xFFE0E0E0),
+                    focusedTextColor = if (isDark) Color.White else Color.Black,
+                    unfocusedTextColor = if (isDark) Color.White else Color.Black
                 )
             )
+            // CORRIGIDO: Removido o .exposedDropdownSize()
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
-                modifier = Modifier.exposedDropdownSize()
+                modifier = Modifier
+                    .width(200.dp)
+                    .background(if (isDark) Color(0xFF2D2C30) else Color.White)
             ) {
                 opcoesTempo.forEach { parTempo ->
                     DropdownMenuItem(
-                        text = { Text(parTempo.first) },
+                        text = {
+                            Text(
+                                text = parTempo.first,
+                                color = if (isDark) Color.White else Color.Black
+                            )
+                        },
                         onClick = {
                             onTempoSelected(parTempo)
                             expandida = false
@@ -158,31 +197,47 @@ fun SeletorUrgenciaComponent(
     onUrgenciaChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
+
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(text = "Nível de Urgência", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+        Text(
+            text = "Nível de Urgência",
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Mapeia visualmente com acentuação se preferir, mas mantém a chave estável em letras maiúsculas
             listOf("BAIXA", "MEDIA", "ALTA").forEach { nivel ->
                 val selecionado = urgenciaSelecionada == nivel
-
-                // Texto de exibição amigável na Interface do Usuário
                 val textoExibicao = if (nivel == "MEDIA") "MÉDIA" else nivel
+
+                val corFundoBotao = when {
+                    selecionado -> Color(0xFF3867F5)
+                    isDark -> Color(0xFF252428)
+                    else -> Color(0xFFEFEFEF)
+                }
+
+                val corTextoBotao = when {
+                    selecionado -> Color.White
+                    isDark -> Color(0xFF9E9E9E)
+                    else -> Color.DarkGray
+                }
 
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (selecionado) Color(0xFF3867F5) else Color(0xFFEFEFEF))
-                        .clickable { onUrgenciaChanged(nivel) }, // Repassa a String correta sem acento para a ViewModel
+                        .background(corFundoBotao)
+                        .clickable { onUrgenciaChanged(nivel) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = textoExibicao,
-                        color = if (selecionado) Color.White else Color.DarkGray,
+                        color = corTextoBotao,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
                     )

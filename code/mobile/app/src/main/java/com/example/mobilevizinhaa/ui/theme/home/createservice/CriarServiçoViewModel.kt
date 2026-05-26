@@ -1,4 +1,4 @@
-package com.example.mobilevizinhaa.ui.theme.home.createobjeto
+package com.example.mobilevizinhaa.ui.theme.home.createservice
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -26,15 +27,17 @@ class CriarServicoViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
-    // Lista reativa que utiliza diretamente o tipo CategoryDetail unificado com o Swagger
-    var categoriasIds by mutableStateOf<List<CategoryDetail>>(emptyList())
-        private set
+    // Lista reativa que o Jetpack Compose escuta para atualizar o Dropdown na hora
+    val categoriasIds = mutableStateListOf<CategoryDetail>()
 
     /**
      * Busca as categorias existentes no condomínio a partir dos serviços listados.
-     * Mapeia o JSON recebido eliminando duplicatas.
+     * Caso o banco esteja vazio ou ocorra erro de mapeamento, insere categorias padrão salvas localmente.
      */
     fun carregarCategorias(token: String) {
+        // Evita chamadas repetidas desnecessárias se já houver dados na lista
+        if (categoriasIds.isNotEmpty()) return
+
         viewModelScope.launch {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
@@ -43,22 +46,51 @@ class CriarServicoViewModel : ViewModel() {
                     RetrofitClient.authApi.listarServicos(authHeader)
                 }
 
+                categoriasIds.clear()
+
                 if (response.isSuccessful && response.body() != null) {
                     val listaServicos = response.body()?.response?.services ?: emptyList()
 
                     // Extrai o objeto de categoria ignorando itens nulos
                     val categoriasMapeadas = listaServicos.mapNotNull { item ->
                         item.category
-                    }.distinctBy { it.id } // Remove duplicados pelo ID da categoria para alimentar o Dropdown
+                    }.distinctBy { it.id } // Remove duplicados pelo ID único da categoria
 
-                    categoriasIds = categoriasMapeadas
+                    if (categoriasMapeadas.isNotEmpty()) {
+                        categoriasIds.addAll(categoriasMapeadas)
+                        Log.d("API_CATEGORIES", "Categorias extraídas dos serviços com sucesso!")
+                    } else {
+                        // FALLBACK 1: Banco está limpo (sem serviços criados). Injeta categorias padrão!
+                        Log.w("API_CATEGORIES", "Nenhum serviço ativo encontrado no banco. Injetando categorias locais...")
+                        categoriasIds.addAll(obterCategoriasPadrao())
+                    }
                 } else {
-                    Log.e("API_CATEGORIES", "Erro na resposta de categorias: ${response.code()}")
+                    Log.e("API_CATEGORIES", "Erro na resposta do servidor: ${response.code()}")
+                    categoriasIds.addAll(obterCategoriasPadrao())
                 }
             } catch (e: Exception) {
-                Log.e("API_CATEGORIES", "Falha catastrófica ao buscar categorias: ${e.message}")
+                Log.e("API_CATEGORIES", "Falha catastrófica ou erro de Parse JSON: ${e.message}")
+                // FALLBACK 2: Garante o funcionamento do Dropdown mesmo sem conexão ou com falha de parse
+                if (categoriasIds.isEmpty()) {
+                    categoriasIds.addAll(obterCategoriasPadrao())
+                }
             }
         }
+    }
+
+    /**
+     * CORRIGIDO: Gera uma lista de categorias padrão com IDs em formato de Texto ("1", "2")
+     * para casar perfeitamente com as propriedades internas declaradas na sua classe CategoryDetail.
+     */
+    private fun obterCategoriasPadrao(): List<CategoryDetail> {
+        return listOf(
+            CategoryDetail(id = "1", name = "Reformas & Reparos"),
+            CategoryDetail(id = "2", name = "Limpeza & Organização"),
+            CategoryDetail(id = "3", name = "Empréstimos de Objetos"),
+            CategoryDetail(id = "4", name = "Cuidados & Pet Sitter"),
+            CategoryDetail(id = "5", name = "Aulas & Consultoria"),
+            CategoryDetail(id = "6", name = "Outros Serviços")
+        )
     }
 
     /**
@@ -69,9 +101,9 @@ class CriarServicoViewModel : ViewModel() {
         token: String,
         titulo: String,
         descricao: String,
-        urgencia: String, // Parâmetro recebido em String da UI Screen ("BAIXA", "MEDIA", "ALTA")
+        urgencia: String,
         tempoEstimado: Int,
-        categoryId: Int, // ID selecionado na Combobox
+        categoryId: Int,
         imagemUri: Uri?,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
@@ -84,14 +116,13 @@ class CriarServicoViewModel : ViewModel() {
                     converterImagemParaBase64(context, imagemUri)
                 } else ""
 
-                // CORRIGIDO: Tratamento para garantir que strings de urgência com acento não quebrem o Enum do Banco
+                // Tratamento para garantir que strings de urgência com acento não quebrem o Enum do Banco
                 val urgenciaTratada = when (urgencia.uppercase()) {
                     "MÉDIA", "MEDIA" -> "MEDIA"
                     "ALTA" -> "ALTA"
                     else -> "BAIXA"
                 }
 
-                // CORRIGIDO: Nomeação dos parâmetros ajustada de acordo com as propriedades da Data Class revisada
                 val payload = CreateServiceRequest(
                     title = titulo,
                     description = descricao,
@@ -103,14 +134,11 @@ class CriarServicoViewModel : ViewModel() {
 
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // CORREÇÃO CRUCIAL AQUI: Mudamos para 'authApiParaServico' para contornar o bug do interceptor antigo
-                // e fazer o JSON chegar 100% preenchido ao validador do Leonardo Scotti.
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.authApiParaServico.criarServico(authHeader, payload)
                 }
 
-                // Log auxiliar para monitorar a resposta do Render no seu Logcat
-                Log.d("API_SERVICE", "Status HTTP: ${response.code()}")
+                Log.d("API_SERVICE", "Status HTTP de Envio: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val respostaCorpo = response.body()
@@ -121,11 +149,11 @@ class CriarServicoViewModel : ViewModel() {
                     }
                 } else {
                     val erroTexto = response.errorBody()?.string()
-                    Log.e("API_SERVICE", "Erro bruto do servidor: $erroTexto")
+                    Log.e("API_SERVICE", "Erro bruto retornado do servidor: $erroTexto")
                     onError("Erro ${response.code()}: Falha na validação dos campos.")
                 }
             } catch (e: Exception) {
-                Log.e("API_SERVICE_ERROR", "Falha de conexão: ${e.message}")
+                Log.e("API_SERVICE_ERROR", "Falha crítica de conexão: ${e.message}")
                 onError("Não foi possível conectar ao servidor do backend.")
             } finally {
                 isLoading = false

@@ -21,6 +21,7 @@ import com.example.mobilevizinhaa.ui.theme.data.SingleResidentResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,6 +49,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = application.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
+    // --- NOVO: GERENCIAMENTO DE TEMA PERSISTENTE ---
+    private val _isDarkMode = MutableStateFlow(false)
+    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+
     // --- ESTADO DO USUÁRIO ---
     // Recupera os dados locais instantaneamente para evitar tela em branco ao abrir o App
     private val _residentData = MutableStateFlow<ResidentResponse?>(getSavedUser())
@@ -63,6 +68,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     // --- LISTA REATIVA DE FOTOS DA TELA HOME ---
     private val _posts = mutableStateListOf<Post>()
     val posts: List<Post> = _posts
+
+    // Inicializador da classe - Carrega os dados persistidos logo ao instanciar o ViewModel
+    init {
+        // Carrega o tema salvo no mesmo arquivo de preferências do usuário
+        _isDarkMode.value = prefs.getBoolean("is_dark_mode", false)
+    }
+
+    // --- NOVO: MÉTODO PARA ALTERNAR E SALVAR O TEMA LOCALMENTE ---
+    fun alternarTema(modoEscuro: Boolean) {
+        _isDarkMode.value = modoEscuro
+        prefs.edit().putBoolean("is_dark_mode", modoEscuro).apply()
+    }
 
     // --- RECUPERAR TOKEN DE SEGURANÇA ---
     fun obterTokenSalvo(): String = prefs.getString("auth_token", "") ?: ""

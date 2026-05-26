@@ -1,4 +1,4 @@
-package com.example.mobilevizinhaa.ui.theme.home.createobjeto
+package com.example.mobilevizinhaa.ui.theme.home.createservice
 
 import android.net.Uri
 import android.util.Log
@@ -38,6 +38,7 @@ fun CriarPedidoObjetoScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val tokenAtivo = homeViewModel.obterTokenSalvo()
+    val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
 
     // Estados locais do formulário
     var titulo by remember { mutableStateOf("") }
@@ -45,7 +46,7 @@ fun CriarPedidoObjetoScreen(
     var descricao by remember { mutableStateOf("") }
     var imagemUri by remember { mutableStateOf<Uri?>(null) }
 
-    // INTEGRADO: Tipo mapeado para CategoryDetail para casar perfeitamente com o modelo da API
+    // Tipo mapeado para CategoryDetail para casar perfeitamente com o modelo da API
     var categoriaSelecionada by remember { mutableStateOf<CategoryDetail?>(null) }
     var tempoSelecionado by remember { mutableStateOf<Pair<String, Int>?>(null) }
 
@@ -57,9 +58,13 @@ fun CriarPedidoObjetoScreen(
         "4 horas" to 240,
     )
 
-    LaunchedEffect(Unit) {
+    // CORRIGIDO: Escuta ativamente o token. Quando ele mudar de vazio para o token real, dispara a API.
+    LaunchedEffect(tokenAtivo) {
         if (tokenAtivo.isNotEmpty()) {
+            Log.d("API_CATEGORIAS", "Token identificado! Disparando carregarCategorias...")
             criarServicoViewModel.carregarCategorias(tokenAtivo)
+        } else {
+            Log.w("API_CATEGORIAS", "Aviso: Token ativo ainda está vazio. Aguardando leitura do banco local...")
         }
     }
 
@@ -72,7 +77,7 @@ fun CriarPedidoObjetoScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F2F7))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // --- CABEÇALHO AZUL GRADIENTE ---
         Box(
@@ -133,7 +138,12 @@ fun CriarPedidoObjetoScreen(
 
             // --- TÍTULO ---
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(text = "Título do Serviço", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+                Text(
+                    text = "Título do Serviço",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 OutlinedTextField(
                     value = titulo,
                     onValueChange = { titulo = it },
@@ -141,18 +151,19 @@ fun CriarPedidoObjetoScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF3867F5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = if (isDark) Color(0xFF444444) else Color(0xFFE0E0E0),
+                        focusedLabelColor = Color(0xFF3867F5)
                     )
                 )
             }
 
-            // --- CATEGORIA E TEMPO (COMPONENTES COMPACTOS INTEGRADOS) ---
+            // --- CATEGORIA E TEMPO ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DropdownCategoriasComponent(
-                    categorias = criarServicoViewModel.categoriasIds, // Lista reativa da ViewModel
+                    categorias = criarServicoViewModel.categoriasIds,
                     categoriaSelecionada = categoriaSelecionada,
                     onCategorySelected = { categoriaSelecionada = it },
                     modifier = Modifier.weight(1f)
@@ -174,7 +185,12 @@ fun CriarPedidoObjetoScreen(
 
             // --- DESCRIÇÃO ---
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(text = "Descrição Detalhada", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+                Text(
+                    text = "Descrição Detalhada",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 OutlinedTextField(
                     value = descricao,
                     onValueChange = { descricao = it },
@@ -182,7 +198,8 @@ fun CriarPedidoObjetoScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF3867F5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = if (isDark) Color(0xFF444444) else Color(0xFFE0E0E0),
+                        focusedLabelColor = Color(0xFF3867F5)
                     ),
                     maxLines = 4
                 )
@@ -216,7 +233,6 @@ fun CriarPedidoObjetoScreen(
                         onClick = {
                             focusManager.clearFocus()
 
-                            // MONITOR DE ESTADOS: Ajuda a validar os dados coletados antes do envio
                             Log.d("BOTAO_ANUNCIAR", "Iniciando processo de postagem de serviço...")
                             Log.d("BOTAO_ANUNCIAR", "-> Titulo: '$titulo'")
                             Log.d("BOTAO_ANUNCIAR", "-> Descricao: '$descricao'")
@@ -230,7 +246,6 @@ fun CriarPedidoObjetoScreen(
                                 return@Button
                             }
 
-                            // Executa a requisição mapeada com o endpoint POST /api/v1/service
                             criarServicoViewModel.postarServico(
                                 context = context,
                                 token = tokenAtivo,
@@ -238,7 +253,7 @@ fun CriarPedidoObjetoScreen(
                                 descricao = descricao,
                                 urgencia = urgencia,
                                 tempoEstimado = tempoSelecionado!!.second,
-                                categoryId = categoriaSelecionada!!.id, // ID numérico dinâmico extraído
+                                categoryId = categoriaSelecionada!!.id,
                                 imagemUri = imagemUri,
                                 onSuccess = {
                                     Toast.makeText(context, "Serviço anunciado com sucesso!", Toast.LENGTH_LONG).show()

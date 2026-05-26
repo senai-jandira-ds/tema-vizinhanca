@@ -45,31 +45,21 @@ fun LoginScreen(
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
-    /**
-     * CLIQUE ÚNICO E AUTOMÁTICO:
-     * O LaunchedEffect monitora o loginResponse. Assim que a API responde com sucesso,
-     * ele executa a lógica de salvar e navegar uma única vez, sem depender de cliques extras.
-     */
     LaunchedEffect(uiState.loginResponse) {
         uiState.loginResponse?.response?.let { loginData ->
             val user = loginData.user
 
-            // ====================================================================
-            // --- CORREÇÃO DE TOKEN DO SHADERPREFERENCES ---
-            // ====================================================================
-            // Captura o token e salva no mesmo arquivo que o HomeViewModel consulta
             val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
             prefs.edit().putString("auth_token", loginData.token).apply()
 
             Log.d("API_HOME", "Token interceptado e salvo no SharedPreferences: ${loginData.token}")
 
-            // Cria o objeto contendo o Bloco corrigido vindo do seu modelo da API
             val resident = ResidentResponse(
                 id = user.id,
                 name = user.name,
                 email = user.email,
                 apartment = user.apto,
-                block = user.block, // Repassa o objeto/tipo mapeado direto do Swagger
+                block = user.block,
                 score = 0,
                 phone = user.phone
             )
@@ -77,7 +67,7 @@ fun LoginScreen(
             // Salva no ViewModel (Memória + Disco)
             homeViewModel.setResidentData(resident)
 
-            // Sincroniza em background (Passando apenas o token para o endpoint /me/resident)
+            // Sincroniza em background
             homeViewModel.carregarDadosPerfil(loginData.token)
 
             // Navega para a Home
@@ -140,7 +130,6 @@ fun LoginScreen(
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    // Dispara a tentativa passando a ação vazia, pois o LaunchedEffect ouve a resposta
                     viewModel.onLoginClicked { }
                 }
             ),
@@ -174,21 +163,23 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // BOTÃO DE CLIQUE ÚNICO
+        // BOTÃO MODIFICADO PARA NÃO SUMIR QUANDO DESATIVADO
         Button(
             onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                // Chamamos apenas a intenção de logar.
-                // A navegação e o armazenamento acontecem automaticamente pelo observador lá em cima.
-                viewModel.onLoginClicked { }
+                if (!uiState.isLoading) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.onLoginClicked { }
+                }
             },
             modifier = Modifier.fillMaxWidth().height(55.dp),
             shape = RoundedCornerShape(25.dp),
+            // Força a cor fixa do botão e do texto/ícone interno em qualquer estado
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF2196F3),
-                contentColor = Color.White
-            ),
-            enabled = !uiState.isLoading
+                contentColor = Color.White,
+                disabledContainerColor = Color(0xFF2196F3),
+                disabledContentColor = Color.White
+            )
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
@@ -225,6 +216,9 @@ fun TccTextField(
         trailingIcon = trailingIcon,
         modifier = modifier,
         colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            errorTextColor = Color.Black,
             focusedContainerColor = Color(0xFFF1F1F1),
             unfocusedContainerColor = Color(0xFFF1F1F1),
             errorContainerColor = Color(0xFFFFEBEE),
