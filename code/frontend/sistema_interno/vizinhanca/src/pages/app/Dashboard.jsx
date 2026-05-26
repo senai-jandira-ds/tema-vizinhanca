@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Card from "../../components/ui/Card";
 import { getCondominiumData } from "../../services/authService";
+import { getMeCondominium  } from "../../services/condominiumService";
 import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType } from "../../services/activityService";
 import Table from "./components/Table";
 import styles from "./Dashboard.module.css";
@@ -10,29 +11,30 @@ function Dashboard() {
     const [showNotifications, setShowNotifications] = useState(false);
 
     const condominiumData = getCondominiumData()
-    console.log("informacoes do condominio")
-
-    console.log(condominiumData)
+    const fetchCondominium = getMeCondominium()
+    console.log(fetchCondominium)
 
     const cards = [
         {
             id: 1,
             title: "Usuários",
-            quantity: condominiumData?.residents?.length || 0,
+            quantity: fetchCondominium?.residents?.length || 0,
             color: "#10B765",
             to: "users"
         },
         {
             id: 2,
             title: "Pedidos",
-            quantity: condominiumData?.services?.length || 0,
+            quantity: fetchCondominium?.activities?.filter(
+                (item) => item.tipo === "Serviço"
+            ).length || 0,
             color: "#A99817",
             to: "services"
         },
         {
             id: 3,
             title: "Objetos",
-            quantity: condominiumData?.activities?.filter(
+            quantity: fetchCondominium?.activities?.filter(
                 (item) => item.tipo === "Objeto"
             ).length || 0,
             color: "#2EA9F5",
@@ -41,7 +43,7 @@ function Dashboard() {
         {
             id: 4,
             title: "Denúncias",
-            quantity: condominiumData?.reports?.length || 0,
+            quantity: fetchCondominium?.reports?.length || 0,
             color: "#FF1111",
             to: "reports"
         },
@@ -160,7 +162,7 @@ function Dashboard() {
                     onCellClick={handleCellClick}
                     showPagination={true}
                     showExport={false}
-                    pageSize={6}
+                    pageSize={4}
                 />
             </main>
         </>

@@ -17,13 +17,16 @@ function Services() {
         try {
             setLoading(true);
             const data = await getActivities();
-            console.log(data)
-            if (!Array.isArray(data)) {
+            console.log('Dados mapeados:', data);
+
+            const services = data.response?.activities
+
+            if (!Array.isArray(services)) {
                 setDadosTabela([]);
                 return;
             }
 
-            const mappedData = data
+            const mappedData = services
                 .map((activity) => ({
                     id: activity.id?.toString() || '',
                     nome: activity.morador || '',
@@ -33,7 +36,7 @@ function Services() {
                     data: formatActivityDate(activity.dataCriacao)
                 }));
 
-            console.log('Dados mapeados:', mappedData);
+           //console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
         } catch (error) {
             console.error('Erro ao buscar serviços:', error);

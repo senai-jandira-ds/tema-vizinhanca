@@ -157,7 +157,7 @@ td:hover {
 .btnCadastrar {
     background: #2600FF;
     color: white;
-    border: 2px solid #ffffff00;
+
     border-radius: 999px;
     padding: 0.5%;
     font-size: 1rem;
@@ -170,7 +170,7 @@ td:hover {
 
 .btnCadastrar:hover {
     background-color: #1d00cc;
-    border: 2px solid #ffffff;
+
     transform: translateY(-2px) scale(1.01);
 
     box-shadow:

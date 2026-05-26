@@ -39,14 +39,15 @@ function Users() {
         try {
             setLoading(true);
             const response = await getResidents();
-            console.log('Resposta da API (moradores):', response);
-            const residents = response?.response || [];
+
+            const residents = response?.response.content || [];
 
             if (!Array.isArray(residents)) {
                 setDadosTabela([]);
                 return;
             }
 
+            console.log(residents)
 
             const mappedData = residents.map(resident => ({
                 id: resident.id?.toString() || '',
@@ -153,6 +154,7 @@ function Users() {
                     onDelete={handleDeleteUpdate}
                     onCadastrarNovo={handleCadastrarNovo}
                     exportType="moradores"
+                    modalType="usuario"
                 />
             </main>
         </>

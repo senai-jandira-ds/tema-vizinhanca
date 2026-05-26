@@ -1,6 +1,6 @@
 import Table from "./components/Table";
 import { getCondominiumData } from "../../services/authService";
-import styles from "./Information.module.css";
+import styles from "./Categories.module.css";
 import settingsStyles from "./Settings.module.css";
 
 function Categories() {
@@ -38,18 +38,20 @@ function Categories() {
     };
 
     return (
-        <>
+        <div className={styles.container}>
             <h2 className={styles.title}>
                 Categorias cadastradas para os moradores
             </h2>
-
+            <div className={styles.tableContainer}>
             <Table
                 columns={colunasTabela}
                 data={dadosTabela}
                 onCellClick={handleCellClick}
                 showPagination={true}
+                pageSize={4}
             />
-        </>
+            </div>
+        </div>
     );
 }
 

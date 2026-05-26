@@ -18,7 +18,7 @@ function Security() {
             setLoading(true);
             const data = await getReports();
 
-            const reports = data?.response?.reports;
+            const reports = data?.response?.content;
 
             if (!Array.isArray(reports)) {
                 setDadosTabela([]);
@@ -27,13 +27,12 @@ function Security() {
 
         const mappedData = reports.map((report) => ({
             id: report.id?.toString() || '',
-            nome: report.resident?.name || 'Não identificado',
+            autor: report.resident?.name || 'Não identificado',
+            photo: report.publication.photo || report.service.photo || report.object,
             descricao: report.description || '',
-            categoria: formatReportType(report),
             status: report.reasonReport?.name || ''
         }));
 
-            console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
         } catch (error) {
             console.error('Erro ao buscar denúncias:', error);
@@ -45,9 +44,8 @@ function Security() {
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
-        { id: 'nome', label: 'Nome', width: 220 },
+        { id: 'autor', label: 'Autor', width: 220 },
         { id: 'descricao', label: 'Descrição', width: 350 },
-        { id: 'categoria', label: 'Categoria', width: 180 },
         {
             id: 'status',
             label: 'Motivo',

@@ -23,7 +23,7 @@ function LoginScreen() {
 
         try {
             const response = await loginCondominium(email, password);
- 
+
             if (response.response?.token) {
                 saveToken(response.response.token);
                 // Salva os dados do condomínio (id, nome, etc)
@@ -45,6 +45,17 @@ function LoginScreen() {
         }
     };
 
+
+    // if (loading) {
+    //     return (
+    //         <div className={styles.screenContent}>
+    //             <div className={styles.loading}>
+    //                 <div className={styles.spinner}></div>
+    //             </div>
+    //         </div>
+    //     )
+    // }
+
     return (
         <div
             className={styles.screenContent}
@@ -60,6 +71,7 @@ function LoginScreen() {
                     exit={{ opacity: 0, x: -60 }}
                     transition={{ duration: 0.35 }}
                 >
+                        
                     <img src={logo} alt="" />
 
                     <Input
@@ -78,7 +90,7 @@ function LoginScreen() {
                     {error && <p className={styles.error}>{error}</p>}
 
                     <button className={styles.loginButton} onClick={handleLogin} disabled={loading}>
-                        {loading ? 'Entrando...' : 'Entrar'}
+                        {loading ? 'Erro' : 'Entrar'}
                     </button>
 
                     <p className={styles.loginText}>
@@ -92,6 +104,7 @@ function LoginScreen() {
             </div>
         </div>
 
+        
     )
 }
 

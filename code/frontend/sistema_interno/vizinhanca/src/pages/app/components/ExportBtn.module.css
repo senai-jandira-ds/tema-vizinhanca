@@ -5,7 +5,7 @@
     background-color: #2600FF;
     width: 10%;
     padding: 10px 20px;
-    border: 2px solid #ffffff00;
+
     border-radius: 20px;
     cursor: pointer;
     color: #ffffff;
@@ -16,8 +16,8 @@
 
 .exportButton:hover {
     background-color: #1d00cc;
-    border: 2px solid #ffffff;
-    transform: translateY(-2px) scale(1.01);
+
+    transform: translateY(-2.2px) scale(1);
 
     box-shadow:
         0 10px 30px rgba(38, 0, 255, 0.10),

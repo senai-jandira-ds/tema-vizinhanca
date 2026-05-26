@@ -42,9 +42,9 @@ function Activity() {
             }
 
             const mappedData = data.response.activities.map((activity, index) => ({
-                id: activity.idMorador?.toString() || (index + 1).toString(),
-                nome: activity.morador || '',
-                descricao: activity.descricao || '',
+                id: activity.resident_id?.toString() || (index + 1).toString(),
+                nome: activity.resident_name || '',
+                descricao: activity.description || '',
                 categoria: formatActivityType(activity.tipo),
                 status: formatActivityStatus(activity.status),
                 data: formatActivityDate(activity.dataCriacao)
@@ -72,7 +72,7 @@ function Activity() {
             getCellClass: (status) => {
                 if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
                 if (status === 'CONCLUIDO' || status === 'FINALIZADO') return styles['status-azul'];
-                if (status === 'PENDENTE' || status === 'EM-ANDAMENTO') return styles['status-amarelo'];
+                if (status === 'PENDENTE' || status === 'INDISPONÍVEL') return styles['status-amarelo'];
                 return '';
             }
         },
