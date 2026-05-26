@@ -71,8 +71,7 @@ public class CondominiumService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Condomínio não encontrado."));
 
-        // Cada query retorna o mesmo objeto gerenciado pelo Hibernate,
-        // populando uma coleção por vez — sem produto cartesiano
+
         condominiumRepository.findWithResidentsByEmail(email);
         condominiumRepository.findWithServicesByEmail(email);
         condominiumRepository.findWithReportsByEmail(email);

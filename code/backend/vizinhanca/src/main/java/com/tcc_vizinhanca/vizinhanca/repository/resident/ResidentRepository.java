@@ -23,7 +23,37 @@ public interface ResidentRepository extends JpaRepository<Resident,Long> {
     @Query("SELECT DISTINCT r FROM Resident r LEFT JOIN FETCH r.publications p WHERE r.email = :email")
     Optional<Resident> findByEmailWithPublications(@Param("email") String email);
 
-    List<Resident> findByCondominiumId(Long condominiumId);
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.block
+    LEFT JOIN FETCH r.condominium
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithBasicDetailsByEmail(
+            @Param("email") String email
+    );
+
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.publications
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithPublicationsByEmail(
+            @Param("email") String email
+    );
+
+    @Query("""
+    SELECT DISTINCT r
+    FROM Resident r
+    LEFT JOIN FETCH r.services s
+    LEFT JOIN FETCH s.category
+    WHERE r.email = :email
+""")
+    Optional<Resident> findWithServicesByEmail(
+            @Param("email") String email
+    );
 
     Optional<Resident> findByEmail(String email);
 
@@ -32,5 +62,4 @@ public interface ResidentRepository extends JpaRepository<Resident,Long> {
     Page<Resident> findAll(Pageable pageable);
 
     boolean existsByCpf(String cpf);
-    boolean existsByEmail(String email);
 }

@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -77,6 +78,22 @@ public class ResidentService {
         return residentRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Morador não encontrado!"));
+    }
+
+    @Transactional(readOnly = true)
+    public Resident getDetailedResidentByEmail(String email) {
+
+        Resident base = residentRepository
+                .findWithBasicDetailsByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Morador não encontrado."
+                ));
+
+        residentRepository.findWithPublicationsByEmail(email);
+        residentRepository.findWithServicesByEmail(email);
+
+        return base;
     }
 
     // INSERT RESIDENT
