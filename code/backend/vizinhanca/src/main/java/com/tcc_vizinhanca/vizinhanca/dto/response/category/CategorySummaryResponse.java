@@ -20,13 +20,13 @@ public class CategorySummaryResponse {
     private Long id;
     private String name;
     private String description;
-    private String typeCategory;
+    private String type_category;
 
     public CategorySummaryResponse(Category category) {
         this.id = category.getId();
         this.name = category.getName();
         this.description = category.getDescription();
-        this.typeCategory = category.getTypeCategory() != null
+        this.type_category = category.getTypeCategory() != null
                 ? category.getTypeCategory().getName()
                 : null;
     }

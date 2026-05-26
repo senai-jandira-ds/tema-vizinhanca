@@ -22,7 +22,7 @@ public class ServiceDetailResponse {
     private Long id;
     private String photo;
     private String title;
-    private Integer estimatedTime;
+    private Integer estimated_time;
     private String urgency;
     private String description;
     private String status;
@@ -33,7 +33,7 @@ public class ServiceDetailResponse {
         this.id = service.getId();
         this.photo = service.getPhoto();
         this.title = service.getTitle();
-        this.estimatedTime = service.getEstimatedTime();
+        this.estimated_time = service.getEstimatedTime();
         this.urgency = service.getUrgency();
         this.description = service.getDescription();
         this.status = service.getStatus();

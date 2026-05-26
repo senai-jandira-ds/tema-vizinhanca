@@ -14,20 +14,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ActivityViewDetailResponse {
 
-    private Long idMorador;
-    private String morador;
-    private String tipo;
-    private String descricao;
+    private Long resident_id;
+    private String resident_name;
+    private String type;
+    private String description;
     private String status;
-    private LocalDateTime dataCriacao;
+    private LocalDateTime created_at;
 
     public ActivityViewDetailResponse(ActivityView view) {
-        this.idMorador = view.getIdMorador();
-        this.morador = view.getResident();
-        this.tipo = view.getType();
-        this.descricao = view.getDescription();
+        this.resident_id = view.getIdMorador();
+        this.resident_name = view.getResident();
+        this.type = view.getType();
+        this.description = view.getDescription();
         this.status = view.getStatus();
-        this.dataCriacao = view.getDataCriacao();
+        this.created_at = view.getDataCriacao();
     }
 
 }
