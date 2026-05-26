@@ -42,7 +42,7 @@ public class CondominiumService {
     }
 
     // SELECT BY ID
-    @Cacheable(value = "condominium", key = "#id")
+    @Cacheable(value = "condominium", key = "#p0")
     public Condominium getSelectCondominiumById(Long id) {
         return condominiumRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -87,7 +87,7 @@ public class CondominiumService {
     }
 
     // UPDATE CONDOMINIUM
-    @CacheEvict(value = "condominium", key = "#idCondominium")
+    @CacheEvict(value = "condominium", key = "#p2")
     public Condominium setUpdateCondominium(
             @NonNull Condominium condominium,
             MultipartFile photo,
@@ -121,7 +121,7 @@ public class CondominiumService {
     }
 
     // DELETE CONDOMINIUM
-    @CacheEvict(value = "condominium", key = "#idCondominium")
+    @CacheEvict(value = "condominium", key = "#p0")
     public void  setDeleteCondominiumById(Long idCondominium) {
         if (!condominiumRepository.existsById(idCondominium)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Condomínio não encontrado no Bando de Dados!");

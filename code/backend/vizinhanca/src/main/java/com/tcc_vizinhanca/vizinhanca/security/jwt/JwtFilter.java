@@ -33,7 +33,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-
         String path = request.getRequestURI();
         String method = request.getMethod();
 
@@ -41,8 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/h2-console")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
-                || (path.equals("/api/v1/condominium")
-                && method.equals("POST"));
+                || (path.equals("/api/v1/condominium") && method.equals("POST"));
     }
 
     @Override
@@ -52,10 +50,7 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        if (SecurityContextHolder
-                .getContext()
-                .getAuthentication() != null) {
-
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -63,60 +58,50 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
-
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-
             String token = header.substring(7);
-
             Claims claims = jwtService.extrairClaims(token);
 
-            String username = claims.getSubject();
+            String email = claims.getSubject();
+            String typePerfil = claims.get("type_perfil", String.class);
 
-            String typePerfil = claims.get("tipo_perfil", String.class);
+            Number idCondominiumRaw = (Number) claims.get("id_condominium");
+            Number idResidentRaw = (Number) claims.get("id_resident");
+
+            Long idCondominium = idCondominiumRaw != null ? idCondominiumRaw.longValue() : null;
+            Long idResident = idResidentRaw != null ? idResidentRaw.longValue() : null;
 
             List<SimpleGrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority(
-                                    "ROLE_" + typePerfil
-                            )
-                    );
+                    new SimpleGrantedAuthority("ROLE_" + typePerfil)
+            );
 
-            Long idCondominium = claims.get("id_condominio", Long.class);
-
-            Long idResident = claims.get("id_residente", Long.class);
-
-            AuthenticatedUser user =
-                    new AuthenticatedUser(
-                            username,
-                            typePerfil,
-                            idCondominium,
-                            idResident
-                    );
+            AuthenticatedUser authenticatedUser = new AuthenticatedUser(
+                    email,
+                    typePerfil,
+                    idCondominium,
+                    idResident
+            );
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
-                            username,
+                            authenticatedUser,
                             null,
                             authorities
                     );
 
-            auth.setDetails(
-                    new WebAuthenticationDetailsSource()
-                            .buildDetails(request)
-            );
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(auth);
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (Exception ex) {
-
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Token inválido");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            return;
         }
+
+        filterChain.doFilter(request, response);
     }
 }
