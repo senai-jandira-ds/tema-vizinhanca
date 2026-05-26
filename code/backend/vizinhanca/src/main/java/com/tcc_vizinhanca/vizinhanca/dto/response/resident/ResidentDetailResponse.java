@@ -26,7 +26,7 @@ public class ResidentDetailResponse {
     private String email;
     private String phone;
     private Integer score;
-    private String creationDate;
+    private String creation_date;
     private BlockSummaryResponse block;
     private List<PublicationSummaryResponse> publications;
     private List<ServiceSummaryResponse> services;
@@ -44,7 +44,7 @@ public class ResidentDetailResponse {
         this.block = resident.getBlock() != null
                 ? new BlockSummaryResponse(resident.getBlock())
                 : new BlockSummaryResponse();
-        this.creationDate = resident.getCreationDate() != null
+        this.creation_date = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
                 : "";
         this.publications = resident.getPublications() != null

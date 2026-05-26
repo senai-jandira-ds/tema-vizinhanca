@@ -18,9 +18,9 @@ public class ReportSummaryResponse {
     private Long id;
     private String description;
     private ResidentSummaryResponse resident;
-    private ReasonReportResponse reasonReport;
-    private Long objectId;
-    private Long serviceId;
+    private ReasonReportResponse reason_report;
+    private Long object_id;
+    private Long service_id;
     private PublicationSummaryResponse publication;
 
     public ReportSummaryResponse(Report report) {
@@ -29,13 +29,13 @@ public class ReportSummaryResponse {
         this.resident = report.getResident() != null
                 ? new ResidentSummaryResponse(report.getResident())
                 : new ResidentSummaryResponse();
-        this.reasonReport = report.getReasonReport() != null
+        this.reason_report = report.getReasonReport() != null
                 ? new ReasonReportResponse(report.getReasonReport())
                 : new ReasonReportResponse();
-        this.objectId = report.getObject() != null
+        this.object_id = report.getObject() != null
                 ? report.getObject().getId()
                 : 0;
-        this.serviceId = report.getService() != null
+        this.service_id = report.getService() != null
                 ? report.getService().getId()
                 : 0;
         this.publication = report.getPublication() != null

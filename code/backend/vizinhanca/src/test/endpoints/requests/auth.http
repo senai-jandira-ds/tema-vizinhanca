@@ -162,3 +162,72 @@ Content-Type: application/json
 # @name report
 GET https://api-vizinhanca.onrender.com/api/v1/report`
 Authorization: Bearer {{token}}
+
+### ===== OBJECT =====
+
+### GET ALL (paginado, filtrado pelo condomínio do token)
+GET http://localhost:8080/api/v1/object?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY STATUS
+GET http://localhost:8080/api/v1/object/status/DISPONIVEL?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY CATEGORY
+GET http://localhost:8080/api/v1/object/category/1?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY RESIDENT
+GET http://localhost:8080/api/v1/object/resident/1?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/object/1
+Authorization: Bearer {{token}}
+
+### POST (multipart/form-data)
+POST http://localhost:8080/api/v1/object
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="photo"; filename="cadeira.jpg"
+Content-Type: image/jpeg
+
+< ./cadeira.jpg
+------Boundary
+Content-Disposition: form-data; name="title"
+
+Cadeira Gamer
+------Boundary
+Content-Disposition: form-data; name="deadline"
+
+2026-08-01
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Cadeira gamer em bom estado, retirar no apartamento 101.
+------Boundary
+Content-Disposition: form-data; name="status"
+
+DISPONIVEL
+------Boundary
+Content-Disposition: form-data; name="category_id"
+
+1
+------Boundary--
+
+### PUT (multipart/form-data)
+PUT http://localhost:8080/api/v1/object/1
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="status"
+
+RESERVADO
+------Boundary--
+
+### DELETE
+DELETE http://localhost:8080/api/v1/object/1
+Authorization: Bearer {{token}}

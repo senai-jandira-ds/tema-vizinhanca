@@ -19,11 +19,11 @@ import java.util.List;
 @Setter
 public class PublicationResponse {
 
-    private Integer amountPublications;
+    private Integer amount_publications;
     private List<PublicationDetailResponse> publications;
 
     public PublicationResponse(List<Publication> publications) {
-        this.amountPublications = publications.size();
+        this.amount_publications = publications.size();
         this.publications = publications.stream()
                 .map(PublicationDetailResponse::new)
                 .toList();

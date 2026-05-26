@@ -17,11 +17,11 @@ import java.util.List;
 @Setter
 public class ServiceResponse {
 
-    private Integer amountServices;
+    private Integer amount_services;
     private List<ServiceDetailResponse> services;
 
     public ServiceResponse(List<Service> services) {
-        this.amountServices = services.size();
+        this.amount_services = services.size();
         this.services = services.stream()
                 .map(ServiceDetailResponse::new)
                 .toList();

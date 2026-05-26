@@ -10,6 +10,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.report;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.object.ObjectSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.publication.PublicationSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
@@ -28,9 +29,8 @@ public class ReportDetailResponse {
     private Long id;
     private String description;
     private ResidentSummaryResponse resident;
-    private CondominiumSummaryResponse condominium;
-    private ReasonReportResponse reasonReport;
-    private Long objectId;
+    private ReasonReportResponse reason_report;
+    private ObjectSummaryResponse object_id;
     private ServiceSummaryResponse service;
     private PublicationSummaryResponse publication;
 
@@ -40,15 +40,12 @@ public class ReportDetailResponse {
         this.resident = report.getResident() != null
                 ? new ResidentSummaryResponse(report.getResident())
                 : new ResidentSummaryResponse();
-        this.condominium = report.getCondominium() != null
-                ? new CondominiumSummaryResponse(report.getCondominium())
-                : new CondominiumSummaryResponse();
-        this.reasonReport = report.getReasonReport() != null
+        this.reason_report = report.getReasonReport() != null
                 ? new ReasonReportResponse(report.getReasonReport())
                 : new ReasonReportResponse();
-        this.objectId = report.getObject() != null
-                ? report.getObject().getId()
-                : 0;
+        this.object_id = report.getObject() != null
+                ? new ObjectSummaryResponse(report.getObject())
+                : new ObjectSummaryResponse();
         this.service = report.getService() != null
                 ? new ServiceSummaryResponse(report.getService())
                 : new ServiceSummaryResponse();

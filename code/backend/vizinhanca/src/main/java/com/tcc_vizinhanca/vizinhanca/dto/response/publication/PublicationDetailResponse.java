@@ -25,17 +25,17 @@ public class PublicationDetailResponse {
     private String photo;
     private String title;
     private String description;
-    private LocalDateTime creationDate;
-    private Long residentId;
-    private String residentName;
+    private LocalDateTime creation_date;
+    private Long resident_id;
+    private String resident_name;
 
     public PublicationDetailResponse(Publication publication) {
         this.id = publication.getId();
         this.photo = publication.getPhoto();
         this.title = publication.getTitle();
         this.description = publication.getDescription();
-        this.creationDate = publication.getCreationDate();
-        this.residentId = publication.getResident().getId();
-        this.residentName = publication.getResident().getName();
+        this.creation_date = publication.getCreationDate();
+        this.resident_id = publication.getResident().getId();
+        this.resident_name = publication.getResident().getName();
     }
 }

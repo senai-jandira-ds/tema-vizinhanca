@@ -25,14 +25,14 @@ public class PublicationSummaryResponse {
     private String photo;
     private String title;
     private String description;
-    private String creationDate;
+    private String creation_date;
 
     public PublicationSummaryResponse(Publication publication) {
         this.id = publication.getId();
         this.photo = publication.getPhoto();
         this.title = publication.getTitle();
         this.description = publication.getDescription();
-        this.creationDate = publication.getCreationDate() != null
+        this.creation_date = publication.getCreationDate() != null
                 ? publication.getCreationDate().toString()
                 : "";
     }

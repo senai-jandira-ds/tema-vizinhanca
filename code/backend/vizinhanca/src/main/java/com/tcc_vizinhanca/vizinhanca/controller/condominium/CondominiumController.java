@@ -55,7 +55,7 @@ public class CondominiumController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Lista de condomínios retornada com sucesso!"));
     }
 
-    // GET RESIDENTS — ex: GET /api/v1/condominium/resident/me?page=0&size=20
+    // GET RESIDENTS
     @GetMapping("/resident/me")
     public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllResidentsByCondominium(
             @RequestParam(defaultValue = "0") int page,
