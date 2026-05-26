@@ -36,7 +36,8 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        return path.startsWith("/api/v1/auth")
+        return path.equals("/api/v1/auth/login/condominium")
+                || path.equals("/api/v1/auth/login/resident")
                 || path.startsWith("/h2-console")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")

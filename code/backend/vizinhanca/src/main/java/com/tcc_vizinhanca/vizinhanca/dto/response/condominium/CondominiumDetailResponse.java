@@ -6,6 +6,7 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,7 @@ public class CondominiumDetailResponse {
     private String creation_date;
     private List<BlockSummaryResponse> blocks;
     private List<ResidentSummaryResponse> residents;
-    private List<ServiceDetailResponse> services;
+    private List<ServiceSummaryResponse> services;
     private List<ReportSummaryResponse> reports;
     private CondominiumAddressResponse address;
     private List<ActivityViewDetailResponse> activities;
@@ -38,7 +39,9 @@ public class CondominiumDetailResponse {
     public CondominiumDetailResponse(Condominium condominium) {
         this.id = condominium.getId();
         this.name = condominium.getName();
-        this.photo = condominium.getPhoto();
+        this.photo = condominium.getPhoto() != null
+                ? condominium.getPhoto()
+                : "";
         this.cnpj = condominium.getCnpj();
         this.amount_blocks = condominium.getAmountBlocks();
         this.amount_apartments = condominium.getAmountApartments();
@@ -58,7 +61,9 @@ public class CondominiumDetailResponse {
     public CondominiumDetailResponse(Condominium condominium, List<ActivityView> activities) {
         this.id = condominium.getId();
         this.name = condominium.getName();
-        this.photo = condominium.getPhoto();
+        this.photo = condominium.getPhoto() != null
+                ? condominium.getPhoto()
+                : "";
         this.cnpj = condominium.getCnpj();
         this.amount_blocks = condominium.getAmountBlocks();
         this.amount_apartments = condominium.getAmountApartments();
@@ -78,7 +83,7 @@ public class CondominiumDetailResponse {
                 : new ArrayList<>();
         this.services = condominium.getServices() != null
                 ? condominium.getServices().stream()
-                  .map(ServiceDetailResponse::new)
+                  .map(ServiceSummaryResponse::new)
                   .toList()
                 : new ArrayList<>();
         this.reports = condominium.getReports() != null

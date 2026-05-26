@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -64,6 +65,7 @@ public class CondominiumService {
      * Executa 4 queries separadas ao invés de um único JOIN FETCH com produto cartesiano.
      * O Hibernate faz merge das coleções no mesmo objeto gerenciado dentro da sessão.
      */
+    @Transactional(readOnly = true)
     public Condominium getDetailedCondominiumByEmail(String email) {
         Condominium base = condominiumRepository.findWithAddressAndBlocksByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(

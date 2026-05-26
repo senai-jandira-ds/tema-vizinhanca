@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzc5ODE0OTk3LCJleHAiOjE3Nzk5MDEzOTd9.JS4svZhmNFcrudZEOGK3gDufzVE7RD6K5tw3zeLXVe4
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzc5ODE3MTcyLCJleHAiOjE3Nzk5MDM1NzJ9.6n2wDfCCznp6FBN290cardiu790yzMvmnkl_kp0J27g
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ### ME - CONDOMINIUM
 # @name meCondominium
-GET https://api-vizinhanca.onrender.com/api/v1/auth/me/condominium
+GET http://localhost:8080/api/v1/auth/me/condominium
 Authorization: Bearer {{token}}
 
 ### ME - RESIDENT
