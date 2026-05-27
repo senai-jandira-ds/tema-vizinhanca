@@ -19,30 +19,27 @@ import com.example.mobilevizinhaa.ui.theme.data.TypeCategoryDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 class CriarServicoViewModel : ViewModel() {
 
-    // Controla o estado de carregamento reativo (Ex: exibe o CircularProgressIndicator na UI)
     var isLoading by mutableStateOf(false)
         private set
 
-    // Lista reativa que o Jetpack Compose escuta para atualizar o Dropdown na hora
     val categoriasIds = mutableStateListOf<CategoryDetail>()
 
     /**
      * ATUALIZADO: Busca as categorias diretamente do novo endpoint da API (/api/v1/category)
      */
     fun carregarCategorias(token: String) {
-        // Evita chamadas repetidas desnecessárias se já houver dados na lista
         if (categoriasIds.isNotEmpty()) return
 
         viewModelScope.launch {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
-                // Chamada ao novo endpoint dedicado a listagem limpa de categorias
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.authApi.obterTodasCategorias(authHeader)
                 }
@@ -65,7 +62,6 @@ class CriarServicoViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 Log.e("API_CATEGORIES", "Falha na conexão com o endpoint /api/v1/category: ${e.message}")
-                // Fallback de segurança para não travar o app do usuário se a API cair
                 if (categoriasIds.isEmpty()) {
                     categoriasIds.addAll(obterCategoriasPadrao())
                 }
@@ -91,7 +87,7 @@ class CriarServicoViewModel : ViewModel() {
     }
 
     /**
-     * Envia o novo serviço/objeto para o backend com o ID da categoria selecionada dinamicamente.
+     * CORRIGIDO: Envia dados tratando erros de restrição/duplicidade HTTP 409 do banco de dados
      */
     fun postarServico(
         context: Context,
@@ -105,15 +101,23 @@ class CriarServicoViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        // 1. VALIDAÇÃO LOCAL PREVENTIVA: Evita enviar títulos vazios ou massivos que quebram o banco
+        if (titulo.trim().length > 45) {
+            onError("O título escolhido é muito longo. Use no máximo 45 caracteres.")
+            return
+        }
+        if (titulo.trim().length < 4) {
+            onError("Insira um título mais descritivo (mínimo 4 caracteres).")
+            return
+        }
+
         viewModelScope.launch {
             isLoading = true
             try {
-                // Converte a foto selecionada em Base64 de forma assíncrona
                 val base64Foto = if (imagemUri != null) {
                     converterImagemParaBase64(context, imagemUri)
                 } else ""
 
-                // Tratamento para garantir que strings de urgência com acento não quebrem o Enum do Banco
                 val urgenciaTratada = when (urgencia.uppercase()) {
                     "MÉDIA", "MEDIA" -> "MEDIA"
                     "ALTA" -> "ALTA"
@@ -121,8 +125,8 @@ class CriarServicoViewModel : ViewModel() {
                 }
 
                 val payload = CreateServiceRequest(
-                    title = titulo,
-                    description = descricao,
+                    title = titulo.trim(),
+                    description = descricao.trim(),
                     photoBase64 = base64Foto,
                     estimatedTime = tempoEstimado,
                     urgency = urgenciaTratada,
@@ -145,13 +149,25 @@ class CriarServicoViewModel : ViewModel() {
                         onError(respostaCorpo?.message ?: "O servidor recusou a criação do serviço.")
                     }
                 } else {
+                    // 2. CAPTURA DO ERRO 409: Intercepta a resposta bruta do servidor e lê o JSON de erro
                     val erroTexto = response.errorBody()?.string()
                     Log.e("API_SERVICE", "Erro bruto retornado do servidor: $erroTexto")
-                    onError("Erro ${response.code()}: Falha na validação dos campos.")
+
+                    if (response.code() == 409) {
+                        try {
+                            val jsonErro = JSONObject(erroTexto ?: "")
+                            val mensagemApi = jsonErro.optString("message", "Dado duplicado ou violação de integridade!")
+                            onError("Não foi possível salvar: $mensagemApi Tente usar um título diferente.")
+                        } catch (e: Exception) {
+                            onError("Este título já está em uso ou é inválido para o sistema.")
+                        }
+                    } else {
+                        onError("Erro ${response.code()}: Falha na validação dos campos do formulário.")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("API_SERVICE_ERROR", "Falha crítica de conexão: ${e.message}")
-                onError("Não foi possível conectar ao servidor do backend.")
+                onError("Não foi possível conectar ao servidor do backend. Verifique a internet.")
             } finally {
                 isLoading = false
             }
@@ -168,7 +184,6 @@ class CriarServicoViewModel : ViewModel() {
             inputStream?.close()
 
             if (bitmapOriginal != null) {
-                // Redimensiona para 500x500 para não estourar o buffer de transferência de texto HTTP
                 val bitmapRedimensionado = Bitmap.createScaledBitmap(bitmapOriginal, 500, 500, true)
                 val outputStream = ByteArrayOutputStream()
                 bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)

@@ -36,6 +36,8 @@ fun PerfilScreen(
     // Controle do Estado para abrir/fechar o Diálogo de Seleção de Tema
     var exibirDialogoTema by remember { mutableStateOf(false) }
 
+    var exibirDiagoloAjuda by remember {mutableStateOf(false) }
+
     // INTEGRADO: Coleta o estado real e persistente do modo escuro diretamente do seu ViewModel
     val modoEscuroAtivo by viewModel.isDarkMode.collectAsState()
 
@@ -54,7 +56,7 @@ fun PerfilScreen(
         Triple(Icons.Default.Palette, "Tema") { exibirDialogoTema = true },
         Triple(Icons.Default.Notifications, "Notificações") { navController.navigate("notificacoes") },
         Triple(Icons.Default.Lock, "Privacidade") { navController.navigate("sub_privacidade") },
-        Triple(Icons.Default.HelpOutline, "Ajuda") { navController.navigate("sub_ajuda") }
+        Triple(Icons.Default.HelpOutline, "Ajuda") { exibirDiagoloAjuda = true },
     )
 
     // A Box altera sua cor de fundo dinamicamente baseada no tema salvo no ViewModel
@@ -190,6 +192,30 @@ fun PerfilScreen(
                 },
                 shape = RoundedCornerShape(16.dp),
                 containerColor = Color.White
+            )
+        }
+
+        if (exibirDiagoloAjuda){
+            AlertDialog(
+                onDismissRequest = {exibirDiagoloAjuda = true},
+                title = {
+                    Text(
+                        text = "Entre em contato",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = Color.Black
+                    )
+                },
+                text = {
+                    Column(modifier = Modifier
+                        .padding(16.dp)
+                        .background(Color(102, 59, 176, 255))
+                    ) {
+
+                    }
+                }, confirmButton = {
+                    Text("Enviar")
+                }
             )
         }
     }

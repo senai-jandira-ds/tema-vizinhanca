@@ -58,6 +58,10 @@ fun CriarPedidoObjetoScreen(
         "4 horas" to 240,
     )
 
+    // Limites de segurança locais em sincronia com o banco de dados
+    val limiteMaxTitulo = 45
+    val limiteMaxDescricao = 250
+
     // Escuta ativamente o token. Quando ele mudar de vazio para o token real, dispara a API.
     LaunchedEffect(tokenAtivo) {
         if (tokenAtivo.isNotEmpty()) {
@@ -136,19 +140,35 @@ fun CriarPedidoObjetoScreen(
                 }
             )
 
-            // --- TÍTULO ---
+            // --- TÍTULO (CORRIGIDO COM BLOQUEIO DE CARACTERES) ---
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Título do Serviço",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Título do Serviço",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = "${titulo.length}/$limiteMaxTitulo",
+                        fontSize = 12.sp,
+                        color = if (titulo.length >= limiteMaxTitulo) Color.Red else Color.Gray
+                    )
+                }
                 OutlinedTextField(
                     value = titulo,
-                    onValueChange = { titulo = it },
+                    onValueChange = { novoTexto ->
+                        // Trava preventivamente no teclado para não extrapolar o limite VARCHAR
+                        if (novoTexto.length <= limiteMaxTitulo) {
+                            titulo = novoTexto
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF3867F5),
                         unfocusedBorderColor = if (isDark) Color(0xFF444444) else Color(0xFFE0E0E0),
@@ -183,17 +203,32 @@ fun CriarPedidoObjetoScreen(
                 onUrgenciaChanged = { urgencia = it }
             )
 
-            // --- DESCRIÇÃO ---
+            // --- DESCRIÇÃO (CORRIGIDA COM BLOQUEIO DE CARACTERES) ---
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Descrição Detalhada",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Descrição Detalhada",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = "${descricao.length}/$limiteMaxDescricao",
+                        fontSize = 12.sp,
+                        color = if (descricao.length >= limiteMaxDescricao) Color.Red else Color.Gray
+                    )
+                }
                 OutlinedTextField(
                     value = descricao,
-                    onValueChange = { descricao = it },
+                    onValueChange = { novoTexto ->
+                        // Trava preventivamente também a descrição do anúncio
+                        if (novoTexto.length <= limiteMaxDescricao) {
+                            descricao = novoTexto
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 110.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -260,6 +295,7 @@ fun CriarPedidoObjetoScreen(
                                     navController.popBackStack()
                                 },
                                 onError = { erro ->
+                                    // A mensagem customizada ou erro 409 mapeado no ViewModel será exibido aqui perfeitamente!
                                     Toast.makeText(context, erro, Toast.LENGTH_LONG).show()
                                 }
                             )

@@ -93,7 +93,6 @@ fun DropdownCategoriasComponent(
                 )
             )
 
-            // CORRIGIDO: Modificador limpo + fillMaxWidth() para o encaixe perfeito na Row
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
@@ -166,7 +165,6 @@ fun DropdownDuracaoComponent(
                 )
             )
 
-            // CORRIGIDO: Modificador limpo + fillMaxWidth() para o encaixe perfeito na Row
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
