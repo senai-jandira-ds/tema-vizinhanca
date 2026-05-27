@@ -4,6 +4,9 @@ import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumCreateRe
 import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockListSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
@@ -11,12 +14,14 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryRespon
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
+import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
@@ -53,6 +58,9 @@ public class CondominiumController {
 
     @Autowired
     private ServiceService serviceService;
+
+    @Autowired
+    private BlockService blockService;
 
     // GET ALL
     @GetMapping
@@ -111,6 +119,20 @@ public class CondominiumController {
         PageResponse<ServiceSummaryResponse> response = new PageResponse<>(services, ServiceSummaryResponse::new);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Serviços encontrados com sucesso!"));
+
+    }
+
+    // GET BLOCKS
+    @GetMapping("/block/me")
+    public ResponseEntity<ApiResponse<BlockListSummaryResponse>> listAllBlocksByCondominium(HttpServletRequest request) {
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Block> blocks = blockService.getSelectBlocksByCondominium(user.idCondominium());
+
+        BlockListSummaryResponse response = new BlockListSummaryResponse(blocks);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Blocos encontrados com sucesso!"));
 
     }
 

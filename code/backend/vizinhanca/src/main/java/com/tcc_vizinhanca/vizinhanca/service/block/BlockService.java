@@ -43,6 +43,12 @@ public class BlockService {
                         HttpStatus.NOT_FOUND, "Bloco não encontrado no banco de dados!"));
     }
 
+    // SELECT BY CONDOMINIUM
+    public List<Block> getSelectBlocksByCondominium(Long idCondominium) {
+        return blockRepository.findByCondominiumId(idCondominium);
+    }
+
+
     // INSERT BLOCK
     public Block setInsertBlock(@NonNull Block block, String email) {
         Condominium condominium = condominiumRepository.findByEmail(email)

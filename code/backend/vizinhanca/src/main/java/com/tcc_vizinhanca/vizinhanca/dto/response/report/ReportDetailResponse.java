@@ -28,6 +28,8 @@ public class ReportDetailResponse {
 
     private Long id;
     private String description;
+    private String cration_date;
+    private String status;
     private ResidentSummaryResponse resident;
     private ReasonReportResponse reason_report;
     private ObjectSummaryResponse object_id;
@@ -37,6 +39,8 @@ public class ReportDetailResponse {
     public ReportDetailResponse(Report report) {
         this.id = report.getId();
         this.description = report.getDescription();
+        this.cration_date = report.getCreationDate().toString();
+        this.status = report.getStatus().toString();
         this.resident = report.getResident() != null
                 ? new ResidentSummaryResponse(report.getResident())
                 : new ResidentSummaryResponse();

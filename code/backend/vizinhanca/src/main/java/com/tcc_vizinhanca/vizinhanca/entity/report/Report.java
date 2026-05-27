@@ -10,15 +10,18 @@
 package com.tcc_vizinhanca.vizinhanca.entity.report;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
-import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
-import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
 import com.tcc_vizinhanca.vizinhanca.entity.publication.Publication;
+import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusReport;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tbl_denuncia")
@@ -35,6 +38,13 @@ public class Report {
 
     @Column(name = "descricao", columnDefinition = "TEXT", nullable = false)
     private String description;
+
+    @Column(name = "data_criacao", nullable = false, columnDefinition = "DATETIME")
+    private LocalDateTime creationDate;
+
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private StatusReport status;
 
     @ManyToOne
     @JoinColumn(name = "id_morador", nullable = false)

@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzc5OTAwMTc4LCJleHAiOjE3Nzk5ODY1Nzh9.TFsBsEZU4g3fbFbIasAzbQq_q7WepxgchMUcDjMfwDE
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzc5OTA2MjA1LCJleHAiOjE3Nzk5OTI2MDV9.03zEKNKM0Vs8KmYdQ2M8hBNBz05SGAMDWYWl_zREJLA
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -50,6 +50,11 @@ Authorization: Bearer {{token}}
 ### Search services by condominium
 # @name searchServicesByCOndominium
 GET http://localhost:8080/api/v1/condominium/service/me
+Authorization: Bearer {{token}}
+
+### Search blocks by condominium
+# @name searchBlocksByCondominium
+GET http://localhost:8080/api/v1/condominium/block/me
 Authorization: Bearer {{token}}
 
 ### Search by id
