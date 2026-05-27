@@ -49,6 +49,11 @@ public class CategoryService {
                         HttpStatus.NOT_FOUND, "Categoria não encontrada!"));
     }
 
+    // SELECT BY CONDOMINIUM
+    public List<Category> getSelectCategoriesByCondominiumId(Long condominiumId) {
+        return categoryRepository.findByCondominiumId(condominiumId);
+    }
+
     // INSERT CATEGORY
     public Category setInsertCategory(@NonNull Category category, Long typeCategoryId) {
         TypeCategory typeCategory = typeCategoryRepository.findById(typeCategoryId)

@@ -36,4 +36,6 @@ public class ResidentUpdateRequest {
 
     @NotNull(message = "Pontuação é obrigatório")
     private Integer score;
+
+    private Boolean is_active;
 }

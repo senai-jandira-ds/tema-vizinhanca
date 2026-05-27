@@ -7,12 +7,14 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockListSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.category.CategorySummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
@@ -22,6 +24,7 @@ import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
+import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
@@ -40,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -61,6 +65,9 @@ public class CondominiumController {
 
     @Autowired
     private BlockService blockService;
+
+    @Autowired
+    private CategoryService categoryService;
 
     // GET ALL
     @GetMapping
@@ -87,6 +94,46 @@ public class CondominiumController {
                 new PageResponse<>(residents, ResidentSummaryResponse::new);
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+    }
+
+    // GET RESIDENTS BY BLOCK
+    @GetMapping("/resident/me/block/{idBlock}")
+    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllBlocksByCondominium(
+            @PathVariable Long idBlock,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request
+    ) {
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Resident> residents = residentService.getSelectResidentsByCondominiumIdAndBlockId(user.idCondominium(), idBlock, pageable);
+
+        PageResponse<ResidentSummaryResponse> response = new  PageResponse<>(residents, ResidentSummaryResponse::new);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+    }
+
+    // GET RESIDENTS BY STATUS
+    @GetMapping("/resident/me/status/{isActive}")
+    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllResidentsByStatus(
+            @PathVariable Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request
+    ) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Resident> residents = residentService.getSelectResidentsByCondominiumIdAndIsActive(user.idCondominium(), isActive, pageable);
+
+        PageResponse<ResidentSummaryResponse> response =
+                new PageResponse<>(residents, ResidentSummaryResponse::new);
+
+        return  ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
 
     // GET ACTIVITIES
@@ -134,6 +181,21 @@ public class CondominiumController {
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Blocos encontrados com sucesso!"));
 
+    }
+
+    // GET CATEGORIES
+    @GetMapping("/category/me")
+    public ResponseEntity<ApiResponse<List<CategorySummaryResponse>>> listAllCategoriesByCondominium(HttpServletRequest request) {
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Category> categories = categoryService.getSelectCategoriesByCondominiumId(user.idCondominium());
+
+        List<CategorySummaryResponse> response = categories.stream()
+                .map(CategorySummaryResponse::new)
+                .toList();
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Categorias encontradas com sucesso!"));
     }
 
     // GET BY ID

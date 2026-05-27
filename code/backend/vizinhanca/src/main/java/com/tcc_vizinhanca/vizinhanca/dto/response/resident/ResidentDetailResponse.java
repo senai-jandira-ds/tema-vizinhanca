@@ -27,6 +27,7 @@ public class ResidentDetailResponse {
     private String phone;
     private Integer score;
     private String creation_date;
+    private Boolean is_active;
     private BlockSummaryResponse block;
     private List<PublicationSummaryResponse> publications;
     private List<ServiceSummaryResponse> services;
@@ -47,6 +48,7 @@ public class ResidentDetailResponse {
         this.creation_date = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
                 : "";
+        this.is_active = resident.getIsActive();
         this.publications = resident.getPublications() != null
                 ? resident.getPublications().stream()
                     .map(PublicationSummaryResponse::new)

@@ -37,9 +37,19 @@ Authorization: Bearer {{token}}
 GET https://api-vizinhanca.onrender.com/api/v1/condominium
 Authorization: Bearer {{token}}
 
-### Search by condominium
+### Search Resident by condominium
 # @name searchResidentsByCondominium
 GET http://localhost:8080/api/v1/condominium/resident/me
+Authorization: Bearer {{token}}
+
+### Search Resident by Status
+# @name searchResidentByStatus
+GET http://localhost:8080/api/v1/condominium/resident/me/status/true
+Authorization: Bearer {{token}}
+
+### Search Resident by Block
+# @name searchResidentsByBlock
+GET http://localhost:8080/api/v1/condominium/resident/me/block/1
 Authorization: Bearer {{token}}
 
 ### Search activities by condominium
@@ -55,6 +65,11 @@ Authorization: Bearer {{token}}
 ### Search blocks by condominium
 # @name searchBlocksByCondominium
 GET http://localhost:8080/api/v1/condominium/block/me
+Authorization: Bearer {{token}}
+
+### Search categories by condominium
+# @name searchCategoriesByCondominium
+GET http://localhost:8080/api/v1/condominium/category/me
 Authorization: Bearer {{token}}
 
 ### Search by id

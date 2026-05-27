@@ -73,6 +73,16 @@ public class ResidentService {
         return residentRepository.findByCondominiumId(condominium.getId(), pageable);
     }
 
+    // SELECT BY BLOCK
+    public Page<Resident> getSelectResidentsByCondominiumIdAndBlockId(Long condominiumId, Long blockId, Pageable pageable) {
+        return residentRepository.findByCondominiumIdAndBlockId(condominiumId, blockId, pageable);
+    }
+
+    // SELECT BY STATUS
+    public Page<Resident> getSelectResidentsByCondominiumIdAndIsActive(Long condominiumId, Boolean isActive, Pageable pageable) {
+        return residentRepository.findByCondominiumIdAndIsActive(condominiumId, isActive, pageable);
+    }
+
     // SELECT BY EMAIL
     public Resident getSelectResidentByEmail(String email) {
         return residentRepository.findByEmail(email)
