@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -71,7 +72,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(30.dp))
             }
 
-            // Item 3: Seção reativa de Cards (Pedidos e Objetos vinculados à nova rota de serviços)
+            // Item 3: Seção reativa de Cards
             item(span = { GridItemSpan(3) }) {
                 Row(
                     modifier = Modifier
@@ -79,22 +80,25 @@ fun HomeScreen(
                         .padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // CONFIGURADO: Este botão limpa o foco e abre a tela CriarPedidoObjetoScreen
                     InfoCard(
                         titulo = "Meus pedidos",
                         quantity = "3",
                         iconeRes = R.drawable.pedido,
                         onAddClick = {
                             focusManager.clearFocus()
-                            navController.navigate("criar_pedido") // Abre a tela CreateServiceScreen
+                            navController.navigate("criar_pedido")
                         }
                     )
+
+                    // CONFIGURADO: Apenas para fins estruturais no momento, sem disparar navegação de criação
                     InfoCard(
                         titulo = "Meus objetos",
                         quantity = "3",
                         iconeRes = R.drawable.objeto,
                         onAddClick = {
                             focusManager.clearFocus()
-                            navController.navigate("criar_pedido") // Abre a tela CreateServiceScreen
+                            // Espaço reservado para ações futuras de listagem ou gerenciamento de objetos
                         }
                     )
                 }
@@ -111,57 +115,55 @@ fun HomeScreen(
                 )
             }
 
-            // Item 5: Grade reativa de Fotos em formato 3x3
-            posts.forEach { post ->
-                item {
-                    val bitmap = remember(post.imagemUrl) {
-                        if (post.imagemUrl != null && !post.imagemUrl.startsWith("http") && post.imagemUrl != "string") {
-                            viewModel.carregarImagemBase64MuralLocal(post.imagemUrl)
-                        } else {
-                            null
-                        }
+            // Item 5: Grade reativa de Fotos otimizada usando a DSL 'items'
+            items(posts) { post ->
+                val bitmap = remember(post.imagemUrl) {
+                    if (post.imagemUrl != null && !post.imagemUrl.startsWith("http") && post.imagemUrl != "string") {
+                        viewModel.carregarImagemBase64MuralLocal(post.imagemUrl)
+                    } else {
+                        null
                     }
+                }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .background(Color(0xFFF2F2F7))
-                            .clickable {
-                                focusManager.clearFocus()
-                                navController.navigate("detalhe_post/${post.id}")
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (bitmap != null) {
-                            Image(
-                                bitmap = bitmap,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else if (!post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string") {
-                            AsyncImage(
-                                model = post.imagemUrl,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else if (post.imagemUri != null) {
-                            AsyncImage(
-                                model = post.imagemUri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Image(
-                                painter = painterResource(id = R.drawable.objeto),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .background(Color(0xFFF2F2F7))
+                        .clickable {
+                            focusManager.clearFocus()
+                            navController.navigate("detalhe_post/${post.id}")
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (!post.imagemUrl.isNullOrEmpty() && post.imagemUrl != "string") {
+                        AsyncImage(
+                            model = post.imagemUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (post.imagemUri != null) {
+                        AsyncImage(
+                            model = post.imagemUri,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.objeto),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
             }

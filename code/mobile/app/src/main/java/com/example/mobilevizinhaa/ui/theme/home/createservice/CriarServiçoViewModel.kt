@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mobilevizinhaa.ui.theme.data.CategoryDetail
 import com.example.mobilevizinhaa.ui.theme.data.CreateServiceRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
+import com.example.mobilevizinhaa.ui.theme.data.TypeCategoryDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,8 +32,7 @@ class CriarServicoViewModel : ViewModel() {
     val categoriasIds = mutableStateListOf<CategoryDetail>()
 
     /**
-     * Busca as categorias existentes no condomínio a partir dos serviços listados.
-     * Caso o banco esteja vazio ou ocorra erro de mapeamento, insere categorias padrão salvas localmente.
+     * ATUALIZADO: Busca as categorias diretamente do novo endpoint da API (/api/v1/category)
      */
     fun carregarCategorias(token: String) {
         // Evita chamadas repetidas desnecessárias se já houver dados na lista
@@ -42,35 +42,30 @@ class CriarServicoViewModel : ViewModel() {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
+                // Chamada ao novo endpoint dedicado a listagem limpa de categorias
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.authApi.listarServicos(authHeader)
+                    RetrofitClient.authApi.obterTodasCategorias(authHeader)
                 }
 
                 categoriasIds.clear()
 
                 if (response.isSuccessful && response.body() != null) {
-                    val listaServicos = response.body()?.response?.services ?: emptyList()
+                    val listaCategorias = response.body()?.response?.categories ?: emptyList()
 
-                    // Extrai o objeto de categoria ignorando itens nulos
-                    val categoriasMapeadas = listaServicos.mapNotNull { item ->
-                        item.category
-                    }.distinctBy { it.id } // Remove duplicados pelo ID único da categoria
-
-                    if (categoriasMapeadas.isNotEmpty()) {
-                        categoriasIds.addAll(categoriasMapeadas)
-                        Log.d("API_CATEGORIES", "Categorias extraídas dos serviços com sucesso!")
+                    if (listaCategorias.isNotEmpty()) {
+                        categoriasIds.addAll(listaCategorias)
+                        Log.d("API_CATEGORIES", "Categorias carregadas direto do novo endpoint com sucesso!")
                     } else {
-                        // FALLBACK 1: Banco está limpo (sem serviços criados). Injeta categorias padrão!
-                        Log.w("API_CATEGORIES", "Nenhum serviço ativo encontrado no banco. Injetando categorias locais...")
+                        Log.w("API_CATEGORIES", "Endpoint retornou lista vazia. Carregando dados locais de segurança...")
                         categoriasIds.addAll(obterCategoriasPadrao())
                     }
                 } else {
-                    Log.e("API_CATEGORIES", "Erro na resposta do servidor: ${response.code()}")
+                    Log.e("API_CATEGORIES", "Erro no servidor ao buscar categorias: ${response.code()}")
                     categoriasIds.addAll(obterCategoriasPadrao())
                 }
             } catch (e: Exception) {
-                Log.e("API_CATEGORIES", "Falha catastrófica ou erro de Parse JSON: ${e.message}")
-                // FALLBACK 2: Garante o funcionamento do Dropdown mesmo sem conexão ou com falha de parse
+                Log.e("API_CATEGORIES", "Falha na conexão com o endpoint /api/v1/category: ${e.message}")
+                // Fallback de segurança para não travar o app do usuário se a API cair
                 if (categoriasIds.isEmpty()) {
                     categoriasIds.addAll(obterCategoriasPadrao())
                 }
@@ -79,17 +74,19 @@ class CriarServicoViewModel : ViewModel() {
     }
 
     /**
-     * CORRIGIDO: Gera uma lista de categorias padrão com IDs em formato de Texto ("1", "2")
-     * para casar perfeitamente com as propriedades internas declaradas na sua classe CategoryDetail.
+     * ATUALIZADO: Categorias locais de segurança mapeadas para a nova estrutura complexa do JSON
      */
     private fun obterCategoriasPadrao(): List<CategoryDetail> {
+        val tipoServico = TypeCategoryDetail(id = 1, name = "SERVICO")
+        val tipoObjeto = TypeCategoryDetail(id = 2, name = "OBJETO")
+
         return listOf(
-            CategoryDetail(id = "1", name = "Reformas & Reparos"),
-            CategoryDetail(id = "2", name = "Limpeza & Organização"),
-            CategoryDetail(id = "3", name = "Empréstimos de Objetos"),
-            CategoryDetail(id = "4", name = "Cuidados & Pet Sitter"),
-            CategoryDetail(id = "5", name = "Aulas & Consultoria"),
-            CategoryDetail(id = "6", name = "Outros Serviços")
+            CategoryDetail(id = 1, name = "Reformas & Reparos", description = "Manutenções gerais", typeCategory = tipoServico),
+            CategoryDetail(id = 2, name = "Limpeza & Organização", description = "Serviços domésticos", typeCategory = tipoServico),
+            CategoryDetail(id = 3, name = "Empréstimos de Objetos", description = "Compartilhamento de utensílios", typeCategory = tipoObjeto),
+            CategoryDetail(id = 4, name = "Cuidados & Pet Sitter", description = "Animais e plantas", typeCategory = tipoServico),
+            CategoryDetail(id = 5, name = "Aulas & Consultoria", description = "Aulas particulares", typeCategory = tipoServico),
+            CategoryDetail(id = 6, name = "Outros Serviços", description = "Utilidades variadas", typeCategory = tipoServico)
         )
     }
 

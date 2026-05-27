@@ -58,7 +58,7 @@ fun CriarPedidoObjetoScreen(
         "4 horas" to 240,
     )
 
-    // CORRIGIDO: Escuta ativamente o token. Quando ele mudar de vazio para o token real, dispara a API.
+    // Escuta ativamente o token. Quando ele mudar de vazio para o token real, dispara a API.
     LaunchedEffect(tokenAtivo) {
         if (tokenAtivo.isNotEmpty()) {
             Log.d("API_CATEGORIAS", "Token identificado! Disparando carregarCategorias...")

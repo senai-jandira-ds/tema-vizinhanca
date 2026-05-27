@@ -14,8 +14,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -38,10 +38,12 @@ import com.example.mobilevizinhaa.ui.theme.menssage.chatdetails.ChatDetalheScree
 import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
+
+// ATUALIZADO: Import da sua tela de criação de serviço/pedido descomentado com sucesso
 import com.example.mobilevizinhaa.ui.theme.home.createservice.CriarPedidoObjetoScreen
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 
-// INTEGRADO: Import do seu tema para envelopar a navegação global
+// INTEGRADO: Import do seu tema para complementar a navegação global
 import com.example.mobilevizinhaa.ui.theme.MobileVizinhaçaTheme
 
 class MainActivity : ComponentActivity() {
@@ -133,7 +135,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 PublicacaoScreen(navController, homeViewModel)
             }
 
-            // --- CRIAÇÃO DE PEDIDO OU OBJETO ---
+            // ATUALIZADO: Rota reativada apontando corretamente para o CriarPedidoObjetoScreen
             composable("criar_pedido") {
                 CriarPedidoObjetoScreen(
                     navController = navController,

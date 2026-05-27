@@ -83,8 +83,7 @@ fun DropdownCategoriasComponent(
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandida) },
-                // AJUSTADO: Âncora limpa para evitar problemas de compatibilidade
-                modifier = Modifier.menuAnchor(),
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3867F5),
@@ -93,12 +92,14 @@ fun DropdownCategoriasComponent(
                     unfocusedTextColor = if (isDark) Color.White else Color.Black
                 )
             )
-            // CORRIGIDO: Removido o .exposedDropdownSize() que causava o esmagamento na Row
+
+            // CORRIGIDO: Modificador limpo + fillMaxWidth() para o encaixe perfeito na Row
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
                 modifier = Modifier
-                    .width(200.dp) // Define uma largura estável para a caixinha do menu flutuante
+                    .exposedDropdownSize()
+                    .fillMaxWidth()
                     .background(if (isDark) Color(0xFF2D2C30) else Color.White)
             ) {
                 if (categorias.isEmpty()) {
@@ -155,7 +156,7 @@ fun DropdownDuracaoComponent(
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { Icon(Icons.Default.AccessTime, null, tint = if (isDark) Color.Gray else Color.DarkGray) },
-                modifier = Modifier.menuAnchor(),
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3867F5),
@@ -164,12 +165,14 @@ fun DropdownDuracaoComponent(
                     unfocusedTextColor = if (isDark) Color.White else Color.Black
                 )
             )
-            // CORRIGIDO: Removido o .exposedDropdownSize()
+
+            // CORRIGIDO: Modificador limpo + fillMaxWidth() para o encaixe perfeito na Row
             ExposedDropdownMenu(
                 expanded = expandida,
                 onDismissRequest = { expandida = false },
                 modifier = Modifier
-                    .width(200.dp)
+                    .exposedDropdownSize()
+                    .fillMaxWidth()
                     .background(if (isDark) Color(0xFF2D2C30) else Color.White)
             ) {
                 opcoesTempo.forEach { parTempo ->

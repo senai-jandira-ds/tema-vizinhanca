@@ -217,11 +217,39 @@ data class BlockDetail(
     @SerializedName("block") val block: String?
 )
 
+// ==========================================
+// NOVO: MODELOS ADAPTADOS DO SWAGGER PARA O ENDPOINT /api/v1/category
+// ==========================================
+
+data class TypeCategoryDetail(
+    @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String
+)
+
 data class CategoryDetail(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String?,
     @SerializedName("description") val description: String?,
-    @SerializedName("typeCategory") val typeCategory: String?
+
+    // Suporta tanto o objeto do novo endpoint quanto String pura caso venha do mapeamento antigo
+    @SerializedName("type_category", alternate = ["typeCategory"])
+    val typeCategory: Any? = null
+)
+
+data class CategoryListResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("developer") val developer: String? = null,
+    @SerializedName("api_description") val apiDescription: String? = null,
+    @SerializedName("version") val version: String? = null,
+    @SerializedName("request_date") val requestDate: String? = null,
+    @SerializedName("message") val message: String,
+    @SerializedName("response") val response: CategoryResponseData?
+)
+
+data class CategoryResponseData(
+    @SerializedName("amount_categories") val amountCategories: Int? = null,
+    @SerializedName("categories") val categories: List<CategoryDetail>? = null
 )
 
 // ==========================================
@@ -271,4 +299,10 @@ interface AuthApiService {
     suspend fun listarServicos(
         @Header("Authorization") token: String
     ): Response<CreateServiceResponse>
+
+    // --- NOVO ENDPOINT: BUSCA TODAS AS CATEGORIAS REGISTRADAS DIRECTAMENTE (GET) ---
+    @GET("api/v1/category")
+    suspend fun obterTodasCategorias(
+        @Header("Authorization") token: String
+    ): Response<CategoryListResponse>
 }
