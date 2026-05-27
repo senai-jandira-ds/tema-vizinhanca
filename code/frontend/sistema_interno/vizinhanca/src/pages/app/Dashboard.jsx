@@ -45,15 +45,15 @@ function Dashboard() {
             title: "Denúncias",
             quantity: fetchCondominium?.reports?.length || 0,
             color: "#FF1111",
-            to: "reports"
+            to: "security"
         },
     ];
 
     const mappedData = condominiumData.activities.map((activity, index) => ({
-        id: activity.idMorador?.toString() || (index + 1).toString(),
-        nome: activity.morador || '',
-        detalhe: activity.descricao || '',
-        tipo: formatActivityType(activity.tipo),
+        id: activity.resident_id.toString() || (index + 1).toString(),
+        nome: activity.resident_name || '',
+        detalhe: activity.description || '',
+        tipo: formatActivityType(activity.type),
         status: formatActivityStatus(activity.status),
     }));
 
@@ -64,11 +64,12 @@ function Dashboard() {
         { id: 'tipo', label: 'Tipo ', width: 150 },
         {
             id: 'status',
-            label: 'Status ',
-            width: 150,
+            label: 'Status',
+            width: 160,
             getCellClass: (status) => {
-                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluído') return styles['status-azul'];
+                if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
+                if (status === 'CONCLUIDO' || status === 'FINALIZADO') return styles['status-azul'];
+                if (status === 'PENDENTE' || status === 'INDISPONÍVEL') return styles['status-amarelo'];
                 return '';
             }
         },
@@ -92,8 +93,6 @@ function Dashboard() {
 
                             <svg
                                 onClick={() => setShowNotifications(!showNotifications)}
-                                width=""
-                                height=""
                                 viewBox="0 0 20 22"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"

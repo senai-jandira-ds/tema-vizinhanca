@@ -45,9 +45,9 @@ function Activity() {
                 id: activity.resident_id?.toString() || (index + 1).toString(),
                 nome: activity.resident_name || '',
                 descricao: activity.description || '',
-                categoria: formatActivityType(activity.tipo),
+                categoria: formatActivityType(activity.type),
                 status: formatActivityStatus(activity.status),
-                data: formatActivityDate(activity.dataCriacao)
+                data: formatActivityDate(activity.creation_date)
             }));
 
             console.log('Dados mapeados:', mappedData);

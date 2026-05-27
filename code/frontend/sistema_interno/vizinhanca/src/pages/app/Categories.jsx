@@ -1,41 +1,72 @@
+import { useEffect, useState } from "react";
 import Table from "./components/Table";
 import { getCondominiumData } from "../../services/authService";
+import { getCategoryTypes, getCategories } from "../../services/categoryService"
 import styles from "./Categories.module.css";
 import settingsStyles from "./Settings.module.css";
 
 function Categories() {
+    const [loading, setLoading] = useState(true);
+    const [dadosTabela, setDadosTabela] = useState([]);
+    const [termoBusca, setTermoBusca] = useState('');
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
 
-    const data = getCondominiumData();
+    useEffect(() => {
+        fetchCategories();
+    }, []);   
+
+    const fetchCategories = async () => {
+        try {
+            setLoading(true);
+            const tableData = await getCategories();
+            const categoriesType = await getCategoryTypes();
+
+            console.log(tableData)
+            console.log(categoriesType)
+
+            if (!Array.isArray(tableData.response.categories)) {
+                setDadosTabela([]);
+                return;
+            }
+            console.log('teste')
+
+            const data = tableData.response.categories
+
+            const mappedData = data.map((category, index) => ({
+                id: category.id?.toString() || (index + 1).toString(),
+                nome: category.name || '',
+                descricao: category.description || '',
+                tipo: category.type_category.name
+            }));
+
+            console.log('Dados mapeados:', mappedData);
+            setDadosTabela(mappedData);
+        } catch (error) {
+            console.error('Erro ao buscar atividades:', error);
+            setDadosTabela([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome', width: 200 },
-        { id: 'detalhe', label: 'Detalhe', width: 350 },
+        { id: 'descricao', label: 'Descrição', width: 350 },
         { id: 'tipo', label: 'Tipo', width: 150 },
-        {
-            id: 'status',
-            label: 'Status',
-            width: 150,
-            getCellClass: (status) => {
-                if (status === 'Aberto' || status === 'Disponível') {
-                    return settingsStyles['status-verde'];
-                }
-
-                if (status === 'Concluído') {
-                    return settingsStyles['status-azul'];
-                }
-
-                return '';
-            }
-        },
-    ];
-
-    const dadosTabela = [
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
         console.log(valor, colunaId, linha);
     };
+
+    if (loading) {
+        return (
+            <div className={styles.loading}>
+                <div className={styles.spinner}></div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
@@ -48,7 +79,9 @@ function Categories() {
                 data={dadosTabela}
                 onCellClick={handleCellClick}
                 showPagination={true}
-                pageSize={4}
+                pageSize={7}
+                modalType="categoria"
+                onCadastrarNovo={() => {}}
             />
             </div>
         </div>

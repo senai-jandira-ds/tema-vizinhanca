@@ -24,13 +24,17 @@ function Security() {
                 setDadosTabela([]);
                 return;
             }
+            
+            console.log(data)
 
         const mappedData = reports.map((report) => ({
             id: report.id?.toString() || '',
             autor: report.resident?.name || 'Não identificado',
-            photo: report.publication.photo || report.service.photo || report.object,
+            photo: report.resident.photo || report.object.photo || report.report.photo,
             descricao: report.description || '',
-            status: report.reasonReport?.name || ''
+            motivo: report.reason_report.name || '',
+            status: report.status || '',
+            data: report.creation_date || ''
         }));
 
             setDadosTabela(mappedData);
@@ -46,9 +50,10 @@ function Security() {
         { id: 'id', label: 'Nº', width: 100 },
         { id: 'autor', label: 'Autor', width: 220 },
         { id: 'descricao', label: 'Descrição', width: 350 },
+        { id: 'motivo', label: 'Motivo', width: 350 },
         {
             id: 'status',
-            label: 'Motivo',
+            label: 'Status',
             width: 180,
             getCellClass: (status) => {
                 if (status === 'Spam' || status === 'Falso') return styles['status-amarelo'];
@@ -56,7 +61,8 @@ function Security() {
                 if (status === 'Inapropriado') return styles['status-azul'];
                 return '';
             }
-        }
+        },
+        { id: 'data', label: 'Data', width: 150 }
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {

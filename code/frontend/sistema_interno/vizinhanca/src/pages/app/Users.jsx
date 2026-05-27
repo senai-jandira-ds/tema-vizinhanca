@@ -53,6 +53,7 @@ function Users() {
                 id: resident.id?.toString() || '',
                 nome: resident.name || '',
                 email: resident.email || '',
+                photo: resident.photo || '',
                 telefone: resident.phone || '',
                 cpf: formatarCPF(resident.cpf) || '',
                 status: 'Ativo',
@@ -113,7 +114,6 @@ function Users() {
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
-        alert('Clicou na célula: ' + valor);
     };
 
     const handleCadastrarNovo = () => {

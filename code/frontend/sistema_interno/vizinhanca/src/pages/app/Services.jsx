@@ -28,12 +28,12 @@ function Services() {
 
             const mappedData = services
                 .map((activity) => ({
-                    id: activity.id?.toString() || '',
-                    nome: activity.morador || '',
-                    descricao: activity.descricao || '',
+                    id: activity.resident_id?.toString() || '',
+                    nome: activity.resident_name || '',
+                    descricao: activity.description || '',
                     categoria: 'Serviço',
                     status: formatActivityStatus(activity.status),
-                    data: formatActivityDate(activity.dataCriacao)
+                    data: formatActivityDate(activity.created_at)
                 }));
 
            //console.log('Dados mapeados:', mappedData);
@@ -56,9 +56,9 @@ function Services() {
             label: 'Status',
             width: 150,
             getCellClass: (status) => {
-                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluído' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'Pendente' || status === 'Em andamento') return styles['status-amarelo'];
+                if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
+                if (status === 'CONCLUÍDO' || status === 'Finalizado') return styles['status-azul'];
+                if (status === 'PENDENTE' || status === 'Em andamento') return styles['status-amarelo'];
                 if (status === 'Cancelado') return styles['status-vermelho'];
                 return '';
             }
@@ -94,6 +94,7 @@ function Services() {
                     data={dadosTabela}
                     onCellClick={handleCellClick}
                     showPagination={true}
+                    modalType="servico"
                     exportType="servicos"
                 />
             </main>
