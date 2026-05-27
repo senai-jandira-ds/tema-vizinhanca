@@ -20,10 +20,12 @@ import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.email.EmailService;
 import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
+import com.tcc_vizinhanca.vizinhanca.specification.resident.ResidentSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -73,14 +75,25 @@ public class ResidentService {
         return residentRepository.findByCondominiumId(condominium.getId(), pageable);
     }
 
-    // SELECT BY BLOCK
-    public Page<Resident> getSelectResidentsByCondominiumIdAndBlockId(Long condominiumId, Long blockId, Pageable pageable) {
-        return residentRepository.findByCondominiumIdAndBlockId(condominiumId, blockId, pageable);
-    }
+    // SELECT WITH FILTERS
+    public Page<Resident> getSelectResidentsByFilters(
+            Long condominiumId,
+            List<Long> blockIds,
+            Boolean isActive,
+            Pageable pageable) {
 
-    // SELECT BY STATUS
-    public Page<Resident> getSelectResidentsByCondominiumIdAndIsActive(Long condominiumId, Boolean isActive, Pageable pageable) {
-        return residentRepository.findByCondominiumIdAndIsActive(condominiumId, isActive, pageable);
+        Specification<Resident> spec = Specification
+                .where(ResidentSpecification.hasCondominium(condominiumId));
+
+        if (blockIds != null && !blockIds.isEmpty()) {
+            spec = spec.and(ResidentSpecification.hasBlocks(blockIds));
+        }
+
+        if (isActive != null) {
+            spec = spec.and(ResidentSpecification.isActive(isActive));
+        }
+
+        return residentRepository.findAll(spec, pageable);
     }
 
     // SELECT BY EMAIL

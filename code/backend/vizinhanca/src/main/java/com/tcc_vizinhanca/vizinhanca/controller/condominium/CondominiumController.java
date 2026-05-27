@@ -96,44 +96,26 @@ public class CondominiumController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
 
-    // GET RESIDENTS BY BLOCK
-    @GetMapping("/resident/me/block/{idBlock}")
-    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllBlocksByCondominium(
-            @PathVariable Long idBlock,
+    // SELECT WITH FILTERS
+    @GetMapping("/resident/me/filter")
+    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listResidentsByFilters(
+            @RequestParam(required = false) List<Long> blockIds,
+            @RequestParam(required = false) Boolean isActive,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            HttpServletRequest request
-    ) {
-        AuthenticatedUser user =
-                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Resident> residents = residentService.getSelectResidentsByCondominiumIdAndBlockId(user.idCondominium(), idBlock, pageable);
-
-        PageResponse<ResidentSummaryResponse> response = new  PageResponse<>(residents, ResidentSummaryResponse::new);
-
-        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
-    }
-
-    // GET RESIDENTS BY STATUS
-    @GetMapping("/resident/me/status/{isActive}")
-    public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listAllResidentsByStatus(
-            @PathVariable Boolean isActive,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         AuthenticatedUser user =
                 (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Resident> residents = residentService.getSelectResidentsByCondominiumIdAndIsActive(user.idCondominium(), isActive, pageable);
+        Page<Resident> residents = residentService
+                .getSelectResidentsByFilters(user.idCondominium(), blockIds, isActive, pageable);
 
         PageResponse<ResidentSummaryResponse> response =
                 new PageResponse<>(residents, ResidentSummaryResponse::new);
 
-        return  ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
+        return ResponseEntity.ok(ResponseUtil.success(response, "Moradores filtrados retornados com sucesso!"));
     }
 
     // GET ACTIVITIES
