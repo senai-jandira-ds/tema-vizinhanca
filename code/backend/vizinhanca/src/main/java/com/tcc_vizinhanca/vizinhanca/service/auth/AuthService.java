@@ -21,6 +21,7 @@ import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepositor
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
+import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,6 +38,9 @@ public class AuthService {
 
     @Autowired
     private ResidentRepository residentRepository;
+
+    @Autowired
+    private ResidentService residentService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -83,24 +87,23 @@ public class AuthService {
 
     public AuthResponse<ResidentDetailResponse> loginResident(String email, String password) {
 
-        Resident resident = residentRepository.findByEmailWithPublications(email)
+        Resident resident = residentRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
-                ));
+                        HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"));
 
         if (!passwordEncoder.matches(password, resident.getPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
-            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas!");
         }
 
+        Resident detailedResident = residentService.getDetailedResidentByEmail(email);
+
         String token = jwtService.gerarToken(
-                resident.getEmail(),
-                resident.getCondominium().getId(),
-                resident.getId(),
+                detailedResident.getEmail(),
+                detailedResident.getCondominium().getId(),
+                detailedResident.getId(),
                 "MORADOR");
 
-        ResidentDetailResponse userResponse = new ResidentDetailResponse(resident);
+        ResidentDetailResponse userResponse = new ResidentDetailResponse(detailedResident);
 
         return new AuthResponse<>(token, userResponse);
     }
