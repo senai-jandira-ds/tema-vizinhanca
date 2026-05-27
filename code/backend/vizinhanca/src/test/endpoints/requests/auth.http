@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJicnVuby5zYW50b3NAZW1haWwuY29tIiwiaWRfY29uZG9taW5pdW0iOjEsImlkX3Jlc2lkZW50IjoyLCJ0eXBlX3BlcmZpbCI6Ik1PUkFET1IiLCJpYXQiOjE3Nzk4MjEyMTIsImV4cCI6MTc3OTkwNzYxMn0.3ekBXjXeoHoOhI45_K4LQFL5wyX7u47GskjLIAwKItQ
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzc5ODQxMDgxLCJleHAiOjE3Nzk5Mjc0ODF9.B9pPx-R5cb_xEKtL0o88u6VqRnEY8h0vjXQv_bKlAT4
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -231,3 +231,55 @@ RESERVADO
 ### DELETE
 DELETE http://localhost:8080/api/v1/object/1
 Authorization: Bearer {{token}}
+
+### ===== CATEGORY =====
+
+### GET ALL
+GET http://localhost:8080/api/v1/category
+Authorization: Bearer {{token}}
+
+### GET BY TYPE
+GET http://localhost:8080/api/v1/category/type/1/categories
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+
+### POST
+POST http://localhost:8080/api/v1/category
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Eletrônicos",
+  "description": "Objetos e serviços da área de eletrônicos",
+  "type_category_id": 1
+}
+
+### PUT
+PUT http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Eletrônicos e Informática",
+  "description": "Objetos e serviços da área de eletrônicos e informática",
+  "type_category_id": 1
+}
+
+### DELETE
+DELETE http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+
+
+### ===== TYPE CATEGORY =====
+
+### GET ALL
+GET http://localhost:8080/api/v1/category/type
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/category/type/1
+Authorization: Bearer {{token}}
+

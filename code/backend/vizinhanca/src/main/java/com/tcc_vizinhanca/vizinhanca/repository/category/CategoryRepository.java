@@ -11,5 +11,10 @@ package com.tcc_vizinhanca.vizinhanca.repository.category;
 import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+
+    List<Category> findByTypeCategoryId(Long typeCategoryId);
+
 }
