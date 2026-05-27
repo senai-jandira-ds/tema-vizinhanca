@@ -16,10 +16,12 @@ import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
+import com.tcc_vizinhanca.vizinhanca.specification.service.ServiceSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -59,6 +61,32 @@ public class ServiceService {
     // SELECT BY CATEGORY
     public Page<Service> getSelectServicesByCategory(Long condominiumId, Long categoryId, Pageable pageable) {
         return serviceRepository.findByCondominiumIdAndCategoryId(condominiumId, categoryId, pageable);
+    }
+
+    // SELECT WITH FILTERS
+    public Page<Service> getSelectServicesByFilters(
+            Long condominiumId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            List<Long> blockIds,
+            Pageable pageable) {
+
+        Specification<Service> spec = Specification
+                .where(ServiceSpecification.hasCondominium(condominiumId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasCategories(categoryIds));
+        }
+
+        if (blockIds != null && !blockIds.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasBlocks(blockIds));
+        }
+
+        return serviceRepository.findAll(spec, pageable);
     }
 
     // SELECT BY ID

@@ -19,7 +19,7 @@ public class ActivityViewDetailResponse {
     private String type;
     private String description;
     private String status;
-    private LocalDateTime created_at;
+    private LocalDateTime creation_date;
 
     public ActivityViewDetailResponse(ActivityView view) {
         this.resident_id = view.getIdMorador();
@@ -27,7 +27,7 @@ public class ActivityViewDetailResponse {
         this.type = view.getType();
         this.description = view.getDescription();
         this.status = view.getStatus();
-        this.created_at = view.getDataCriacao();
+        this.creation_date = view.getDataCriacao();
     }
 
 }

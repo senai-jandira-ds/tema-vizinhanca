@@ -25,6 +25,7 @@ public class ResidentSummaryResponse {
     private String phone;
     private Integer score;
     private String creation_date;
+    private Boolean is_active;
     private BlockSummaryResponse block;
 
     public ResidentSummaryResponse(Resident resident) {
@@ -39,6 +40,7 @@ public class ResidentSummaryResponse {
         this.creation_date = resident.getCreationDate() != null
                 ? resident.getCreationDate().toString()
                 : "";
+        this.is_active = resident.getIsActive();
         this.block = resident.getBlock() != null
                 ? new BlockSummaryResponse(resident.getBlock())
                 : null;

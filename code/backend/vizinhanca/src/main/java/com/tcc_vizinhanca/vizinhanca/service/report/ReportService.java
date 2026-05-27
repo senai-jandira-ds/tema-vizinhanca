@@ -9,6 +9,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.service.report;
 
+import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.report.ReasonReport;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
@@ -18,11 +19,13 @@ import com.tcc_vizinhanca.vizinhanca.repository.report.ReasonReportRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.report.ReportRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
+import com.tcc_vizinhanca.vizinhanca.specification.report.ReportSpecification;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,6 +56,37 @@ public class ReportService {
     // SELECT ALL
     public Page<Report> getSelectAllReports(Pageable pageable) {
         return reportRepository.findAll(pageable);
+    }
+
+    // SELECT WITH FILTERS
+    public Page<Report> getSelectReportsByFilters(
+            Long condominiumId,
+            List<String> statuses,
+            List<Long> reasonIds,
+            List<Long> blockIds,
+            Pageable pageable) {
+
+        Specification<Report> spec = Specification
+                .where(ReportSpecification.hasCondominium(condominiumId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ReportSpecification.hasStatuses(statuses));
+        }
+
+        if (reasonIds != null && !reasonIds.isEmpty()) {
+            spec = spec.and(ReportSpecification.hasReasons(reasonIds));
+        }
+
+        if (blockIds != null && !blockIds.isEmpty()) {
+            spec = spec.and(ReportSpecification.hasBlocks(blockIds));
+        }
+
+        return reportRepository.findAll(spec, pageable);
+    }
+
+    //SELECT BY CONDOMINIUM
+    public Page<Report> getSelectReportsByCondominiumId(Long idCondominium, Pageable pageable) {
+        return reportRepository.findByCondominiumId(idCondominium, pageable);
     }
 
     // SELECT BY ID

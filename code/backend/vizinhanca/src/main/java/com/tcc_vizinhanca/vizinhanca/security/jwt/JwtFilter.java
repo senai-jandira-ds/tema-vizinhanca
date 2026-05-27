@@ -12,6 +12,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +39,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         return path.equals("/api/v1/auth/login/condominium")
                 || path.equals("/api/v1/auth/login/resident")
-                || path.startsWith("/h2-console")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || (path.equals("/api/v1/condominium") && method.equals("POST"));
@@ -46,9 +46,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NotNull HttpServletRequest request,
+            @NotNull HttpServletResponse response,
+            @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
 
         if (SecurityContextHolder.getContext().getAuthentication() != null) {

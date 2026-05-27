@@ -44,7 +44,7 @@ public class CondominiumService {
         return condominiumRepository.findAll();
     }
 
-    // SELECT BY ID — carrega address + blocks (leve, sem coleções grandes)
+    // SELECT BY ID
     @Cacheable(value = "condominium", key = "#id")
     public Condominium getSelectCondominiumById(Long id) {
         return condominiumRepository.findByIdWithDetails(id)
@@ -52,7 +52,7 @@ public class CondominiumService {
                         HttpStatus.NOT_FOUND, "Condomínio não encontrado no Banco de Dados!"));
     }
 
-    // SELECT BY EMAIL — busca leve usada no JwtFilter e auth, só carrega address
+    // SELECT BY EMAIL
     @Cacheable(value = "residentByEmail", key = "#email")
     public Condominium getSelectCondominiumByEmail(String email) {
         return condominiumRepository.findByEmail(email)
@@ -60,11 +60,6 @@ public class CondominiumService {
                         HttpStatus.NOT_FOUND, "Condomínio não encontrado!"));
     }
 
-    /**
-     * Busca detalhada usada no login e no /me.
-     * Executa 4 queries separadas ao invés de um único JOIN FETCH com produto cartesiano.
-     * O Hibernate faz merge das coleções no mesmo objeto gerenciado dentro da sessão.
-     */
     @Transactional(readOnly = true)
     public Condominium getDetailedCondominiumByEmail(String email) {
         Condominium base = condominiumRepository.findWithAddressAndBlocksByEmail(email)

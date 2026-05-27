@@ -12,16 +12,14 @@ import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ResidentRepository extends JpaRepository<Resident,Long> {
-
-    @Query("SELECT DISTINCT r FROM Resident r LEFT JOIN FETCH r.publications p WHERE r.email = :email")
-    Optional<Resident> findByEmailWithPublications(@Param("email") String email);
+public interface ResidentRepository extends JpaRepository<Resident,Long>, JpaSpecificationExecutor<Resident> {
 
     @Query("""
     SELECT DISTINCT r
@@ -54,6 +52,13 @@ public interface ResidentRepository extends JpaRepository<Resident,Long> {
     Optional<Resident> findWithServicesByEmail(
             @Param("email") String email
     );
+
+    @Query("SELECT r.id FROM Resident r WHERE r.condominium.id = :condominiumId AND r.block.id = :blockId")
+    List<Long> findIdsByCondominiumIdAndBlockId(@Param("condominiumId") Long condominiumId, @Param("blockId") Long blockId);
+
+    Page<Resident> findByCondominiumIdAndBlockId(Long condominiumId, Long blockId, Pageable pageable);
+
+    Page<Resident> findByCondominiumIdAndIsActive(Long condominiumId, Boolean isActive, Pageable pageable);
 
     Optional<Resident> findByEmail(String email);
 

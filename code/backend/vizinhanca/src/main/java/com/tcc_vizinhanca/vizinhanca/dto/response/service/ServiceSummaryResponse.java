@@ -21,7 +21,7 @@ public class ServiceSummaryResponse {
     private String urgency;
     private String description;
     private String status;
-    private Long resident;
+    private ResidentSummaryResponse resident;
     private CategorySummaryResponse category;
 
     public ServiceSummaryResponse(Service service) {
@@ -32,7 +32,9 @@ public class ServiceSummaryResponse {
         this.urgency = service.getUrgency();
         this.description = service.getDescription();
         this.status = service.getStatus();
-        this.resident = service.getResident().getId();
+        this.resident = service.getResident() != null
+                ? new ResidentSummaryResponse(service.getResident())
+                : new ResidentSummaryResponse();
         this.category = service.getCategory() != null
                 ? new CategorySummaryResponse(service.getCategory())
                 : new CategorySummaryResponse();
