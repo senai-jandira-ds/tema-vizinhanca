@@ -5,28 +5,35 @@ import com.tcc_vizinhanca.vizinhanca.dto.request.condominium.CondominiumUpdateRe
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.PageResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockListSummaryResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.category.CategorySummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.object.ObjectDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.object.ObjectSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Block;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
+import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
+import com.tcc_vizinhanca.vizinhanca.repository.report.ReportRepository;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
-import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.block.BlockService;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
+import com.tcc_vizinhanca.vizinhanca.service.object.ObjectService;
+import com.tcc_vizinhanca.vizinhanca.service.report.ReportService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.service.service.ServiceService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
@@ -43,7 +50,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -62,6 +68,12 @@ public class CondominiumController {
 
     @Autowired
     private ServiceService serviceService;
+
+    @Autowired
+    private ObjectService objectService;
+
+    @Autowired
+    private ReportService reportService;
 
     @Autowired
     private BlockService blockService;
@@ -96,7 +108,7 @@ public class CondominiumController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Moradores encontrados com sucesso!"));
     }
 
-    // SELECT WITH FILTERS
+    // GET RESIDENTS WITH FILTERS
     @GetMapping("/resident/me/filter")
     public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listResidentsByFilters(
             @RequestParam(required = false) List<Long> blockIds,
@@ -133,6 +145,29 @@ public class CondominiumController {
         return ResponseEntity.ok(ResponseUtil.success(response, "Atividades encontradas com sucesso!"));
     }
 
+    // GET ACTIVITIES WITH FILTERS
+    @GetMapping("/activity/me/filter")
+    public ResponseEntity<ApiResponse<PageResponse<ActivityViewDetailResponse>>> listActivitiesByFilters(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Long idBlock,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataCriacao").descending());
+        Page<ActivityView> activities = activityViewService
+                .getSelectActivitiesByFilters(user.idCondominium(), status, type, idBlock, pageable);
+
+        PageResponse<ActivityViewDetailResponse> response =
+                new PageResponse<>(activities, ActivityViewDetailResponse::new);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Atividades filtradas retornadas com sucesso!"));
+    }
+
     // GET SERVICES
     @GetMapping("/service/me")
     public ResponseEntity<ApiResponse<PageResponse<ServiceSummaryResponse>>> listAllServicesByCondominium(
@@ -149,6 +184,108 @@ public class CondominiumController {
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Serviços encontrados com sucesso!"));
 
+    }
+
+    // GET SERVICES WITH FILTERS
+    @GetMapping("/service/me/filter")
+    public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listServicesByFilters(
+            @RequestParam(required = false) List<String> statuses,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) List<Long> blockIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Service> services = serviceService
+                .getSelectServicesByFilters(user.idCondominium(), statuses, categoryIds, blockIds, pageable);
+
+        return ResponseEntity.ok(ResponseUtil.success(
+                new PageResponse<>(services, ServiceDetailResponse::new),
+                "Serviços filtrados retornados com sucesso!"));
+    }
+
+    // GET OBJECTS
+    @GetMapping("/object/me")
+    public ResponseEntity<ApiResponse<PageResponse<ObjectSummaryResponse>>> listAllServiceByCondominium(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int  size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
+        Page<Object> objects = objectService.getSelectAllObjectsByCondominiumId(user.idCondominium(), pageable);
+
+        PageResponse<ObjectSummaryResponse> response = new PageResponse<>(objects, ObjectSummaryResponse::new);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Objectos encontrados com sucesso!"));
+    }
+
+    // GET OBJECTS WITH FILTERS
+    @GetMapping("/object/me/filter")
+    public ResponseEntity<ApiResponse<PageResponse<ObjectDetailResponse>>> listObjectsByFilters(
+            @RequestParam(required = false) List<String> statuses,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) List<Long> blockIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Object> objects = objectService
+                .getSelectObjectsByFilters(user.idCondominium(), statuses, categoryIds, blockIds, pageable);
+
+        return ResponseEntity.ok(ResponseUtil.success(
+                new PageResponse<>(objects, ObjectDetailResponse::new),
+                "Objetos filtrados retornados com sucesso!"));
+    }
+
+    // GET REPORTS
+    @GetMapping("/report/me")
+    public ResponseEntity<ApiResponse<PageResponse<ReportSummaryResponse>>> listAllReportsByCondominium(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int  size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("reasonReport").ascending());
+        Page<Report> reports = reportService.getSelectReportsByCondominiumId(user.idCondominium(), pageable);
+
+        PageResponse<ReportSummaryResponse> response = new PageResponse<>(reports, ReportSummaryResponse::new);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Denúncias encontradas com sucesso!"));
+    }
+
+    // GET REPORTS WITH FILTERS
+    @GetMapping("/report/me/filter")
+    public ResponseEntity<ApiResponse<PageResponse<ReportDetailResponse>>> listReportsByFilters(
+            @RequestParam(required = false) List<String> statuses,
+            @RequestParam(required = false) List<Long> reasonIds,
+            @RequestParam(required = false) List<Long> blockIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Report> reports = reportService
+                .getSelectReportsByFilters(user.idCondominium(), statuses, reasonIds, blockIds, pageable);
+
+        return ResponseEntity.ok(ResponseUtil.success(
+                new PageResponse<>(reports, ReportDetailResponse::new),
+                "Denúncias filtradas retornadas com sucesso!"));
     }
 
     // GET BLOCKS

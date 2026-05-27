@@ -12,10 +12,11 @@ import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ObjectRepository extends JpaRepository<Object, Long> {
+public interface ObjectRepository extends JpaRepository<Object, Long>, JpaSpecificationExecutor<Object> {
 
     Page<Object> findByCondominiumId(Long condominiumId, Pageable pageable);
 

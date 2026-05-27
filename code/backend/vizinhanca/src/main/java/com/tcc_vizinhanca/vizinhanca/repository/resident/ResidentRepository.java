@@ -53,6 +53,9 @@ public interface ResidentRepository extends JpaRepository<Resident,Long>, JpaSpe
             @Param("email") String email
     );
 
+    @Query("SELECT r.id FROM Resident r WHERE r.condominium.id = :condominiumId AND r.block.id = :blockId")
+    List<Long> findIdsByCondominiumIdAndBlockId(@Param("condominiumId") Long condominiumId, @Param("blockId") Long blockId);
+
     Page<Resident> findByCondominiumIdAndBlockId(Long condominiumId, Long blockId, Pageable pageable);
 
     Page<Resident> findByCondominiumIdAndIsActive(Long condominiumId, Boolean isActive, Pageable pageable);

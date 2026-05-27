@@ -18,14 +18,18 @@ import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
+import com.tcc_vizinhanca.vizinhanca.specification.object.ObjectSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Service
 public class ObjectService {
@@ -63,6 +67,33 @@ public class ObjectService {
     // SELECT BY CATEGORY
     public Page<Object> getSelectObjectsByCategory(Long condominiumId, Long categoryId, Pageable pageable) {
         return objectRepository.findByCondominiumIdAndCategoryId(condominiumId, categoryId, pageable);
+    }
+
+    // SELECT WITH FILTERS
+    // ObjectService
+    public Page<Object> getSelectObjectsByFilters(
+            Long condominiumId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            List<Long> blockIds,
+            Pageable pageable) {
+
+        Specification<Object> spec = Specification
+                .where(ObjectSpecification.hasCondominium(condominiumId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasCategories(categoryIds));
+        }
+
+        if (blockIds != null && !blockIds.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasBlocks(blockIds));
+        }
+
+        return objectRepository.findAll(spec, pageable);
     }
 
     // SELECT BY ID
