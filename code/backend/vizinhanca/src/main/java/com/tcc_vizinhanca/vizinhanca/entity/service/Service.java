@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "tbl_servico")
 @Getter
@@ -46,6 +48,9 @@ public class Service {
 
     @Column(name = "descricao", nullable = false, columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "data_criacao", columnDefinition = "DATETIME")
+    private LocalDateTime creationDate;
 
     @Column(name = "status", nullable = false, length = 20)
     private String status;

@@ -25,6 +25,7 @@ public class ServiceDetailResponse {
     private Integer estimated_time;
     private String urgency;
     private String description;
+    private String creation_date;
     private String status;
     private ResidentSummaryResponse resident;
     private CategorySummaryResponse category;
@@ -36,6 +37,7 @@ public class ServiceDetailResponse {
         this.estimated_time = service.getEstimatedTime();
         this.urgency = service.getUrgency();
         this.description = service.getDescription();
+        this.creation_date = service.getCreationDate().toString();
         this.status = service.getStatus();
         this.resident = service.getResident() != null
                 ? new ResidentSummaryResponse(service.getResident())

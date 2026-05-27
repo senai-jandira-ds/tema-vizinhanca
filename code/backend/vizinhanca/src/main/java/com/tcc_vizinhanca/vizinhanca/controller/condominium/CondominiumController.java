@@ -8,15 +8,19 @@ import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewRespon
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.mapper.condominium.CondominiumMapper;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.JwtService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
+import com.tcc_vizinhanca.vizinhanca.service.service.ServiceService;
 import com.tcc_vizinhanca.vizinhanca.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +51,9 @@ public class CondominiumController {
     @Autowired
     private ActivityViewService activityViewService;
 
+    @Autowired
+    private ServiceService serviceService;
+
     // GET ALL
     @GetMapping
     public ResponseEntity<ApiResponse<CondominiumResponse>> listAllCondos() {
@@ -66,8 +73,7 @@ public class CondominiumController {
                 (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<Resident> residents = residentService
-                .getSelectResidentsByCondominiumId(user.idCondominium(), pageable);
+        Page<Resident> residents = residentService.getSelectResidentsByCondominiumId(user.idCondominium(), pageable);
 
         PageResponse<ResidentSummaryResponse> response =
                 new PageResponse<>(residents, ResidentSummaryResponse::new);
@@ -88,6 +94,24 @@ public class CondominiumController {
 
         ActivityViewResponse response = new ActivityViewResponse(activities);
         return ResponseEntity.ok(ResponseUtil.success(response, "Atividades encontradas com sucesso!"));
+    }
+
+    // GET SERVICES
+    @GetMapping("/service/me")
+    public ResponseEntity<ApiResponse<PageResponse<ServiceSummaryResponse>>> listAllServicesByCondominium(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int  size,
+            HttpServletRequest request) {
+        AuthenticatedUser user =
+                (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
+        Page<Service> services = serviceService.getSelectAllServicesByCondominiumId(user.idCondominium(), pageable);
+
+        PageResponse<ServiceSummaryResponse> response = new PageResponse<>(services, ServiceSummaryResponse::new);
+
+        return ResponseEntity.ok(ResponseUtil.success(response, "Serviços encontrados com sucesso!"));
+
     }
 
     // GET BY ID

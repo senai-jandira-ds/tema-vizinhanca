@@ -31,8 +31,6 @@ public interface CondominiumRepository extends JpaRepository<Condominium, Long> 
     """)
     Optional<Condominium> findByIdWithDetails(@Param("id") Long id);
 
-    // Carrega residents + block de cada resident em query separada
-    // evitando produto cartesiano com services e reports
     @Query("""
         SELECT DISTINCT c FROM Condominium c
         LEFT JOIN FETCH c.residents r
