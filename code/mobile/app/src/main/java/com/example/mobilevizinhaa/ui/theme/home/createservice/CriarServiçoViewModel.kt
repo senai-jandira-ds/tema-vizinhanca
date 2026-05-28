@@ -124,7 +124,7 @@ class CriarServicoViewModel : ViewModel() {
                     description = descricao.trim(),
                     estimatedTime = tempoEstimado,
                     photoBase64 = base64Foto, // Envia a string limpa extraída do Uri
-                    status = "ACTIVE",
+                    status = "PENDENTE",
                     title = titulo.trim(),
                     urgency = urgencyTratada
                 )
