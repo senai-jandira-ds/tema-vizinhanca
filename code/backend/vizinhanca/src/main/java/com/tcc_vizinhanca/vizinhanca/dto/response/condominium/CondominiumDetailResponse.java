@@ -1,11 +1,10 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.activity_view.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;

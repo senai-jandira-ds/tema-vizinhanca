@@ -1,4 +1,4 @@
-package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
+package com.tcc_vizinhanca.vizinhanca.dto.response.condominium.activity_view;
 
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import lombok.AllArgsConstructor;

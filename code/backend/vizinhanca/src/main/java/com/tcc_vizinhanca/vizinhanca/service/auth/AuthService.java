@@ -10,11 +10,10 @@
 package com.tcc_vizinhanca.vizinhanca.service.auth;
 
 import com.tcc_vizinhanca.vizinhanca.dto.response.auth.AuthResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.ActivityViewDetailResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumStats;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.activity_view.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.LoginCondominiumResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentDetailResponse;
-import com.tcc_vizinhanca.vizinhanca.entity.condominium.ActivityView;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.condominium.CondominiumRepository;
@@ -53,7 +52,7 @@ public class AuthService {
 
     public AuthResponse<LoginCondominiumResponse> loginCondominium(String email, String password){
 
-        Condominium condominium = condominiumRepository.findByEmail(email)
+        Condominium condominium = condominiumRepository.findWithResidentsByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Credenciais inválidas!"
                 ));
@@ -70,6 +69,9 @@ public class AuthService {
                 null,
                 "CONDOMÍNIO");
 
+        CondominiumStats stats = condominiumRepository
+                .getCondominiumStats(condominium.getId());
+
 
         List<ActivityViewDetailResponse> activities =
                 activityViewService
@@ -80,7 +82,7 @@ public class AuthService {
                         .map(ActivityViewDetailResponse::new)
                         .toList();
 
-        LoginCondominiumResponse loginCondominiumResponse = new LoginCondominiumResponse(condominium, activities);
+        LoginCondominiumResponse loginCondominiumResponse = new LoginCondominiumResponse(condominium, activities, stats);
 
         return new AuthResponse<>(token, loginCondominiumResponse);
     }
