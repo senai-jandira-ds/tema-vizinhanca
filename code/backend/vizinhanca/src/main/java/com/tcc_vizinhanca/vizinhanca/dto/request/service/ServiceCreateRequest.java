@@ -8,6 +8,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.request.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tcc_vizinhanca.vizinhanca.enums.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -35,8 +36,8 @@ public class ServiceCreateRequest {
     @NotBlank(message = "Descrição é obrigatória")
     private String description;
 
-    @NotBlank(message = "Status é obrigatório")
-    private String status;
+    @NotNull(message = "Status é obrigatório")
+    private Status status;
 
     @JsonProperty("category_id")
     @NotNull(message = "Categoria é obrigatória")

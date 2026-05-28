@@ -1,7 +1,7 @@
 /***************************************************
  * Objetivo: Controller REST responsável pelos endpoints de conversas:
  * criação, listagem e histórico de mensagens
- * Data: 27/05/2026
+ * Data: 28/05/2026
  * Autor: Leonardo Scotti
  * Versão: 1.0.05.26
  * *************************************************/
@@ -11,6 +11,7 @@ package com.tcc_vizinhanca.vizinhanca.controller.conversation;
 import com.tcc_vizinhanca.vizinhanca.dto.request.conversation.ConversationRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.response.ApiResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.conversation.ConversationDetailResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.conversation.ConversationSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.conversation.MessageResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.conversation.Conversation;
 import com.tcc_vizinhanca.vizinhanca.security.jwt.AuthenticatedUser;
@@ -40,14 +41,14 @@ public class ConversationController {
 
     // GET ALL
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ConversationDetailResponse>>> listMyConversations() {
+    public ResponseEntity<ApiResponse<List<ConversationSummaryResponse>>> listMyConversations() {
         AuthenticatedUser user =
                 (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<ConversationDetailResponse> response =
+        List<ConversationSummaryResponse> response =
                 conversationService.getConversationsByResidentId(user.idResident())
                         .stream()
-                        .map(ConversationDetailResponse::new)
+                        .map(ConversationSummaryResponse::new)
                         .toList();
 
         return ResponseEntity.ok(ResponseUtil.success(response, "Conversas retornadas com sucesso!"));
@@ -77,7 +78,6 @@ public class ConversationController {
         AuthenticatedUser user =
                 (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // Valida participação antes de retornar mensagens
         conversationService.getConversationById(id, user.idResident());
 
         List<MessageResponse> messages = chatService.getMessages(id);
@@ -85,7 +85,7 @@ public class ConversationController {
         return ResponseEntity.ok(ResponseUtil.success(messages, "Mensagens retornadas com sucesso!"));
     }
 
-    // Cria ou retorna conversa existente entre dois moradores
+    // POST
     @PostMapping
     public ResponseEntity<ApiResponse<ConversationDetailResponse>> createConversation(
             @Valid @RequestBody ConversationRequest request) {

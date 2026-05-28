@@ -13,12 +13,14 @@ package com.tcc_vizinhanca.vizinhanca.entity.service;
 import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
+import com.tcc_vizinhanca.vizinhanca.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -50,10 +52,11 @@ public class Service {
     private String description;
 
     @Column(name = "data_criacao", columnDefinition = "DATETIME")
-    private LocalDateTime creationDate;
+    private LocalDate creationDate;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @ManyToOne
     @JoinColumn(name = "id_morador", nullable = false)
@@ -66,4 +69,10 @@ public class Service {
     @ManyToOne
     @JoinColumn(name = "id_condominio", nullable = false)
     private Condominium condominium;
+
+    @PrePersist
+    public void prePersist() {
+        this.creationDate = LocalDate.now();
+        this.status = Status.PENDENTE;
+    }
 }

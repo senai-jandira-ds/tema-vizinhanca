@@ -102,6 +102,10 @@ public class ServiceService {
         Condominium condominium = condominiumService.getSelectCondominiumById(condominiumId);
         Category category = categoryService.getSelectCategoryById(categoryId);
 
+        System.out.println(residentService.getSelectResidentById(residentId));
+        System.out.println(condominiumService.getSelectCondominiumById(condominiumId));
+        System.out.println(categoryService.getSelectCategoryById(categoryId));
+
         service.setResident(resident);
         service.setCondominium(condominium);
         service.setCategory(category);
