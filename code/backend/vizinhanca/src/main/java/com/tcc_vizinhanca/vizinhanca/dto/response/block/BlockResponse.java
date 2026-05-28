@@ -17,11 +17,11 @@ import java.util.List;
 @Setter
 public class BlockResponse {
 
-    private Integer amountBlocks;
+    private Integer amount_blocks;
     private List<BlockDetailResponse> blocks;
 
     public BlockResponse(List<Block> blocks) {
-        this.amountBlocks = blocks.size();
+        this.amount_blocks = blocks.size();
         this.blocks = blocks.stream()
                 .map(BlockDetailResponse::new)
                 .toList();

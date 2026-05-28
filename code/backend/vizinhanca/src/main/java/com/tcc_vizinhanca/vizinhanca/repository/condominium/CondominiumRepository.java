@@ -8,6 +8,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.repository.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumStats;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -63,4 +64,20 @@ public interface CondominiumRepository extends JpaRepository<Condominium, Long> 
         WHERE c.email = :email
     """)
     Optional<Condominium> findWithAddressAndBlocksByEmail(@Param("email") String email);
+
+    @Query("""
+    SELECT new com.tcc_vizinhanca.vizinhanca.dto.response.condominium.CondominiumStats(
+        COUNT(DISTINCT r.id),
+        COUNT(DISTINCT s.id),
+        COUNT(DISTINCT o.id),
+        COUNT(DISTINCT rp.id)
+    )
+    FROM Condominium c
+    LEFT JOIN c.residents r
+    LEFT JOIN c.services s
+    LEFT JOIN c.objects o
+    LEFT JOIN c.reports rp
+    WHERE c.id = :id
+""")
+    CondominiumStats getCondominiumStats(@Param("id") Long id);
 }

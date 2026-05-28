@@ -1,10 +1,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.response.condominium;
 
-import com.tcc_vizinhanca.vizinhanca.dto.response.block.BlockSummaryResponse;
+import com.tcc_vizinhanca.vizinhanca.dto.response.condominium.activity_view.ActivityViewDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.condominium_address.CondominiumAddressResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.report.ReportSummaryResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
-import com.tcc_vizinhanca.vizinhanca.dto.response.service.ServiceDetailResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +22,9 @@ public class LoginCondominiumResponse {
     private String creation_date;
     private CondominiumAddressResponse address;
     private List<ActivityViewDetailResponse> activities;
+    private CondominiumStats stats;
 
-    public LoginCondominiumResponse(Condominium condominium, List<ActivityViewDetailResponse> activities) {
+    public LoginCondominiumResponse(Condominium condominium, List<ActivityViewDetailResponse> activities, CondominiumStats stats) {
         this.id = condominium.getId();
         this.name = condominium.getName();
         this.photo = condominium.getPhoto() != null
@@ -45,6 +43,7 @@ public class LoginCondominiumResponse {
         this.activities = activities != null
                 ? activities
                 : new ArrayList<>();
+        this.stats = stats;
     }
 
 }

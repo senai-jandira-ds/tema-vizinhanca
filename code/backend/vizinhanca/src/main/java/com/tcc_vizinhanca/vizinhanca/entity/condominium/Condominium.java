@@ -9,6 +9,7 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.condominium;
 
+import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
 import com.tcc_vizinhanca.vizinhanca.entity.report.Report;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
@@ -66,6 +67,9 @@ public class Condominium {
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
     private Set<Service> services = new HashSet<>();
+
+    @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
+    private Set<Object> objects = new HashSet<>();
 
     @OneToMany(mappedBy = "condominium", fetch = FetchType.LAZY)
     private Set<Report> reports = new HashSet<>();
