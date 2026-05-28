@@ -90,7 +90,7 @@ function LoginScreen() {
                     {error && <p className={styles.error}>{error}</p>}
 
                     <button className={styles.loginButton} onClick={handleLogin} disabled={loading}>
-                        {loading ? 'Erro' : 'Entrar'}
+                        {loading ? 'Entrando' : 'Entrar'}
                     </button>
 
                     <p className={styles.loginText}>

@@ -11,6 +11,7 @@ function Settings() {
             <div className={styles.nav}>
                 <NavLink to="information">Informações</NavLink>
                 <NavLink to="categories">Categoria</NavLink>
+                <NavLink to="blocks">Blocos</NavLink>
             </div>
 
             <main className={styles.main}>

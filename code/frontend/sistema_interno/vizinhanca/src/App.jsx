@@ -23,6 +23,7 @@ import Security from "./pages/app/Security";
 import Settings from "./pages/app/Settings";
 import Information from "./pages/app/Information";
 import Categories from "./pages/app/Categories";
+import Blocks from "./pages/app/Blocks";
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -46,6 +47,7 @@ function AnimatedRoutes() {
 
             <Route path="information" element={<Information />} />
             <Route path="categories" element={<Categories />} />
+            <Route path="blocks" element={<Blocks />} />
           </Route>
         </Route>
       </Routes>

@@ -295,9 +295,9 @@ function CategoriaModal({
     data?.linha !== undefined;
 
   const [formData, setFormData] = useState({
-    nome: data?.linha?.nome || "",
-    detalhe: data?.linha?.detalhe || "",
-    tipo_categoria_id:
+    name: data?.linha?.nome || "",
+    description: data?.linha?.descricao || "",
+    type_category_id:
       data?.linha?.tipo_categoria_id || "",
     status: data?.linha?.status || "Disponível",
     id: data?.linha?.id || null
@@ -312,14 +312,15 @@ function CategoriaModal({
 
   const handleSubmit = () => {
     const dadosParaEnviar = {
-      name: formData.nome,
-      description: formData.detalhe,
+      name: formData.name,
+      description: formData.description,
       type_category_id: Number(
-        formData.tipo_categoria_id
+        formData.type_category_id
       ),
-      status: formData.status
     };
 
+
+    console.log(dadosParaEnviar)
     if (isEdicao) {
       onSubmit &&
         onSubmit(formData.id, dadosParaEnviar);
@@ -350,9 +351,9 @@ function CategoriaModal({
       <div className={styles.formGroup}>
         <input
           type="text"
-          value={formData.nome}
+          value={formData.name}
           onChange={(e) =>
-            handleChange('nome', e.target.value)
+            handleChange('name', e.target.value)
           }
           placeholder="Nome"
           className={styles.inputFull}
@@ -360,9 +361,9 @@ function CategoriaModal({
 
         <input
           type="text"
-          value={formData.detalhe}
+          value={formData.description}
           onChange={(e) =>
-            handleChange('detalhe', e.target.value)
+            handleChange('description', e.target.value)
           }
           placeholder="Detalhe"
           className={styles.inputFull}
@@ -370,23 +371,19 @@ function CategoriaModal({
 
         <select
           className={styles.inputFull}
-          value={formData.tipo_categoria_id}
+          value={formData.type_category_id}
           onChange={(e) =>
             handleChange(
               'tipo_categoria_id',
-              e.target.value
+              Number(e.target.value)
             )
           }
         >
-          <option value="">
-            Tipo da categoria
-          </option>
-
-          <option value={1}>
+          <option value={formData.type_category_id = 1}>
             Objeto
           </option>
 
-          <option value={2}>
+          <option value={formData.type_category_id = 2}>
             Serviço
           </option>
         </select>

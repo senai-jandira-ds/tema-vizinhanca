@@ -38,6 +38,10 @@
     background-color: white;
 }
 
+.nav a:last-child{
+    width: 5rem;
+}
+
 .main{
     display: flex;
     flex-grow: 1;   

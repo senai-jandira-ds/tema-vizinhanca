@@ -18,32 +18,28 @@ function Dashboard() {
         {
             id: 1,
             title: "Usuários",
-            quantity: fetchCondominium?.residents?.length || 0,
+            quantity: condominiumData.stats?.amount_residents || 0,
             color: "#10B765",
             to: "users"
         },
         {
             id: 2,
             title: "Pedidos",
-            quantity: fetchCondominium?.activities?.filter(
-                (item) => item.tipo === "Serviço"
-            ).length || 0,
+            quantity: condominiumData.stats?.amount_services || 0,
             color: "#A99817",
             to: "services"
         },
         {
             id: 3,
             title: "Objetos",
-            quantity: fetchCondominium?.activities?.filter(
-                (item) => item.tipo === "Objeto"
-            ).length || 0,
+            quantity: condominiumData.stats?.amount_objects || 0,
             color: "#2EA9F5",
             to: "services"
         },
         {
             id: 4,
             title: "Denúncias",
-            quantity: fetchCondominium?.reports?.length || 0,
+            quantity: condominiumData.stats?.amount_reports || 0,
             color: "#FF1111",
             to: "security"
         },
