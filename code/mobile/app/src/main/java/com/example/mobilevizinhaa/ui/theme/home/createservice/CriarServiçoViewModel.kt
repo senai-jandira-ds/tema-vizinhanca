@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.text.TextUtils.replace
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -12,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+// Imports corrigidos para as classes antigas que não quebram o app
 import com.example.mobilevizinhaa.ui.theme.data.CategoryDetail
 import com.example.mobilevizinhaa.ui.theme.data.CreateServiceRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
@@ -28,11 +30,9 @@ class CriarServicoViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
+    // Usando a classe CategoryDetail original
     val categoriasIds = mutableStateListOf<CategoryDetail>()
 
-    /**
-     * ATUALIZADO: Busca as categorias diretamente do novo endpoint da API (/api/v1/category)
-     */
     fun carregarCategorias(token: String) {
         if (categoriasIds.isNotEmpty()) return
 
@@ -51,17 +51,17 @@ class CriarServicoViewModel : ViewModel() {
 
                     if (listaCategorias.isNotEmpty()) {
                         categoriasIds.addAll(listaCategorias)
-                        Log.d("API_CATEGORIES", "Categorias carregadas direto do novo endpoint com sucesso!")
+                        Log.d("API_CATEGORIES", "Categorias estruturadas carregadas com sucesso!")
                     } else {
-                        Log.w("API_CATEGORIES", "Endpoint retornou lista vazia. Carregando dados locais de segurança...")
+                        Log.w("API_CATEGORIES", "Lista do backend vazia. Injetando fallback seguro...")
                         categoriasIds.addAll(obterCategoriasPadrao())
                     }
                 } else {
-                    Log.e("API_CATEGORIES", "Erro no servidor ao buscar categorias: ${response.code()}")
+                    Log.e("API_CATEGORIES", "Erro de resposta HTTP: ${response.code()}")
                     categoriasIds.addAll(obterCategoriasPadrao())
                 }
             } catch (e: Exception) {
-                Log.e("API_CATEGORIES", "Falha na conexão com o endpoint /api/v1/category: ${e.message}")
+                Log.e("API_CATEGORIES", "Falha crítica de conexão ao buscar categorias: ${e.message}")
                 if (categoriasIds.isEmpty()) {
                     categoriasIds.addAll(obterCategoriasPadrao())
                 }
@@ -69,9 +69,7 @@ class CriarServicoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * ATUALIZADO: Categorias locais de segurança mapeadas para a nova estrutura complexa do JSON
-     */
+    // Fallback corrigido para TypeCategoryDetail e CategoryDetail com IDs em Int
     private fun obterCategoriasPadrao(): List<CategoryDetail> {
         val tipoServico = TypeCategoryDetail(id = 1, name = "SERVICO")
         val tipoObjeto = TypeCategoryDetail(id = 2, name = "OBJETO")
@@ -86,9 +84,6 @@ class CriarServicoViewModel : ViewModel() {
         )
     }
 
-    /**
-     * CORRIGIDO: Envia dados tratando erros de restrição/duplicidade HTTP 409 do banco de dados
-     */
     fun postarServico(
         context: Context,
         token: String,
@@ -101,7 +96,6 @@ class CriarServicoViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        // 1. VALIDAÇÃO LOCAL PREVENTIVA: Evita enviar títulos vazios ou massivos que quebram o banco
         if (titulo.trim().length > 45) {
             onError("O título escolhido é muito longo. Use no máximo 45 caracteres.")
             return
@@ -114,69 +108,81 @@ class CriarServicoViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
+                // Conversão limpa para Base64 (sem quebras de linha ou modificações de caracteres)
                 val base64Foto = if (imagemUri != null) {
-                    converterImagemParaBase64(context, imagemUri)
+                    converterImagemParaBase64(context, imagemUri).trim()
                 } else ""
 
-                val urgenciaTratada = when (urgencia.uppercase()) {
+                val urgencyTratada = when (urgencia.uppercase()) {
                     "MÉDIA", "MEDIA" -> "MEDIA"
                     "ALTA" -> "ALTA"
                     else -> "BAIXA"
                 }
 
                 val payload = CreateServiceRequest(
-                    title = titulo.trim(),
+                    categoryId = categoryId,
                     description = descricao.trim(),
-                    photoBase64 = base64Foto,
                     estimatedTime = tempoEstimado,
-                    urgency = urgenciaTratada,
-                    categoryId = categoryId
+                    photoBase64 = base64Foto, // Envia a string limpa extraída do Uri
+                    status = "ACTIVE",
+                    title = titulo.trim(),
+                    urgency = urgencyTratada
                 )
+
+                Log.d("API_SERVICE", "Enviando payload: $payload")
 
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.authApiParaServico.criarServico(authHeader, payload)
+                    RetrofitClient.authApi.criarServico(authHeader, payload)
                 }
 
-                Log.d("API_SERVICE", "Status HTTP de Envio: ${response.code()}")
+                Log.d("API_SERVICE", "Código HTTP retornado: ${response.code()}")
 
                 if (response.isSuccessful) {
                     val respostaCorpo = response.body()
                     if (respostaCorpo != null && respostaCorpo.status) {
                         onSuccess()
                     } else {
-                        onError(respostaCorpo?.message ?: "O servidor recusou a criação do serviço.")
+                        onError(respostaCorpo?.message ?: "Servidor recusou os dados de entrada.")
                     }
                 } else {
-                    // 2. CAPTURA DO ERRO 409: Intercepta a resposta bruta do servidor e lê o JSON de erro
                     val erroTexto = response.errorBody()?.string()
-                    Log.e("API_SERVICE", "Erro bruto retornado do servidor: $erroTexto")
+                    Log.e("API_SERVICE", "Erro retornado pela API: $erroTexto")
 
-                    if (response.code() == 409) {
-                        try {
-                            val jsonErro = JSONObject(erroTexto ?: "")
-                            val mensagemApi = jsonErro.optString("message", "Dado duplicado ou violação de integridade!")
-                            onError("Não foi possível salvar: $mensagemApi Tente usar um título diferente.")
-                        } catch (e: Exception) {
-                            onError("Este título já está em uso ou é inválido para o sistema.")
+                    when (response.code()) {
+                        409 -> {
+                            try {
+                                val jsonErro = JSONObject(erroTexto ?: "")
+                                val messageApi = jsonErro.optString("message", "Conflito de integridade de dados.")
+                                onError("Não foi possível salvar: $messageApi")
+                            } catch (e: Exception) {
+                                onError("Este título de serviço já está ativo no seu perfil.")
+                            }
                         }
-                    } else {
-                        onError("Erro ${response.code()}: Falha na validação dos campos do formulário.")
+                        400 -> {
+                            try {
+                                val jsonErro = JSONObject(erroTexto ?: "")
+                                val messageApi = jsonErro.optString("message", "Campos inválidos.")
+                                onError("Erro na validação do formulário: $messageApi")
+                            } catch (e: Exception) {
+                                onError("Verifique o preenchimento dos dados obrigatórios.")
+                            }
+                        }
+                        else -> {
+                            onError("Erro ${response.code()}: Não foi possível processar a requisição no servidor.")
+                        }
                     }
                 }
             } catch (e: Exception) {
-                Log.e("API_SERVICE_ERROR", "Falha crítica de conexão: ${e.message}")
-                onError("Não foi possível conectar ao servidor do backend. Verifique a internet.")
+                Log.e("API_SERVICE_ERROR", "Falha de rede/conexão física: ${e.message}")
+                onError("Não foi possível alcançar o servidor. Verifique sua conexão.")
             } finally {
                 isLoading = false
             }
         }
     }
 
-    /**
-     * Helper assíncrono para redimensionamento e compressão de imagens em IO thread
-     */
     private suspend fun converterImagemParaBase64(context: Context, uri: Uri): String = withContext(Dispatchers.IO) {
         try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)

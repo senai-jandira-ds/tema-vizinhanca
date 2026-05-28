@@ -141,8 +141,7 @@ data class CreatePostDataResponse(
 
 /**
  * Payload JSON enviado no corpo (Body) para criar um novo serviço ou objeto.
- * TOTALMENTE BLINDADO: Envia as chaves numéricas em snake_case para o validador
- * e utiliza o status "ACTIVE" para evitar truncamento na tabela do banco de dados.
+ * Sincronizado exatamente com o campo "photo" exigido pela API.
  */
 data class CreateServiceRequest(
     @SerializedName("title")
@@ -151,7 +150,7 @@ data class CreateServiceRequest(
     @SerializedName("description")
     val description: String,
 
-    @SerializedName("photo", alternate = ["photoBase64", "photo_base64"])
+    @SerializedName("photo")
     val photoBase64: String,
 
     @SerializedName("estimated_time", alternate = ["estimatedTime", "estimatedtime"])
@@ -163,9 +162,8 @@ data class CreateServiceRequest(
     @SerializedName("category_id", alternate = ["categoryId", "categoryid"])
     val categoryId: Int,
 
-    // CORREÇÃO: Alterado de "ATIVO" para "ACTIVE" para sanar o erro 500 de truncamento de coluna
     @SerializedName("status")
-    val status: String = "ACTIVE"
+    val status: String = "PENDENTE"
 )
 
 /**
@@ -218,7 +216,7 @@ data class BlockDetail(
 )
 
 // ==========================================
-// NOVO: MODELOS ADAPTADOS DO SWAGGER PARA O ENDPOINT /api/v1/category
+// MODELOS ADAPTADOS DO SWAGGER PARA O ENDPOINT /api/v1/category
 // ==========================================
 
 data class TypeCategoryDetail(
@@ -230,8 +228,6 @@ data class CategoryDetail(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String?,
     @SerializedName("description") val description: String?,
-
-    // Suporta tanto o objeto do novo endpoint quanto String pura caso venha do mapeamento antigo
     @SerializedName("type_category", alternate = ["typeCategory"])
     val typeCategory: Any? = null
 )
@@ -300,7 +296,7 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<CreateServiceResponse>
 
-    // --- NOVO ENDPOINT: BUSCA TODAS AS CATEGORIAS REGISTRADAS DIRECTAMENTE (GET) ---
+    // --- BUSCA TODAS AS CATEGORIAS REGISTRADAS DIRETAMENTE (GET) ---
     @GET("api/v1/category")
     suspend fun obterTodasCategorias(
         @Header("Authorization") token: String
