@@ -141,7 +141,6 @@ data class CreatePostDataResponse(
 
 /**
  * Payload JSON enviado no corpo (Body) para criar um novo serviço ou objeto.
- * Sincronizado exatamente com o campo "photo" exigido pela API.
  */
 data class CreateServiceRequest(
     @SerializedName("title")
@@ -167,8 +166,7 @@ data class CreateServiceRequest(
 )
 
 /**
- * Resposta de sucesso do servidor do Render para a rota de serviços (GET e POST)
- * Mapeada de acordo com o JSON fornecido pelo Swagger.
+ * Resposta de sucesso do servidor do Render ao CRIAR (POST) um serviço.
  */
 data class CreateServiceResponse(
     @SerializedName("status") val status: Boolean,
@@ -198,6 +196,46 @@ data class ServiceDetail(
     @SerializedName("category") val category: CategoryDetail?
 )
 
+// ==========================================
+// 4.1 MODELOS DE LISTAGEM PAGINADA DO SWAGGER (GET /service)
+// ==========================================
+
+data class ServicePagedResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("developer") val developer: String? = null,
+    @SerializedName("api_description") val apiDescription: String? = null,
+    @SerializedName("version") val version: String? = null,
+    @SerializedName("request_date") val requestDate: String? = null,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val responseData: ServicePageContainer
+)
+
+data class ServicePageContainer(
+    @SerializedName("total_elements") val totalElements: Int,
+    @SerializedName("total_pages") val totalPages: Int,
+    @SerializedName("current_page") val currentPage: Int,
+    @SerializedName("page_size") val pageSize: Int,
+    @SerializedName("content") val content: List<ServiceDetailBackend>
+)
+
+data class ServiceDetailBackend(
+    @SerializedName("id") val id: Int,
+    @SerializedName("photo") val photoBase64: String?,
+    @SerializedName("title") val title: String,
+    @SerializedName("estimated_time") val estimatedTime: Int,
+    @SerializedName("urgency") val urgency: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("creation_date") val creationDate: String?,
+    @SerializedName("status") val status: String,
+    @SerializedName("resident") val resident: ResidentDetail?,
+    @SerializedName("category") val category: CategoryDetail?
+)
+
+// ==========================================
+// SUB-MODELOS COMPARTILHADOS (Residente, Bloco, etc)
+// ==========================================
+
 data class ResidentDetail(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String?,
@@ -206,7 +244,7 @@ data class ResidentDetail(
     @SerializedName("email") val email: String,
     @SerializedName("phone") val phone: String?,
     @SerializedName("score") val score: Int?,
-    @SerializedName("creationDate") val creationDate: String?,
+    @SerializedName("creationDate", alternate = ["creation_date"]) val creationDate: String?,
     @SerializedName("block") val block: BlockDetail?
 )
 
@@ -290,11 +328,17 @@ interface AuthApiService {
         @Body request: CreateServiceRequest
     ): Response<CreateServiceResponse>
 
-    // --- BUSCA TODOS OS SERVIÇOS DO CONDOMÍNIO (GET) ---
+    // --- BUSCA TODOS OS SERVIÇOS DO CONDOMÍNIO (GET) - MODELO ANTIGO ---
     @GET("api/v1/service")
     suspend fun listarServicos(
         @Header("Authorization") token: String
     ): Response<CreateServiceResponse>
+
+    // --- BUSCA OS SERVIÇOS PAGINADOS DO SWAGGER (GET) - MODELO NOVO ATUALIZADO ---
+    @GET("api/v1/service")
+    suspend fun listarServicosPaginados(
+        @Header("Authorization") token: String
+    ): Response<ServicePagedResponse>
 
     // --- BUSCA TODAS AS CATEGORIAS REGISTRADAS DIRETAMENTE (GET) ---
     @GET("api/v1/category")

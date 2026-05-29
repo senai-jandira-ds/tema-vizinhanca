@@ -39,11 +39,11 @@ import com.example.mobilevizinhaa.ui.theme.notification.NotificationsScreen
 import com.example.mobilevizinhaa.ui.theme.home.createpost.createpost.PublicacaoScreen
 import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
 
-// ATUALIZADO: Import da sua tela de criação de serviço/pedido descomentado com sucesso
+// Imports de criação e configurações
 import com.example.mobilevizinhaa.ui.theme.home.createservice.CriarPedidoObjetoScreen
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 
-// INTEGRADO: Import do seu tema para complementar a navegação global
+// Import do tema global
 import com.example.mobilevizinhaa.ui.theme.MobileVizinhaçaTheme
 
 class MainActivity : ComponentActivity() {
@@ -55,19 +55,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
 
-            // Instancia o HomeViewModel centralizado aqui na MainActivity para escutar o SharedPreferences
+            // Instancia o HomeViewModel centralizado na MainActivity
             val homeViewModel: HomeViewModel = viewModel(
                 factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
                     context.applicationContext as Application
                 )
             )
 
-            // 1. Observa reativamente o estado do tema salvo nas configurações
+            // Observa reativamente o estado do tema salvo nas configurações
             val modoEscuroAtivo by homeViewModel.isDarkMode.collectAsState()
 
-            // 2. Aplica o Tema customizado em TODAS as rotas e telas do App
             MobileVizinhaçaTheme(isDarkMode = modoEscuroAtivo) {
-                // Surface força o contêiner base a assumir a cor de fundo correta (Claro/Escuro)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -86,6 +84,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // CORRIGIDO: Removemos "pedido" e "objeto" da lista de esconder. A barra AGORA VAI APARECER!
     val esconderBottomBar = currentRoute == null ||
             currentRoute == "login" ||
             currentRoute == "publicacao" ||
@@ -95,7 +94,6 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        // Garante que o Scaffold use o fundo do tema do MaterialTheme para não sobrepor telas brancas
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (!esconderBottomBar) {
@@ -135,7 +133,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 PublicacaoScreen(navController, homeViewModel)
             }
 
-            // ATUALIZADO: Rota reativada apontando corretamente para o CriarPedidoObjetoScreen
+            // --- CRIAÇÃO DE SERVIÇO ---
             composable("criar_pedido") {
                 CriarPedidoObjetoScreen(
                     navController = navController,
@@ -165,8 +163,42 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
             composable("mensagens") { MessagesScreen(navController) }
             composable("mural") { MuralScreen() }
             composable("ranking") { RankingScreen() }
-            composable("pedido") { PedidosObjetosScreen() }
-            composable("objeto") { PedidosObjetosScreen() }
+
+            // --- CORRIGIDO: Rotas separando o comportamento visual de "PEDIDO" e "OBJETO" ---
+            composable(
+                route = "pedido/{tokenUsuario}/{idUsuarioLogado}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType },
+                    navArgument("idUsuarioLogado") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+                val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
+
+                // Passamos explicitamente o tipo do conteúdo para manter o layout original
+                PedidosObjetosScreen(
+                    tokenUsuario = token,
+                    idUsuarioLogado = idUsuario
+                )
+            }
+
+            composable(
+                route = "objeto/{tokenUsuario}/{idUsuarioLogado}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType },
+                    navArgument("idUsuarioLogado") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+                val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
+
+                // Se o seu componente antigo aceitar um parâmetro para diferenciar as abas ou o tipo de requisição,
+                // certifique-se de preenchê-lo aqui se necessário.
+                PedidosObjetosScreen(
+                    tokenUsuario = token,
+                    idUsuarioLogado = idUsuario
+                )
+            }
 
             // --- CHAT DETALHADO ---
             composable(

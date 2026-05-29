@@ -1,5 +1,7 @@
 package com.example.mobilevizinhaa.ui.theme.listaitens
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,64 +18,70 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
-
-// Modelo de dados único para representar os itens do mural na tela
-data class ItemMock(
-    val id: Int,
-    val titulo: String,
-    val descricao: String,
-    val status: String,
-    val categoria: String,
-    val data: String,
-    val imagemRes: Int
-)
+import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PedidosObjetosScreen() {
+fun PedidosObjetosScreen(
+    tokenUsuario: String,         // Recebe o Token do usuário autenticado
+    idUsuarioLogado: Int,         // Recebe o ID do residente logado para fazer o filtro pessoal
+    viewModel: PedidosObjetosViewModel = viewModel() // Instancia a sua ViewModel real
+) {
     // Controla o estado da aba atual: 0 para Pedidos, 1 para Objetos
     var selectedTab by remember { mutableIntStateOf(0) }
     var filtroSelecionado by remember { mutableStateOf("Todos") }
+
+    // Dispara a busca e o filtro no banco de dados assim que a tela abre ou as credenciais mudam
+    LaunchedEffect(tokenUsuario, idUsuarioLogado) {
+        if (tokenUsuario.isNotEmpty()) {
+            viewModel.carregarItensDoUsuario(tokenUsuario, idUsuarioLogado)
+        }
+    }
 
     // Reseta o filtro horizontal para "Todos" toda vez que o valor da Tab mudar
     LaunchedEffect(selectedTab) {
         filtroSelecionado = "Todos"
     }
 
-    // --- TROCA DE VALOR DOS FILTROS (COMPONENTES HORIZONTAIS) ---
+    // --- FILTROS EM BRUTO SINCRONIZADOS COM OS ENUMS DA API (CAIXA ALTA) ---
     val filtrosAtuais = if (selectedTab == 0) {
-        listOf("Todos", "Pendente", "Em andamento", "Concluído")
+        listOf("Todos", "PENDENTE", "IN_PROGRESS", "COMPLETED")
     } else {
-        listOf("Todos", "Disponível", "Empréstimo", "Doação", "Achados")
+        listOf("Todos", "DISPONIVEL", "EMPRESTIMO", "DOACAO", "ACHADOS")
     }
 
-    // --- TROCA DE VALOR DA LISTA DE DADOS DE FORMA DIRETA ---
-    val dadosAtuaisDoMural = if (selectedTab == 0) {
-        listOf(
-            ItemMock(1, "Arrumar disjuntor", "O disjuntor não para de desarmar... toda hora cai a energia, principalmente quando...", "Pendente", "Manutenção", "27/03/2026", R.drawable.mulher),
-            ItemMock(2, "Vazamento na pia", "Gente, alguém mais já passou por isso? 😩 Tô com um vazamento na cozinha...", "Em andamento", "Reparo", "28/03/2026", R.drawable.mulher)
-        )
-    } else {
-        listOf(
-            ItemMock(3, "Furadeira de Impacto", "Empresto furadeira Mondial com jogo de brocas completo. Favor devolver limpa.", "Disponível", "Ferramentas", "15/05/2026", R.drawable.mulher),
-            ItemMock(4, "Chave de Fenda Extensa", "Alguém teria uma chave de fenda longa para me emprestar hoje à tarde?", "Empréstimo", "Empréstimo", "17/05/2026", R.drawable.mulher),
-            ItemMock(5, "Cadeira de Escritório", "Estou desapegando desta cadeira antiga, rodinhas perfeitas, apenas marcas de uso.", "Doação", "Móveis", "18/05/2026", R.drawable.mulher)
-        )
+    // --- SEPARAÇÃO LOCAL INTELIGENTE (PEDIDO DE SERVIÇO vs OBJETO) ---
+    val dadosFiltradosPorAba = remember(viewModel.listaMeusItens, selectedTab) {
+        viewModel.listaMeusItens.filter { item ->
+            val tipoCategoriaString = item.category?.typeCategory?.toString()?.uppercase() ?: ""
+            if (selectedTab == 0) {
+                // Aba Pedidos: Tudo o que NÃO for um objeto
+                !tipoCategoriaString.contains("OBJETO")
+            } else {
+                // Aba Objetos: Apenas categorias classificadas como objeto
+                tipoCategoriaString.contains("OBJETO")
+            }
+        }
     }
 
-    // Aplica o filtro de chips sobre os dados que mudaram de valor
-    val listaExibida = if (filtroSelecionado == "Todos") {
-        dadosAtuaisDoMural
-    } else {
-        dadosAtuaisDoMural.filter { it.status == filtroSelecionado }
+    // Aplica o filtro de chips horizontais sobre os dados da aba ativa
+    val listaExibida = remember(dadosFiltradosPorAba, filtroSelecionado) {
+        if (filtroSelecionado == "Todos") {
+            dadosFiltradosPorAba
+        } else {
+            dadosFiltradosPorAba.filter { it.status.equals(filtroSelecionado, ignoreCase = true) }
+        }
     }
 
     Column(
@@ -81,12 +89,16 @@ fun PedidosObjetosScreen() {
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        // --- HEADER COM SEU GRADIENTE ---
+        // --- HEADER COM O SEU GRADIENTE IGUAL À HOME ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
-                .background(brush = Brush.verticalGradient(colors = listOf(GradientBlueStart, GradientBlueEnd)))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(GradientBlueStart, GradientBlueEnd)
+                    )
+                )
                 .padding(24.dp)
         ) {
             Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
@@ -140,7 +152,7 @@ fun PedidosObjetosScreen() {
             }
         }
 
-        // --- LAZYROW DE FILTROS (Muda os valores dinamicamente) ---
+        // --- LAZYROW DE FILTROS (Traduz os Enums da API para textos bonitos na tela) ---
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -149,10 +161,21 @@ fun PedidosObjetosScreen() {
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(filtrosAtuais) { filtro ->
+                val labelExibicao = when (filtro.uppercase()) {
+                    "PENDENTE" -> "Pendente"
+                    "IN_PROGRESS" -> "Em andamento"
+                    "COMPLETED" -> "Concluído"
+                    "DISPONIVEL" -> "Disponível"
+                    "EMPRESTIMO" -> "Empréstimo"
+                    "DOACAO" -> "Doação"
+                    "ACHADOS" -> "Achados"
+                    else -> "Todos"
+                }
+
                 FilterChip(
                     selected = filtroSelecionado == filtro,
                     onClick = { filtroSelecionado = filtro },
-                    label = { Text(filtro) },
+                    label = { Text(labelExibicao) },
                     shape = CircleShape,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = BluePrimary,
@@ -165,23 +188,40 @@ fun PedidosObjetosScreen() {
             }
         }
 
-        // --- LAZYCOLUMN (Consome a lista que trocou de valor) ---
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(listaExibida) { item ->
-                PedidoCard(
-                    titulo = item.titulo,
-                    descricao = item.descricao,
-                    status = item.status,
-                    categoria = item.categoria,
-                    data = item.data,
-                    imagemRes = item.imagemRes
+        // --- EXIBIÇÃO TRATADA DO CONTEÚDO (LOADING, ERRO, VAZIO OU REAL) ---
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = BluePrimary
                 )
+            } else if (viewModel.errorMessage != null) {
+                Text(
+                    text = viewModel.errorMessage!!,
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                    fontSize = 14.sp
+                )
+            } else if (listaExibida.isEmpty()) {
+                Text(
+                    text = if (selectedTab == 0) "Você não possui solicitações de pedidos." else "Você não possui objetos cadastrados.",
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 14.sp
+                )
+            } else {
+                // --- LAZYCOLUMN REAL ---
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(listaExibida) { item ->
+                        PedidoCard(servico = item)
+                    }
+                }
             }
         }
     }

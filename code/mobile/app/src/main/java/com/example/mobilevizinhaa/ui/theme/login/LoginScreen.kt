@@ -49,10 +49,15 @@ fun LoginScreen(
         uiState.loginResponse?.response?.let { loginData ->
             val user = loginData.user
 
+            // SALVANDO O TOKEN E O ID COM SEGURANÇA NO SHAREDPREFERENCES
             val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putString("auth_token", loginData.token).apply()
+            prefs.edit().apply {
+                putString("auth_token", loginData.token)
+                putInt("auth_user_id", user.id) // Salvando o idUsuarioLogado aqui de forma persistente!
+                apply()
+            }
 
-            Log.d("API_HOME", "Token interceptado e salvo no SharedPreferences: ${loginData.token}")
+            Log.d("API_HOME", "Token e ID interceptados e salvos com sucesso.")
 
             val resident = ResidentResponse(
                 id = user.id,
@@ -163,7 +168,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // BOTÃO MODIFICADO PARA NÃO SUMIR QUANDO DESATIVADO
         Button(
             onClick = {
                 if (!uiState.isLoading) {
@@ -173,7 +177,6 @@ fun LoginScreen(
             },
             modifier = Modifier.fillMaxWidth().height(55.dp),
             shape = RoundedCornerShape(25.dp),
-            // Força a cor fixa do botão e do texto/ícone interno em qualquer estado
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF2196F3),
                 contentColor = Color.White,

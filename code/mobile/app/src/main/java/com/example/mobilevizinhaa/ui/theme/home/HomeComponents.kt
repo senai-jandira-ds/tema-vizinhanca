@@ -1,5 +1,6 @@
 package com.example.mobilevizinhaa.ui.theme.home
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
@@ -41,7 +42,7 @@ import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
 
-// --- 1. HOME HEADER (TOTALMENTE SINCRONIZADO E BLINDADO CONTRA CACHE) ---
+// --- 1. HOME HEADER ---
 @Composable
 fun HomeHeader(
     userName: String,
@@ -58,19 +59,16 @@ fun HomeHeader(
     ) { uri: Uri? ->
         if (uri != null) {
             fotoUri = uri
-            // Dispara a rotina do ViewModel que processa em IO e faz o PUT no banco
             viewModel.atualizarFotoPerfil(context, uri)
         }
     }
 
-    // Limpa a Uri local provisória assim que o banco de dados responder com o novo Base64 estável
     LaunchedEffect(userPhotoUrl) {
         if (!userPhotoUrl.isNullOrBlank()) {
             fotoUri = null
         }
     }
 
-    // Identifica se a string é um Base64 válido (mesmo que venha com prefixos "data:image")
     val bitmapPerfil = remember(userPhotoUrl) {
         if (!userPhotoUrl.isNullOrEmpty() && !userPhotoUrl.startsWith("http") && userPhotoUrl != "string") {
             viewModel.carregarImagemBase64MuralLocal(userPhotoUrl)
@@ -131,10 +129,8 @@ fun HomeHeader(
                 .clickable { launcher.launch("image/*") },
             contentAlignment = Alignment.Center
         ) {
-            // CASCATA DE RENDERIZAÇÃO INTELIGENTE ANTI-FALHAS
             when {
                 fotoUri != null -> {
-                    // 1. Mostra a foto local imediatamente ao selecionar para dar feedback ao usuário
                     AsyncImage(
                         model = fotoUri,
                         contentDescription = null,
@@ -143,7 +139,6 @@ fun HomeHeader(
                     )
                 }
                 bitmapPerfil != null -> {
-                    // 2. Banco respondeu e o conversor gerou o ImageBitmap limpo
                     Image(
                         bitmap = bitmapPerfil,
                         contentDescription = null,
@@ -152,7 +147,6 @@ fun HomeHeader(
                     )
                 }
                 (!userPhotoUrl.isNullOrEmpty() && userPhotoUrl.startsWith("http")) -> {
-                    // 3. Caso o backend salve como URL remota/Cloudinary/S3
                     AsyncImage(
                         model = userPhotoUrl,
                         contentDescription = null,
@@ -161,7 +155,6 @@ fun HomeHeader(
                     )
                 }
                 else -> {
-                    // 4. Fallback padrão: Ícone cinza de usuário se estiver sem foto ou "string" padrão do Swagger
                     Box(Modifier.fillMaxSize().background(Color(0xFFE0E0E0)), Alignment.Center) {
                         Icon(Icons.Default.Person, null, tint = Color.White, modifier = Modifier.size(55.dp))
                     }
@@ -171,7 +164,7 @@ fun HomeHeader(
     }
 }
 
-// --- 2. INFO CARD (MANTIDO INTACTO) ---
+// --- 2. INFO CARD ---
 @Composable
 fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> Unit) {
     Card(
@@ -207,7 +200,7 @@ fun InfoCard(titulo: String, quantity: String, iconeRes: Int, onAddClick: () -> 
     }
 }
 
-// --- 3. GRADE DE POSTAGENS (MANTIDO INTACTO) ---
+// --- 3. GRADE DE POSTAGENS ---
 @Composable
 fun PostGridSection(
     posts: List<Post>,
@@ -274,11 +267,17 @@ fun PostGridSection(
     }
 }
 
-// --- 4. NAVBAR (MANTIDO INTACTO) ---
+// --- 4. NAVBAR CORRIGIDA SEM PERDER AS CORES ORIGINAIS ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.value?.destination?.route
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
+    val tokenString = sharedPreferences.getString("auth_token", "") ?: ""
+    val idUsuarioInt = sharedPreferences.getInt("auth_user_id", 0)
 
     Surface(
         modifier = Modifier.fillMaxWidth().height(80.dp),
@@ -300,12 +299,21 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             )
 
             items.forEach { item ->
+                // MANTIDO: Verifica se a rota atual condiz exatamente com o botão, evitando misturar as telas
+                val isSelected = currentRoute?.startsWith(item.second) == true
+
                 BottomNavItem(
                     painter = painterResource(id = item.first),
-                    isSelected = currentRoute?.startsWith(item.second) == true,
+                    isSelected = isSelected,
                     onClick = {
-                        if (currentRoute != item.second) {
-                            navController?.navigate(item.second) {
+                        if (!isSelected) {
+                            val rotaDestino = if (item.second == "pedido") {
+                                "pedido/$tokenString/$idUsuarioInt"
+                            } else {
+                                item.second
+                            }
+
+                            navController?.navigate(rotaDestino) {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
@@ -325,6 +333,7 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
+            // Usa estritamente a sua cor NavbarActiveBlue definida no seu tema original
             Box(Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape), Alignment.Center) {
                 Icon(painter, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
