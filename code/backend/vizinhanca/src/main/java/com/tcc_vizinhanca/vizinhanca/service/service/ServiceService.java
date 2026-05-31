@@ -15,6 +15,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
+import com.tcc_vizinhanca.vizinhanca.service.notification.NotificationService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.specification.service.ServiceSpecification;
 import lombok.NonNull;
@@ -42,6 +43,9 @@ public class ServiceService {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Service> getSelectAllServicesByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -123,20 +127,35 @@ public class ServiceService {
         Condominium condominium = condominiumService.getSelectCondominiumById(condominiumId);
         Category category = categoryService.getSelectCategoryById(categoryId);
 
-        System.out.println(residentService.getSelectResidentById(residentId));
-        System.out.println(condominiumService.getSelectCondominiumById(condominiumId));
-        System.out.println(categoryService.getSelectCategoryById(categoryId));
-
         service.setResident(resident);
         service.setCondominium(condominium);
         service.setCategory(category);
 
-        return serviceRepository.save(service);
+        Service saved = serviceRepository.save(service);
+
+        // Notifica todos os moradores do condomínio sobre o novo serviço
+        List<Long> residentIds = condominium.getResidents()
+                .stream()
+                .map(r -> r.getId())
+                .filter(id -> !id.equals(residentId)) // não notifica quem criou
+                .toList();
+
+        notificationService.notifyAllResidents(
+                residentIds,
+                resident.getName() + " solicitou um serviço: " + saved.getTitle(),
+                "SERVICE",
+                saved.getId()
+        );
+
+        return saved;
     }
 
     // UPDATE
     public Service setUpdateService(@NonNull Long id, Service updatedService, Long categoryId) {
         Service existingService = getSelectServiceById(id);
+
+        boolean statusChanged = updatedService.getStatus() != null
+                && !updatedService.getStatus().equals(existingService.getStatus());
 
         if (updatedService.getPhoto() != null) existingService.setPhoto(updatedService.getPhoto());
         if (updatedService.getTitle() != null) existingService.setTitle(updatedService.getTitle());
@@ -150,7 +169,18 @@ public class ServiceService {
             existingService.setCategory(category);
         }
 
-        return serviceRepository.save(existingService);
+        Service updated = serviceRepository.save(existingService);
+
+        if (statusChanged) {
+            notificationService.notify(
+                    updated.getResident().getId(),
+                    "Seu serviço \"" + updated.getTitle() + "\" foi atualizado para: " + updated.getStatus(),
+                    "SERVICE",
+                    updated.getId()
+            );
+        }
+
+        return updated;
     }
 
     // DELETE
