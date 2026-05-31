@@ -9,6 +9,7 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.conversation;
 
 import com.tcc_vizinhanca.vizinhanca.entity.conversation.Message;
 import com.tcc_vizinhanca.vizinhanca.enums.Status;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusChat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,7 @@ public class MessageResponse {
     private Long id;
     private String text;
     private LocalDateTime createdDate;
-    private Status status;
+    private StatusChat status;
     private Long conversationId;
     private Long residentId;
     private String residentName;

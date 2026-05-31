@@ -8,6 +8,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.request.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tcc_vizinhanca.vizinhanca.enums.Status;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +25,7 @@ public class ServiceUpdateRequest {
 
     private String urgency;
     private String description;
-    private String status;
+    private Status status;
 
     @JsonProperty("category_id")
     @Positive(message = "ID da categoria deve ser positivo")

@@ -3,6 +3,7 @@ package com.tcc_vizinhanca.vizinhanca.dto.response.service;
 import com.tcc_vizinhanca.vizinhanca.dto.response.category.CategorySummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.dto.response.resident.ResidentSummaryResponse;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
+import com.tcc_vizinhanca.vizinhanca.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ public class ServiceSummaryResponse {
     private Integer estimated_time;
     private String urgency;
     private String description;
-    private String status;
+    private Status status;
     private ResidentSummaryResponse resident;
     private CategorySummaryResponse category;
 

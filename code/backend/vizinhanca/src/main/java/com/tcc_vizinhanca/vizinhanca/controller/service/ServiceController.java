@@ -140,6 +140,8 @@ public class ServiceController {
         Service saved = serviceService.setInsertService(
                 service, user.idResident(), user.idCondominium(), request.getCategoryId());
 
+        System.out.println(user.toString());
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseUtil.success(new ServiceDetailResponse(saved), "Serviço criado com sucesso!"));
     }

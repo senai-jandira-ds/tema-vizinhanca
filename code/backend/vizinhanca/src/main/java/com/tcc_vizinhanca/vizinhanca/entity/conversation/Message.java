@@ -11,6 +11,7 @@ package com.tcc_vizinhanca.vizinhanca.entity.conversation;
 
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.enums.Status;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusChat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class Message {
     private LocalDateTime createdDate;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private StatusChat status;
 
     @ManyToOne
     @JoinColumn(name = "id_conversa", nullable = false)
@@ -52,7 +53,7 @@ public class Message {
     @PrePersist
     public void prePersist(){
         this.createdDate = LocalDateTime.now();
-        this.status = Status.SENT;
+        this.status = StatusChat.ENVIADO;
     }
 
 }
