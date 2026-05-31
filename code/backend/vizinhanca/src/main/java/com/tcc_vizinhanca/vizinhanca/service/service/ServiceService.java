@@ -89,6 +89,27 @@ public class ServiceService {
         return serviceRepository.findAll(spec, pageable);
     }
 
+    // SELECT WITH FILTERS
+    public Page<Service> getSelectResidentServicesByFilters(
+            Long residentId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            Pageable pageable) {
+
+        Specification<Service> spec = Specification
+                .where(ServiceSpecification.hasResident(residentId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasCategories(categoryIds));
+        }
+
+        return serviceRepository.findAll(spec, pageable);
+    }
+
     // SELECT BY ID
     public Service getSelectServiceById(@NonNull Long id) {
         return serviceRepository.findById(id)

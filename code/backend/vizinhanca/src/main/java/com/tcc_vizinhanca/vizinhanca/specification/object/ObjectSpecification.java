@@ -11,6 +11,10 @@ public class ObjectSpecification {
         return (root, query, cb) -> cb.equal(root.get("condominium").get("id"), condominiumId);
     }
 
+    public static Specification<Object> hasResident(Long residentId) {
+        return (root, query, cb) -> cb.equal(root.get("resident").get("id"), residentId);
+    }
+
     public static Specification<Object> hasStatuses(List<String> statuses) {
         return (root, query, cb) -> root.get("status").in(statuses);
     }

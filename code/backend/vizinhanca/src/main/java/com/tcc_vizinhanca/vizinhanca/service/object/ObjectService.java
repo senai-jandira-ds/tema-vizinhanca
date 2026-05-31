@@ -70,7 +70,6 @@ public class ObjectService {
     }
 
     // SELECT WITH FILTERS
-    // ObjectService
     public Page<Object> getSelectObjectsByFilters(
             Long condominiumId,
             List<String> statuses,
@@ -78,8 +77,7 @@ public class ObjectService {
             List<Long> blockIds,
             Pageable pageable) {
 
-        Specification<Object> spec = Specification
-                .where(ObjectSpecification.hasCondominium(condominiumId));
+        Specification<Object> spec = Specification.where(ObjectSpecification.hasCondominium(condominiumId));
 
         if (statuses != null && !statuses.isEmpty()) {
             spec = spec.and(ObjectSpecification.hasStatuses(statuses));
@@ -96,11 +94,30 @@ public class ObjectService {
         return objectRepository.findAll(spec, pageable);
     }
 
+    // SELECT WITH FILTERS
+    public Page<Object> getSelectResidentObjectsByFilters(
+            Long residentId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            Pageable pageable) {
+
+        Specification<Object> spec = Specification.where(ObjectSpecification.hasResident(residentId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasCategories(categoryIds));
+        }
+
+        return objectRepository.findAll(spec, pageable);
+    }
+
     // SELECT BY ID
     public Object getSelectObjectById(@NonNull Long id) {
         return objectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
     }
 
     // INSERT
