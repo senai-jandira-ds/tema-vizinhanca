@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Interceptor
 import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Buffer
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -121,6 +120,15 @@ object RetrofitClient {
      */
     val authApi: AuthApiService by lazy {
         retrofit.create(AuthApiService::class.java)
+    }
+
+    /**
+     * 🎯 LINK DE SEGURANÇA (COMPATIBILIDADE):
+     * Mapeia chamadas antigas ou referências de ViewModels que buscam por 'authApiService'
+     * apontando direto para a rota estável principal. Evita erros de compilação!
+     */
+    val authApiService: AuthApiService by lazy {
+        authApi
     }
 
     /**

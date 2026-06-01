@@ -1,6 +1,7 @@
 package com.example.mobilevizinhaa.ui.theme.data
 
 import com.google.gson.annotations.SerializedName
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
@@ -216,6 +217,58 @@ data class ServiceDetailBackend(
 )
 
 // ==========================================
+// 4.2 MODELOS AJUSTADOS PARA COMPARTILHAMENTO DE OBJETOS
+// ==========================================
+
+data class CreateObjectRequest(
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("photoBase64") val photoBase64: String,
+    @SerializedName("deadline") val deadline: String,
+    @SerializedName("categoryId") val categoryId: Int
+)
+
+data class CreateObjectResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val response: ObjectDataContainer?
+)
+
+data class ObjectDataContainer(
+    @SerializedName("id") val id: Int?,
+    @SerializedName("title") val title: String?,
+    @SerializedName("description") val description: String?
+)
+
+data class ObjectPagedResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val responseData: ObjectPageContainer
+)
+
+data class ObjectPageContainer(
+    @SerializedName("total_elements") val totalElements: Int,
+    @SerializedName("total_pages") val totalPages: Int,
+    @SerializedName("current_page") val currentPage: Int,
+    @SerializedName("page_size") val pageSize: Int,
+    @SerializedName("content") val content: List<ObjectDetailBackend>
+)
+
+data class ObjectDetailBackend(
+    @SerializedName("id") val id: Int,
+    @SerializedName("photo") val photo: String?,
+    @SerializedName("title") val title: String,
+    @SerializedName("deadline") val deadline: String?,
+    @SerializedName("description") val description: String,
+    @SerializedName("creation_date") val creationDate: String?,
+    @SerializedName("status") val status: String,
+    @SerializedName("resident") val resident: ResidentDetail?,
+    @SerializedName("category") val category: CategoryDetail?
+)
+
+// ==========================================
 // SUB-MODELOS COMPARTILHADOS (Residente, Bloco, etc)
 // ==========================================
 
@@ -257,9 +310,9 @@ data class CategoryListResponse(
     @SerializedName("status") val status: Boolean,
     @SerializedName("status_code") val statusCode: Int,
     @SerializedName("developer") val developer: String? = null,
-    @SerializedName("api_description") val apiDescription: String? = null,
+    @SerializedName("api_description", alternate = ["apiDescription"]) val apiDescription: String? = null,
     @SerializedName("version") val version: String? = null,
-    @SerializedName("request_date") val requestDate: String? = null,
+    @SerializedName("request_date", alternate = ["requestDate"]) val requestDate: String? = null,
     @SerializedName("message") val message: String,
     @SerializedName("response") val response: CategoryResponseData?
 )
@@ -327,27 +380,37 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<CategoryListResponse>
 
-    // ------------------------------------------------------------------------
-    // INTERFACES INTEGRADAS REVISADAS
-    // ------------------------------------------------------------------------
-
-    /**
-     * Deleta um serviço ou objeto do condomínio de forma permanente.
-     */
     @DELETE("api/v1/service/{id}")
     suspend fun deletarServico(
         @Header("Authorization") token: String,
         @Path("id") idServico: Int
     ): Response<Unit>
 
-    /**
-     * CORRIGIDO: Agora envia o status encapsulado dentro de um objeto JSON no corpo (@Body).
-     * Sincronizado perfeitamente com a necessidade do Spring Boot do back-end.
-     */
     @PUT("api/v1/service/{id}")
     suspend fun atualizarStatusServico(
         @Header("Authorization") token: String,
         @Path("id") idServico: Int,
-        @Body request: ServiceUpdateRequest // 👈 Mudança de @Query para @Body aqui
+        @Body request: ServiceUpdateRequest
     ): Response<Unit>
+
+    // ------------------------------------------------------------------------
+    // ROTAS DE INTEGRAÇÃO DE OBJETOS DO CONDOMÍNIO (CORRIGIDO E VALIDADO)
+    // ------------------------------------------------------------------------
+
+    @Multipart
+    @POST("api/v1/object")
+    suspend fun criarObjeto(
+        @Header("Authorization") token: String,
+        @Part title: MultipartBody.Part,
+        @Part description: MultipartBody.Part,
+        @Part photo: MultipartBody.Part,        // 🎯 Alterado de 'photoBase64' para 'photo'
+        @Part deadline: MultipartBody.Part,
+        @Part status: MultipartBody.Part,      // 🎯 Campo obrigatório adicionado
+        @Part categoryId: MultipartBody.Part
+    ): Response<CreateObjectResponse>
+
+    @GET("api/v1/object")
+    suspend fun listarObjetosPaginados(
+        @Header("Authorization") token: String
+    ): Response<ObjectPagedResponse>
 }

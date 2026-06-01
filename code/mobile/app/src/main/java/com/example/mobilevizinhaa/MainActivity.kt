@@ -41,6 +41,7 @@ import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
 
 // Imports de criação e configurações
 import com.example.mobilevizinhaa.ui.theme.home.createservice.CriarPedidoObjetoScreen
+import com.example.mobilevizinhaa.ui.theme.home.createobjeto.CriarObjetoScreen // 🎯 IMPORTADO: Nova tela de cadastro de objetos
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 
 // Import do tema global
@@ -89,6 +90,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
             currentRoute == "login" ||
             currentRoute == "publicacao" ||
             currentRoute.startsWith("criar_servico") ||
+            currentRoute.startsWith("criar_objeto") || // 🎯 CORRIGIDO: Esconde a BottomBar ao criar objeto
             currentRoute.startsWith("chat_detalhe") ||
             currentRoute.startsWith("detalhe_post")
 
@@ -151,6 +153,22 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 )
             }
 
+            // --- 🎯 NOVA ROTA: CRIAÇÃO DE OBJETO DO CONDOMÍNIO ---
+            composable(
+                route = "criar_objeto/{tokenUsuario}/{idUsuarioLogado}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType },
+                    navArgument("idUsuarioLogado") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+
+                CriarObjetoScreen(
+                    tokenUsuario = token,
+                    onVoltarClick = { navController.popBackStack() }
+                )
+            }
+
             // --- DETALHE DA POSTAGEM ---
             composable(
                 route = "detalhe_post/{postId}",
@@ -172,7 +190,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
             composable("notificacoes") { NotificationsScreen() }
             composable("mensagens") { MessagesScreen(navController) }
 
-            // --- 💡 CORRIGIDO DEFINITIVO: ROTA DO MURAL AGORA EXIGE E RECEBE O TOKEN VIA NAVEGAÇÃO ---
+            // --- CORRIGIDO DEFINITIVO: ROTA DO MURAL ---
             composable(
                 route = "mural/{tokenUsuario}",
                 arguments = listOf(
@@ -180,8 +198,6 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 )
             ) { backStackEntry ->
                 val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
-
-                // Agora o token real e válido é repassado para a tela carregar a API
                 MuralScreen(tokenUsuario = token)
             }
 

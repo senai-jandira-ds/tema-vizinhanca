@@ -88,12 +88,12 @@ fun HomeScreen(
                         val token = sharedPrefs.getString("auth_token", "") ?: ""
                         val idUsuario = sharedPrefs.getInt("auth_user_id", 0)
 
-                        // Rota mapeada exatamente igual à registrada no NavHost da MainActivity
+                        // Rota mapeada exatamente igual à registrada no NavHost da MainActivity para Serviços
                         navController.navigate("criar_servico/$token/$idUsuario")
                     }
                 )
 
-                // InfoCard de Objetos - Redirecionando para Criar Serviço com a rota correta
+                // InfoCard de Objetos - Redirecionando para Criar Objeto com a rota correspondente
                 InfoCard(
                     titulo = "Meus objetos",
                     quantity = "3",
@@ -104,8 +104,8 @@ fun HomeScreen(
                         val token = sharedPrefs.getString("auth_token", "") ?: ""
                         val idUsuario = sharedPrefs.getInt("auth_user_id", 0)
 
-                        // Rota mapeada exatamente igual à registrada no NavHost da MainActivity
-                        navController.navigate("criar_servico/$token/$idUsuario")
+                        // 🎯 ATUALIZADO: Redireciona para a tela de objetos passando as credenciais
+                        navController.navigate("criar_objeto/$token/$idUsuario")
                     }
                 )
             }
