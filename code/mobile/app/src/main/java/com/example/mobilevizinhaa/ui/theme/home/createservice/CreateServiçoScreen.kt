@@ -26,18 +26,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mobilevizinhaa.ui.theme.data.CategoryDetail
-import com.example.mobilevizinhaa.ui.theme.home.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CriarPedidoObjetoScreen(
     navController: NavController,
-    criarServicoViewModel: CriarServicoViewModel = viewModel(),
-    homeViewModel: HomeViewModel = viewModel()
+    tokenUsuario: String,         // AJUSTE: Recebendo o token direto da rota
+    idUsuarioLogado: Int,         // AJUSTE: Recebendo o id direto da rota
+    criarServicoViewModel: CriarServicoViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    val tokenAtivo = homeViewModel.obterTokenSalvo()
     val isDark = MaterialTheme.colorScheme.background == Color(0xFF1C1B1F)
 
     // Estados locais do formulário
@@ -62,13 +61,13 @@ fun CriarPedidoObjetoScreen(
     val limiteMaxTitulo = 45
     val limiteMaxDescricao = 250
 
-    // Escuta ativamente o token. Quando ele mudar de vazio para o token real, dispara a API.
-    LaunchedEffect(tokenAtivo) {
-        if (tokenAtivo.isNotEmpty()) {
-            Log.d("API_CATEGORIAS", "Token identificado! Disparando carregarCategorias...")
-            criarServicoViewModel.carregarCategorias(tokenAtivo)
+    // Dispara a busca de categorias imediatamente usando o token garantido vindo da navegação
+    LaunchedEffect(tokenUsuario) {
+        if (tokenUsuario.isNotEmpty()) {
+            Log.d("API_CATEGORIAS", "Token recebido via rota! Disparando carregarCategorias...")
+            criarServicoViewModel.carregarCategorias(tokenUsuario)
         } else {
-            Log.w("API_CATEGORIAS", "Aviso: Token ativo ainda está vazio. Aguardando leitura do banco local...")
+            Log.w("API_CATEGORIAS", "Aviso: Token recebido via rota está vazio.")
         }
     }
 
@@ -161,7 +160,6 @@ fun CriarPedidoObjetoScreen(
                 OutlinedTextField(
                     value = titulo,
                     onValueChange = { novoTexto ->
-                        // Trava preventivamente no teclado para não extrapolar o limite VARCHAR
                         if (novoTexto.length <= limiteMaxTitulo) {
                             titulo = novoTexto
                         }
@@ -224,7 +222,6 @@ fun CriarPedidoObjetoScreen(
                 OutlinedTextField(
                     value = descricao,
                     onValueChange = { novoTexto ->
-                        // Trava preventivamente também a descrição do anúncio
                         if (novoTexto.length <= limiteMaxDescricao) {
                             descricao = novoTexto
                         }
@@ -268,22 +265,15 @@ fun CriarPedidoObjetoScreen(
                         onClick = {
                             focusManager.clearFocus()
 
-                            Log.d("BOTAO_ANUNCIAR", "Iniciando processo de postagem de serviço...")
-                            Log.d("BOTAO_ANUNCIAR", "-> Titulo: '$titulo'")
-                            Log.d("BOTAO_ANUNCIAR", "-> Descricao: '$descricao'")
-                            Log.d("BOTAO_ANUNCIAR", "-> Urgencia Enviada: '$urgencia'")
-                            Log.d("BOTAO_ANUNCIAR", "-> Categoria: Nome='${categoriaSelecionada?.name}', ID=${categoriaSelecionada?.id}")
-                            Log.d("BOTAO_ANUNCIAR", "-> Tempo: Texto='${tempoSelecionado?.first}', Minutos=${tempoSelecionado?.second}")
-                            Log.d("BOTAO_ANUNCIAR", "-> Imagem Uri Local: $imagemUri")
-
                             if (titulo.isBlank() || descricao.isBlank() || categoriaSelecionada == null || tempoSelecionado == null) {
                                 Toast.makeText(context, "Selecione a categoria e preencha todos os campos obrigatórios!", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
 
+                            // Chamando o POST utilizando o token coletado na rota
                             criarServicoViewModel.postarServico(
                                 context = context,
-                                token = tokenAtivo,
+                                token = tokenUsuario,
                                 titulo = titulo,
                                 descricao = descricao,
                                 urgencia = urgencia,
@@ -295,7 +285,6 @@ fun CriarPedidoObjetoScreen(
                                     navController.popBackStack()
                                 },
                                 onError = { erro ->
-                                    // A mensagem customizada ou erro 409 mapeado no ViewModel será exibido aqui perfeitamente!
                                     Toast.makeText(context, erro, Toast.LENGTH_LONG).show()
                                 }
                             )

@@ -84,11 +84,11 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // CORRIGIDO: Removemos "pedido" e "objeto" da lista de esconder. A barra AGORA VAI APARECER!
+    // Esconde a BottomBar perfeitamente nas telas de fluxo de cadastro e detalhes
     val esconderBottomBar = currentRoute == null ||
             currentRoute == "login" ||
             currentRoute == "publicacao" ||
-            currentRoute == "criar_pedido" ||
+            currentRoute.startsWith("criar_servico") ||
             currentRoute.startsWith("chat_detalhe") ||
             currentRoute.startsWith("detalhe_post")
 
@@ -128,16 +128,26 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 )
             }
 
-            // --- CRIAÇÃO DE POSTAGEM ---
+            // --- CRIAÇÃO DE POSTAGEM (MURAL LOCAL) ---
             composable("publicacao") {
                 PublicacaoScreen(navController, homeViewModel)
             }
 
-            // --- CRIAÇÃO DE SERVIÇO ---
-            composable("criar_pedido") {
+            // --- ROTA DE CRIAÇÃO DE SERVIÇO REPASSA OS PARÂMETROS ---
+            composable(
+                route = "criar_servico/{tokenUsuario}/{idUsuarioLogado}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType },
+                    navArgument("idUsuarioLogado") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+                val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
+
                 CriarPedidoObjetoScreen(
                     navController = navController,
-                    homeViewModel = homeViewModel
+                    tokenUsuario = token,
+                    idUsuarioLogado = idUsuario
                 )
             }
 
@@ -161,10 +171,23 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
             // --- ROTAS SECUNDÁRIAS ---
             composable("notificacoes") { NotificationsScreen() }
             composable("mensagens") { MessagesScreen(navController) }
-            composable("mural") { MuralScreen() }
+
+            // --- 💡 CORRIGIDO DEFINITIVO: ROTA DO MURAL AGORA EXIGE E RECEBE O TOKEN VIA NAVEGAÇÃO ---
+            composable(
+                route = "mural/{tokenUsuario}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+
+                // Agora o token real e válido é repassado para a tela carregar a API
+                MuralScreen(tokenUsuario = token)
+            }
+
             composable("ranking") { RankingScreen() }
 
-            // --- CORRIGIDO: Rotas separando o comportamento visual de "PEDIDO" e "OBJETO" ---
+            // --- LISTAGEM DE PEDIDOS MEUS ---
             composable(
                 route = "pedido/{tokenUsuario}/{idUsuarioLogado}",
                 arguments = listOf(
@@ -175,13 +198,13 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
                 val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
 
-                // Passamos explicitamente o tipo do conteúdo para manter o layout original
                 PedidosObjetosScreen(
                     tokenUsuario = token,
                     idUsuarioLogado = idUsuario
                 )
             }
 
+            // --- LISTAGEM DE OBJETOS MEUS ---
             composable(
                 route = "objeto/{tokenUsuario}/{idUsuarioLogado}",
                 arguments = listOf(
@@ -192,8 +215,6 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 val token = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
                 val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
 
-                // Se o seu componente antigo aceitar um parâmetro para diferenciar as abas ou o tipo de requisição,
-                // certifique-se de preenchê-lo aqui se necessário.
                 PedidosObjetosScreen(
                     tokenUsuario = token,
                     idUsuarioLogado = idUsuario

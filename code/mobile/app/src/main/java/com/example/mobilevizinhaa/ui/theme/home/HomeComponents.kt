@@ -267,7 +267,7 @@ fun PostGridSection(
     }
 }
 
-// --- 4. NAVBAR CORRIGIDA SEM PERDER AS CORES ORIGINAIS ---
+// --- 4. NAVBAR ATUALIZADA E CORRIGIDA PARA ENVIAR O TOKEN AO MURAL ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
@@ -299,7 +299,7 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             )
 
             items.forEach { item ->
-                // MANTIDO: Verifica se a rota atual condiz exatamente com o botão, evitando misturar as telas
+                // Verifica se a rota atual condiz com o botão selecionado
                 val isSelected = currentRoute?.startsWith(item.second) == true
 
                 BottomNavItem(
@@ -307,10 +307,11 @@ fun CustomBottomNavBar(navController: NavController? = null) {
                     isSelected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            val rotaDestino = if (item.second == "pedido") {
-                                "pedido/$tokenString/$idUsuarioInt"
-                            } else {
-                                item.second
+                            // Mapeia dinamicamente as rotas que exigem os parâmetros do Token do usuário logado
+                            val rotaDestino = when (item.second) {
+                                "pedido" -> "pedido/$tokenString/$idUsuarioInt"
+                                "mural" -> "mural/$tokenString" // 👈 CORRIGIDO: Agora passa o token real para a rota do Mural abrir e funcionar!
+                                else -> item.second
                             }
 
                             navController?.navigate(rotaDestino) {
@@ -333,7 +334,6 @@ fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> 
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
-            // Usa estritamente a sua cor NavbarActiveBlue definida no seu tema original
             Box(Modifier.fillMaxSize().background(NavbarActiveBlue, CircleShape), Alignment.Center) {
                 Icon(painter, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }

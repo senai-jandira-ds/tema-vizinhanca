@@ -51,7 +51,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(GrayBackground)
     ) {
-        // RESTAURADO: Uso da Column vertical idêntica ao design original da sua foto
+        // Uso da Column vertical idêntica ao design original
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,7 +77,7 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // InfoCard de Pedidos integrado
+                // InfoCard de Pedidos - Redirecionando para Criar Serviço com a rota correta
                 InfoCard(
                     titulo = "Meus pedidos",
                     quantity = "3",
@@ -88,11 +88,12 @@ fun HomeScreen(
                         val token = sharedPrefs.getString("auth_token", "") ?: ""
                         val idUsuario = sharedPrefs.getInt("auth_user_id", 0)
 
-                        navController.navigate("pedido/$token/$idUsuario")
+                        // Rota mapeada exatamente igual à registrada no NavHost da MainActivity
+                        navController.navigate("criar_servico/$token/$idUsuario")
                     }
                 )
 
-                // InfoCard de Objetos integrado
+                // InfoCard de Objetos - Redirecionando para Criar Serviço com a rota correta
                 InfoCard(
                     titulo = "Meus objetos",
                     quantity = "3",
@@ -103,7 +104,8 @@ fun HomeScreen(
                         val token = sharedPrefs.getString("auth_token", "") ?: ""
                         val idUsuario = sharedPrefs.getInt("auth_user_id", 0)
 
-                        navController.navigate("objeto/$token/$idUsuario")
+                        // Rota mapeada exatamente igual à registrada no NavHost da MainActivity
+                        navController.navigate("criar_servico/$token/$idUsuario")
                     }
                 )
             }

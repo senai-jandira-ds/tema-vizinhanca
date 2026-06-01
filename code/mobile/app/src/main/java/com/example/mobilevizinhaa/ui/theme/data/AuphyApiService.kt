@@ -52,23 +52,15 @@ data class UserData(
 // 2. MODELOS DE RESIDENTE E POSTAGENS (SWAGGER)
 // ==========================================
 
-/**
- * Modelo das publicações individuais vinculadas à conta do residente.
- * Alimenta diretamente a grade de fotos (Mural Pessoal) da HomeScreen.
- */
 data class PublicationResponse(
     val id: Int,
     @SerializedName("photo", alternate = ["photoUrl", "imageUrl"])
-    val photo: String?,       // URL remota ou Base64 retornada pelo banco do Render
-    val title: String,        // Título do post
-    val description: String,  // Descrição do post
+    val photo: String?,
+    val title: String,
+    val description: String,
     val creationDate: String?
 )
 
-/**
- * Classe "Envelope" para capturar o objeto de perfil único do Swagger.
- * Usada tanto na busca (GET) quanto na atualização cadastral (PUT).
- */
 data class SingleResidentResponse(
     val status: Boolean,
     val message: String,
@@ -88,12 +80,9 @@ data class ResidentResponse(
     val phone: String? = null,
     @SerializedName("photo", alternate = ["photoUrl", "avatar"])
     val photo: String? = null,
-    val publications: List<PublicationResponse>? = null // Lista de posts específicos deste usuário
+    val publications: List<PublicationResponse>? = null
 )
 
-/**
- * Modelo de Payload para textos e fotos na Atualização do Residente.
- */
 data class UpdateResidentRequest(
     val id: Int,
     val name: String,
@@ -139,9 +128,6 @@ data class CreatePostDataResponse(
 // 4. MODELOS PARA CRIAÇÃO E LISTAGEM DE SERVIÇO (SWAGGER / JSON)
 // ==========================================
 
-/**
- * Payload JSON enviado no corpo (Body) para criar um novo serviço ou objeto.
- */
 data class CreateServiceRequest(
     @SerializedName("title")
     val title: String,
@@ -165,9 +151,6 @@ data class CreateServiceRequest(
     val status: String = "PENDENTE"
 )
 
-/**
- * Resposta de sucesso do servidor do Render ao CRIAR (POST) um serviço.
- */
 data class CreateServiceResponse(
     @SerializedName("status") val status: Boolean,
     @SerializedName("status_code", alternate = ["statusCode"]) val statusCode: Int,
@@ -254,7 +237,7 @@ data class BlockDetail(
 )
 
 // ==========================================
-// MODELOS ADAPTADOS DO SWAGGER PARA O ENDPOINT /api/v1/category
+// MODELOS ADAPTADOS DO SWAGGER ENDPOINT /api/v1/category
 // ==========================================
 
 data class TypeCategoryDetail(
@@ -287,62 +270,84 @@ data class CategoryResponseData(
 )
 
 // ==========================================
+// DTO ADICIONADO PARA ENVIAR O STATUS NO CORPO (JSON)
+// ==========================================
+data class ServiceUpdateRequest(
+    @SerializedName("status") val status: String
+)
+
+// ==========================================
 // 5. INTERFACE DA API (ROTAS DE RETROFIT)
 // ==========================================
 interface AuthApiService {
 
-    // --- AUTENTICAÇÃO ---
     @POST("api/v1/auth/login/resident")
     suspend fun loginResident(@Body request: LoginRequest): Response<LoginResponse>
 
-    // --- LISTAGEM GERAL DE RESIDENTES ---
     @GET("api/v1/resident")
     suspend fun listResidents(
         @Header("Authorization") token: String
     ): Response<List<ResidentResponse>>
 
-    // --- BUSCAR DADOS DA CONTA AUTENTICADA ---
     @GET("api/v1/auth/me/resident")
     suspend fun getResidentById(
         @Header("Authorization") token: String
     ): Response<SingleResidentResponse>
 
-    // --- ATUALIZAR CONTA E FOTO DO PERFIL ---
     @PUT("api/v1/resident")
     suspend fun updateResident(
         @Header("Authorization") token: String,
         @Body request: UpdateResidentRequest
     ): Response<SingleResidentResponse>
 
-    // --- SALVAR NOVA POSTAGEM NA CONTA DO RESIDENTE ---
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,
         @Body request: CreatePostRequest
     ): Response<CreatePostResponse>
 
-    // --- SALVAR NOVO SERVIÇO/OBJETO NO BANCO (POST) ---
     @POST("api/v1/service")
     suspend fun criarServico(
         @Header("Authorization") token: String,
         @Body request: CreateServiceRequest
     ): Response<CreateServiceResponse>
 
-    // --- BUSCA TODOS OS SERVIÇOS DO CONDOMÍNIO (GET) - MODELO ANTIGO ---
     @GET("api/v1/service")
     suspend fun listarServicos(
         @Header("Authorization") token: String
     ): Response<CreateServiceResponse>
 
-    // --- BUSCA OS SERVIÇOS PAGINADOS DO SWAGGER (GET) - MODELO NOVO ATUALIZADO ---
     @GET("api/v1/service")
     suspend fun listarServicosPaginados(
         @Header("Authorization") token: String
     ): Response<ServicePagedResponse>
 
-    // --- BUSCA TODAS AS CATEGORIAS REGISTRADAS DIRETAMENTE (GET) ---
     @GET("api/v1/category")
     suspend fun obterTodasCategorias(
         @Header("Authorization") token: String
     ): Response<CategoryListResponse>
+
+    // ------------------------------------------------------------------------
+    // INTERFACES INTEGRADAS REVISADAS
+    // ------------------------------------------------------------------------
+
+    /**
+     * Deleta um serviço ou objeto do condomínio de forma permanente.
+     */
+    @DELETE("api/v1/service/{id}")
+    suspend fun deletarServico(
+        @Header("Authorization") token: String,
+        @Path("id") idServico: Int
+    ): Response<Unit>
+
+    /**
+     * CORRIGIDO: Agora envia o status encapsulado dentro de um objeto JSON no corpo (@Body).
+     * Sincronizado perfeitamente com a necessidade do Spring Boot do back-end.
+     */
+    @PUT("api/v1/service/{id}")
+    suspend fun atualizarStatusServico(
+        @Header("Authorization") token: String,
+        @Path("id") idServico: Int,
+        @Body request: ServiceUpdateRequest // 👈 Mudança de @Query para @Body aqui
+    ): Response<Unit>
 }

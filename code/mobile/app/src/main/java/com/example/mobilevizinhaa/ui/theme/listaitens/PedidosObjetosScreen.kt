@@ -2,8 +2,10 @@ package com.example.mobilevizinhaa.ui.theme.listaitens
 
 import android.graphics.BitmapFactory
 import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -42,6 +44,9 @@ fun PedidosObjetosScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var filtroSelecionado by remember { mutableStateOf("Todos") }
 
+    // Estado que gerencia qual item foi clicado para abrir e preencher a pop-up
+    var itemSelecionadoParaDetalhe by remember { mutableStateOf<ServiceDetailBackend?>(null) }
+
     // Dispara a busca e o filtro no banco de dados assim que a tela abre ou as credenciais mudam
     LaunchedEffect(tokenUsuario, idUsuarioLogado) {
         if (tokenUsuario.isNotEmpty()) {
@@ -54,9 +59,9 @@ fun PedidosObjetosScreen(
         filtroSelecionado = "Todos"
     }
 
-    // --- FILTROS EM BRUTO SINCRONIZADOS COM OS ENUMS DA API (CAIXA ALTA) ---
+    // --- CORRIGIDO: Alinhado "IN_PROGRESS" para "EM_ANDAMENTO" conforme o padrão real da API ---
     val filtrosAtuais = if (selectedTab == 0) {
-        listOf("Todos", "PENDENTE", "IN_PROGRESS", "COMPLETED")
+        listOf("Todos", "PENDENTE", "EM_ANDAMENTO", "COMPLETED")
     } else {
         listOf("Todos", "DISPONIVEL", "EMPRESTIMO", "DOACAO", "ACHADOS")
     }
@@ -66,21 +71,19 @@ fun PedidosObjetosScreen(
         viewModel.listaMeusItens.filter { item ->
             val tipoCategoriaString = item.category?.typeCategory?.toString()?.uppercase() ?: ""
             if (selectedTab == 0) {
-                // Aba Pedidos: Tudo o que NÃO for um objeto
                 !tipoCategoriaString.contains("OBJETO")
             } else {
-                // Aba Objetos: Apenas categorias classificadas como objeto
                 tipoCategoriaString.contains("OBJETO")
             }
         }
     }
 
-    // Aplica o filtro de chips horizontais sobre os dados da aba ativa
+    // Aplica o filtro de chips horizontais sobre os dados da aba activa (com tratamento ignoreCase e uppercase)
     val listaExibida = remember(dadosFiltradosPorAba, filtroSelecionado) {
-        if (filtroSelecionado == "Todos") {
+        if (filtroSelecionado.uppercase() == "TODOS") {
             dadosFiltradosPorAba
         } else {
-            dadosFiltradosPorAba.filter { it.status.equals(filtroSelecionado, ignoreCase = true) }
+            dadosFiltradosPorAba.filter { it.status.uppercase() == filtroSelecionado.uppercase() }
         }
     }
 
@@ -89,14 +92,17 @@ fun PedidosObjetosScreen(
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        // --- HEADER COM O SEU GRADIENTE IGUAL À HOME ---
+        // --- HEADER COM O DEGRADÊ LUMINOSO ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(GradientBlueStart, GradientBlueEnd)
+                        colors = listOf(
+                            com.example.mobilevizinhaa.ui.theme.GradientBlueStart,
+                            com.example.mobilevizinhaa.ui.theme.GradientBlueEnd
+                        )
                     )
                 )
                 .padding(24.dp)
@@ -152,7 +158,7 @@ fun PedidosObjetosScreen(
             }
         }
 
-        // --- LAZYROW DE FILTROS (Traduz os Enums da API para textos bonitos na tela) ---
+        // --- LAZYROW DE FILTROS ---
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,7 +169,7 @@ fun PedidosObjetosScreen(
             items(filtrosAtuais) { filtro ->
                 val labelExibicao = when (filtro.uppercase()) {
                     "PENDENTE" -> "Pendente"
-                    "IN_PROGRESS" -> "Em andamento"
+                    "EM_ANDAMENTO" -> "Em andamento"
                     "COMPLETED" -> "Concluído"
                     "DISPONIVEL" -> "Disponível"
                     "EMPRESTIMO" -> "Empréstimo"
@@ -173,7 +179,7 @@ fun PedidosObjetosScreen(
                 }
 
                 FilterChip(
-                    selected = filtroSelecionado == filtro,
+                    selected = filtroSelecionado.uppercase() == filtro.uppercase(),
                     onClick = { filtroSelecionado = filtro },
                     label = { Text(labelExibicao) },
                     shape = CircleShape,
@@ -188,7 +194,7 @@ fun PedidosObjetosScreen(
             }
         }
 
-        // --- EXIBIÇÃO TRATADA DO CONTEÚDO (LOADING, ERRO, VAZIO OU REAL) ---
+        // --- EXIBIÇÃO TRATADA DO CONTEÚDO ---
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
             if (viewModel.isLoading) {
                 CircularProgressIndicator(
@@ -210,7 +216,6 @@ fun PedidosObjetosScreen(
                     fontSize = 14.sp
                 )
             } else {
-                // --- LAZYCOLUMN REAL ---
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -219,10 +224,92 @@ fun PedidosObjetosScreen(
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     items(listaExibida) { item ->
-                        PedidoCard(servico = item)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { itemSelecionadoParaDetalhe = item }
+                        ) {
+                            PedidoCard(servico = item)
+                        }
                     }
                 }
             }
         }
+    }
+
+    // --- INTEGRADO: DIÁLOGO POP-UP COM REQUISIÇÕES REAIS ---
+    itemSelecionadoParaDetalhe?.let { item ->
+        AlertDialog(
+            onDismissRequest = { itemSelecionadoParaDetalhe = null },
+            confirmButton = {},
+            dismissButton = {},
+            shape = RoundedCornerShape(16.dp),
+            containerColor = Color.White,
+            title = {
+                Text(
+                    text = item.title ?: "Sem título",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BluePrimary
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Column {
+                        Text(text = "Descrição:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
+                        Text(text = item.description ?: "Nenhuma descrição informada.", color = Color.Gray, fontSize = 14.sp)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(text = "Status:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
+                            Text(text = item.status ?: "PENDENTE", color = BluePrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(text = "Categoria:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
+                            Text(text = item.category?.name ?: "Geral", color = Color.Gray, fontSize = 14.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // CHAMADA INTEGRADA: Colocar no Mural (Mudar status para andamento)
+                    Button(
+                        onClick = {
+                            viewModel.mudarStatusParaAndamento(tokenUsuario, item.id)
+                            itemSelecionadoParaDetalhe = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Colocar no Mural (Andamento)", color = Color.White, fontWeight = FontWeight.Medium)
+                    }
+
+                    // CHAMADA INTEGRADA: Excluir item permanentemente da API
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.excluirItemDoUsuario(tokenUsuario, item.id)
+                            itemSelecionadoParaDetalhe = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444))
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Excluir", color = Color(0xFFEF4444), fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
+        )
     }
 }

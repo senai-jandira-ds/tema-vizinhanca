@@ -1,7 +1,6 @@
 package com.example.mobilevizinhaa.ui.theme.mural
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,21 +16,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mobilevizinhaa.R
-import com.example.mobilevizinhaa.ui.theme.data.ServiceDetail
+import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 
 /**
  * Componente do Card do Mural atualizado para dados dinâmicos da API,
  * mas blindado com fallback estático para evitar falhas de sessão do banco.
  *
- * @param post Objeto de dados contendo as informações completas do serviço/pedido.
+ * @param post Objeto de dados vindo da paginação real contendo informações completas do serviço/pedido.
  * @param onDetalhesClick Ação disparada ao clicar no botão "Detalhes".
  * @param onOferecerAjudaClick Ação disparada ao clicar no botão "Oferecer ajuda".
  */
 @Composable
 fun PostItem(
-    post: ServiceDetail,
-    onDetalhesClick: (ServiceDetail) -> Unit,
-    onOferecerAjudaClick: (ServiceDetail) -> Unit
+    post: ServiceDetailBackend, // 👈 Ajustado para ServiceDetailBackend para alinhar com o MuralViewModel
+    onDetalhesClick: (ServiceDetailBackend) -> Unit,
+    onOferecerAjudaClick: (ServiceDetailBackend) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
 
@@ -45,10 +44,10 @@ fun PostItem(
                 } else if (post.resident?.name?.contains("Rosana", ignoreCase = true) == true) {
                     R.drawable.mulher
                 } else {
-                    R.drawable.wellington // Padrão
+                    R.drawable.wellington // Padrão comunitário
                 }
             } catch (e: Exception) {
-                // Se der erro de LazyInitializationException no resident, joga para o Wellington fixo
+                // Se der erro de carregamento ou proxy nulo, joga para o padrão
                 R.drawable.wellington
             }
 
@@ -66,7 +65,6 @@ fun PostItem(
                 val nomeAutor = try {
                     post.resident?.name ?: "Morador"
                 } catch (e: Exception) {
-                    // Se o hibernate falhar na sessão, simula com base no ID ou título
                     if (post.id == 1 || post.title.contains("Vazamento", ignoreCase = true)) "Wellington" else "Rosana"
                 }
 
@@ -76,7 +74,7 @@ fun PostItem(
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "Tempo estimado: ${post.estimatedTime}h",
+                    text = "Tempo estimado: ${post.estimatedTime}h", // 👈 Campo em formato camelCase preservado
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
