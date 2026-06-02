@@ -5,7 +5,6 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Base64
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,7 +51,9 @@ fun CriarObjetoScreen(
     var descricao by remember { mutableStateOf("") }
     var diasDisponiveis by remember { mutableStateOf(1) }
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
-    var fotoBase64 by remember { mutableStateOf("") }
+
+    // 🎯 CORRIGIDO: Removido 'fotoBase64' e inserido o estado correto de bytes para compilar perfeitamente
+    var fotoBytes by remember { mutableStateOf<ByteArray?>(null) }
     var bitmapExibicao by remember { mutableStateOf<Bitmap?>(null) }
 
     val launcherGaleria = rememberLauncherForActivityResult(
@@ -68,14 +69,20 @@ fun CriarObjetoScreen(
                     val source = ImageDecoder.createSource(context.contentResolver, it)
                     ImageDecoder.decodeBitmap(source)
                 }
-                bitmapExibicao = bitmap
+
+                // Redimensiona para evitar estouro de memória (OutOfMemoryException)
+                val bitmapRedimensionado = Bitmap.createScaledBitmap(bitmap, 600, 600, true)
+                bitmapExibicao = bitmapRedimensionado
 
                 val outputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
-                val bytes = outputStream.toByteArray()
-                fotoBase64 = Base64.encodeToString(bytes, Base64.DEFAULT)
+                bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+
+                // 🎯 ATRIBUÍDO: Alimenta os bytes que serão lidos pelo gatilho do botão Enviar
+                fotoBytes = outputStream.toByteArray()
+                outputStream.close()
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, "Erro ao processar a imagem selecionada.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -297,9 +304,9 @@ fun CriarObjetoScreen(
                                 token = tokenUsuario,
                                 titulo = titulo,
                                 descricao = descricao,
-                                fotoBase64 = fotoBase64,
+                                fotoBytes = fotoBytes, // 🎯 COMPILANDO: Agora mapeado com os dados reais em ByteArray
                                 diasDisponiveis = diasDisponiveis,
-                                categoryId = 1 // Envia ID padrão para a categoria do condomínio
+                                categoryId = 1
                             )
                         },
                         enabled = !uiState.isLoading,

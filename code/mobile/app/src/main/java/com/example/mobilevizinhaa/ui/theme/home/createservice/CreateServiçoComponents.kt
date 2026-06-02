@@ -103,7 +103,7 @@ fun DropdownCategoriasComponent(
             ) {
                 if (categorias.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("Carregando...", color = Color.Gray) },
+                        text = { Text("Nenhuma categoria disponível", color = Color.Gray) },
                         onClick = {}
                     )
                 } else {

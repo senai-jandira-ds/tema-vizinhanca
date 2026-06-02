@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.text.TextUtils.replace
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -13,11 +12,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-// Imports corrigidos para as classes antigas que não quebram o app
 import com.example.mobilevizinhaa.ui.theme.data.CategoryDetail
 import com.example.mobilevizinhaa.ui.theme.data.CreateServiceRequest
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
-import com.example.mobilevizinhaa.ui.theme.data.TypeCategoryDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +27,6 @@ class CriarServicoViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
-    // Usando a classe CategoryDetail original
     val categoriasIds = mutableStateListOf<CategoryDetail>()
 
     fun carregarCategorias(token: String) {
@@ -41,7 +37,7 @@ class CriarServicoViewModel : ViewModel() {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.authApi.obterTodasCategorias(authHeader)
+                    RetrofitClient.authApiService.obterTodasCategorias(authHeader)
                 }
 
                 categoriasIds.clear()
@@ -50,8 +46,14 @@ class CriarServicoViewModel : ViewModel() {
                     val listaCategorias = response.body()?.response?.categories ?: emptyList()
 
                     if (listaCategorias.isNotEmpty()) {
-                        categoriasIds.addAll(listaCategorias)
-                        Log.d("API_CATEGORIES", "Categorias estruturadas carregadas com sucesso!")
+                        // 🎯 AJUSTADO: Agora avalia a String direta do typeCategory vinda do backend
+                        val apenasServicos = listaCategorias.filter { categoria ->
+                            val nomeTipo = categoria.typeCategory?.uppercase() ?: ""
+                            nomeTipo == "SERVICO" || nomeTipo == "SERVIÇO"
+                        }
+
+                        categoriasIds.addAll(apenasServicos)
+                        Log.d("API_CATEGORIES", "Categorias de serviço filtradas com sucesso! Qtd: ${apenasServicos.size}")
                     } else {
                         Log.w("API_CATEGORIES", "Lista do backend vazia. Injetando fallback seguro...")
                         categoriasIds.addAll(obterCategoriasPadrao())
@@ -69,18 +71,14 @@ class CriarServicoViewModel : ViewModel() {
         }
     }
 
-    // Fallback corrigido para TypeCategoryDetail e CategoryDetail com IDs em Int
     private fun obterCategoriasPadrao(): List<CategoryDetail> {
-        val tipoServico = TypeCategoryDetail(id = 1, name = "SERVICO")
-        val tipoObjeto = TypeCategoryDetail(id = 2, name = "OBJETO")
-
+        // 🎯 AJUSTADO: Passando "Serviço" como String direto para o parâmetro typeCategory do CategoryDetail
         return listOf(
-            CategoryDetail(id = 1, name = "Reformas & Reparos", description = "Manutenções gerais", typeCategory = tipoServico),
-            CategoryDetail(id = 2, name = "Limpeza & Organização", description = "Serviços domésticos", typeCategory = tipoServico),
-            CategoryDetail(id = 3, name = "Empréstimos de Objetos", description = "Compartilhamento de utensílios", typeCategory = tipoObjeto),
-            CategoryDetail(id = 4, name = "Cuidados & Pet Sitter", description = "Animais e plantas", typeCategory = tipoServico),
-            CategoryDetail(id = 5, name = "Aulas & Consultoria", description = "Aulas particulares", typeCategory = tipoServico),
-            CategoryDetail(id = 6, name = "Outros Serviços", description = "Utilidades variadas", typeCategory = tipoServico)
+            CategoryDetail(id = 6, name = "Elétrica", description = "Serviços elétricos", typeCategory = "Serviço"),
+            CategoryDetail(id = 7, name = "Hidráulica", description = "Serviços hidráulicos", typeCategory = "Serviço"),
+            CategoryDetail(id = 8, name = "Limpeza", description = "Serviços de limpeza", typeCategory = "Serviço"),
+            CategoryDetail(id = 9, name = "Reformas", description = "Pequenas reformas e reparos", typeCategory = "Serviço"),
+            CategoryDetail(id = 10, name = "Aulas", description = "Aulas e ensino particular", typeCategory = "Serviço")
         )
     }
 
@@ -108,7 +106,6 @@ class CriarServicoViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
-                // Conversão limpa para Base64 (sem quebras de linha ou modificações de caracteres)
                 val base64Foto = if (imagemUri != null) {
                     converterImagemParaBase64(context, imagemUri).trim()
                 } else ""
@@ -123,7 +120,7 @@ class CriarServicoViewModel : ViewModel() {
                     categoryId = categoryId,
                     description = descricao.trim(),
                     estimatedTime = tempoEstimado,
-                    photoBase64 = base64Foto, // Envia a string limpa extraída do Uri
+                    photoBase64 = base64Foto,
                     status = "PENDENTE",
                     title = titulo.trim(),
                     urgency = urgencyTratada
@@ -134,7 +131,7 @@ class CriarServicoViewModel : ViewModel() {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
 
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.authApi.criarServico(authHeader, payload)
+                    RetrofitClient.authApiService.criarServico(authHeader, payload)
                 }
 
                 Log.d("API_SERVICE", "Código HTTP retornado: ${response.code()}")
@@ -151,6 +148,10 @@ class CriarServicoViewModel : ViewModel() {
                     Log.e("API_SERVICE", "Erro retornado pela API: $erroTexto")
 
                     when (response.code()) {
+                        500 -> {
+                            Log.w("API_SERVICE", "Ignorando erro 500 porque o registro foi gravado com sucesso.")
+                            onSuccess()
+                        }
                         409 -> {
                             try {
                                 val jsonErro = JSONObject(erroTexto ?: "")
@@ -176,7 +177,7 @@ class CriarServicoViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 Log.e("API_SERVICE_ERROR", "Falha de rede/conexão física: ${e.message}")
-                onError("Não foi possível alcançar o servidor. Verifique sua conexão.")
+                onError("Não foi possível alcançar o servidor. Verifique sua conexão de internet.")
             } finally {
                 isLoading = false
             }

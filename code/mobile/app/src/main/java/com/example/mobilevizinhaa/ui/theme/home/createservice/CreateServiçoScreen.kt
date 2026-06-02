@@ -31,8 +31,8 @@ import com.example.mobilevizinhaa.ui.theme.data.CategoryDetail
 @Composable
 fun CriarPedidoObjetoScreen(
     navController: NavController,
-    tokenUsuario: String,         // AJUSTE: Recebendo o token direto da rota
-    idUsuarioLogado: Int,         // AJUSTE: Recebendo o id direto da rota
+    tokenUsuario: String,         // Recebendo o token direto da rota
+    idUsuarioLogado: Int,         // Recebendo o id direto da rota
     criarServicoViewModel: CriarServicoViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -65,6 +65,7 @@ fun CriarPedidoObjetoScreen(
     LaunchedEffect(tokenUsuario) {
         if (tokenUsuario.isNotEmpty()) {
             Log.d("API_CATEGORIAS", "Token recebido via rota! Disparando carregarCategorias...")
+            // 🎯 O ViewModel vai buscar e filtrar mantendo APENAS categorias do tipo "SERVICO"
             criarServicoViewModel.carregarCategorias(tokenUsuario)
         } else {
             Log.w("API_CATEGORIAS", "Aviso: Token recebido via rota está vazio.")
@@ -181,6 +182,7 @@ fun CriarPedidoObjetoScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DropdownCategoriasComponent(
+                    // 🎯 Esta lista expõe dinamicamente apenas as categorias "SERVICO" pré-filtradas no ViewModel
                     categorias = criarServicoViewModel.categoriasIds,
                     categoriaSelecionada = categoriaSelecionada,
                     onCategorySelected = { categoriaSelecionada = it },
@@ -266,7 +268,7 @@ fun CriarPedidoObjetoScreen(
                             focusManager.clearFocus()
 
                             if (titulo.isBlank() || descricao.isBlank() || categoriaSelecionada == null || tempoSelecionado == null) {
-                                Toast.makeText(context, "Selecione a categoria e preencha todos os campos obrigatórios!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Selecione uma categoria de serviço e preencha todos os campos obrigatórios!", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
 
@@ -278,7 +280,7 @@ fun CriarPedidoObjetoScreen(
                                 descricao = descricao,
                                 urgencia = urgencia,
                                 tempoEstimado = tempoSelecionado!!.second,
-                                categoryId = categoriaSelecionada!!.id,
+                                categoryId = categoriaSelecionada!!.id, // ID seguro da categoria vinculada a "SERVICO"
                                 imagemUri = imagemUri,
                                 onSuccess = {
                                     Toast.makeText(context, "Serviço anunciado com sucesso!", Toast.LENGTH_LONG).show()

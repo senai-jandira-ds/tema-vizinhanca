@@ -293,17 +293,15 @@ data class BlockDetail(
 // MODELOS ADAPTADOS DO SWAGGER ENDPOINT /api/v1/category
 // ==========================================
 
-data class TypeCategoryDetail(
-    @SerializedName("id") val id: Int,
-    @SerializedName("name") val name: String
-)
-
 data class CategoryDetail(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String?,
     @SerializedName("description") val description: String?,
+
+    // 🎯 CORREÇÃO CRUCIAL AQUI: Mudado de TypeCategoryDetail? para String?
+    // O backend retorna apenas uma string comum ("Serviço", "Objeto", etc.) nesta rota.
     @SerializedName("type_category", alternate = ["typeCategory"])
-    val typeCategory: Any? = null
+    val typeCategory: String? = null
 )
 
 data class CategoryListResponse(
@@ -403,9 +401,9 @@ interface AuthApiService {
         @Header("Authorization") token: String,
         @Part title: MultipartBody.Part,
         @Part description: MultipartBody.Part,
-        @Part photo: MultipartBody.Part,        // 🎯 Alterado de 'photoBase64' para 'photo'
+        @Part photo: MultipartBody.Part,
         @Part deadline: MultipartBody.Part,
-        @Part status: MultipartBody.Part,      // 🎯 Campo obrigatório adicionado
+        @Part status: MultipartBody.Part,
         @Part categoryId: MultipartBody.Part
     ): Response<CreateObjectResponse>
 

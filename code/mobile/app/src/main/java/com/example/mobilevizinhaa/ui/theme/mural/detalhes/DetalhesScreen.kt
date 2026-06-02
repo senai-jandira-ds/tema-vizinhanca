@@ -24,21 +24,33 @@ import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetail
 
 /**
- * Tela de Detalhes do Pedido (Versão Estática blindada para o TCC).
- * @param servico Recebe o objeto do card clicado para manter o contrato com a MuralScreen, mas exibe dados fixos locais.
- * @param onBackClick Callback para fechar a tela e limpar o estado de navegação.
+ * Tela de Detalhes do Pedido (Versão totalmente Dinâmica e Segura contra NullPointer).
  */
 @Composable
 fun MuralDetalheScreen(
-    servico: ServiceDetail, // Adicionado para bater certinho com a chamada da MuralScreen!!
+    servico: ServiceDetail,
     onBackClick: () -> Unit
 ) {
     var mostrarAlerta by remember { mutableStateOf(false) }
 
+    // Tratamento seguro da tag de urgência (evita que quebre caso venha nulo)
+    val urgenciaString = servico.urgency ?: "BAIXA"
+    val textoUrgencia = when (urgenciaString.uppercase()) {
+        "ALTA" -> "Urgente"
+        "MEDIA", "MÉDIA" -> "Média"
+        else -> "Baixa"
+    }
+
+    val corUrgencia = when (urgenciaString.uppercase()) {
+        "ALTA" -> Color(0xFFEF5350) // Vermelho
+        "MEDIA", "MÉDIA" -> Color(0xFFFFB74D) // Laranja
+        else -> Color(0xFF81C784) // Verde
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // --- HEADER COM FOTO FIXA ---
+            // --- HEADER COM FOTO ---
             Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
                 Image(
                     painter = painterResource(id = R.drawable.vazamento),
@@ -65,12 +77,14 @@ fun MuralDetalheScreen(
                         modifier = Modifier.size(28.dp).clickable { onBackClick() }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Pedido", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Detalhes do Pedido", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
-            // --- CORPO ESTÁTICO (FIXO WELLINGTON) ---
+            // --- CORPO DA TELA TOTALMENTE SEGURO (?.) ---
             Column(modifier = Modifier.fillMaxWidth().weight(1f).padding(20.dp)) {
+
+                // Dados do Morador que criou o pedido
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = R.drawable.wellington),
@@ -79,28 +93,52 @@ fun MuralDetalheScreen(
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "Wellington", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Column {
+                        // Correção do erro: Acesso seguro usando ?. e operador Elvis ?: para String padrão
+                        Text(
+                            text = servico.resident?.name ?: "Morador",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+
+                        // Verificação segura para exibir o apartamento se ele existir
+                        val apto = servico.resident?.apartment
+                        if (!apto.isNullOrBlank()) {
+                            Text(text = "Apto: $apto", fontSize = 13.sp, color = Color.Gray)
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
-                Text(text = "Vazamento embaixo da pia", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                // Título real do pedido com fallback seguro
+                Text(text = servico.title ?: "Sem título", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Spacer(modifier = Modifier.height(14.dp))
 
+                // Tags de Categorias e Metadados dinâmicos
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+
+                    // Correção do erro: Nome da categoria tratado com segurança
                     Box(modifier = Modifier.background(Color(0xFF26A69A), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(text = "Reparos", color = Color.White, fontSize = 13.sp)
+                        Text(text = servico.category?.name ?: "Geral", color = Color.White, fontSize = 13.sp)
                     }
+
+                    // Tempo estimado tratado de forma segura
                     Box(modifier = Modifier.background(Color(0xFFF1F3F5), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(text = "Tempo estimado: 2h", color = Color(0xFF495057), fontSize = 13.sp)
+                        Text(text = "Tempo estimado: ${servico.estimatedTime ?: 0}h", color = Color(0xFF495057), fontSize = 13.sp)
                     }
-                    Box(modifier = Modifier.background(Color(0xFFEF5350), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(text = "Urgente", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+
+                    // Urgência calculada acima
+                    Box(modifier = Modifier.background(corUrgencia, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                        Text(text = textoUrgencia, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+
+                // Descrição real digitada pelo morador
                 Text(
-                    text = "Gente, alguém mais já passou por isso? 😞 Tô com um vazamento embaixo da pia da cozinha que está molhando o armário todo. Preciso de ajuda urgente com encanamento.",
+                    text = if (servico.description.isNullOrBlank()) "Nenhuma descrição fornecida para este pedido." else servico.description,
                     fontSize = 16.sp, color = Color(0xFF333333), lineHeight = 24.sp
                 )
             }
@@ -127,15 +165,21 @@ fun MuralDetalheScreen(
             }
         }
 
-        // --- DIÁLOGO DE ALERTA ---
+        // --- DIÁLOGO DE ALERTA SEGURO ---
         if (mostrarAlerta) {
             AlertDialog(
                 onDismissRequest = { mostrarAlerta = false },
                 title = { Text(text = "Alerta", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black) },
-                text = { Text(text = "Você deseja oferecer ajuda a este pedido?\nApós confirmar, vocês poderão combinar o serviço pelo chat.", fontSize = 15.sp, color = Color(0xFF495057)) },
+                text = {
+                    Text(
+                        text = "Você deseja oferecer ajuda para o pedido \"${servico.title ?: "deste serviço"}\"?\nApós confirmar, vocês poderão combinar os detalhes pelo chat.",
+                        fontSize = 15.sp,
+                        color = Color(0xFF495057)
+                    )
+                },
                 confirmButton = {
                     TextButton(onClick = { mostrarAlerta = false }) {
-                        Text("confirmar", color = Color(0xFF26A69A), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Confirmar", color = Color(0xFF26A69A), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 },
                 dismissButton = {

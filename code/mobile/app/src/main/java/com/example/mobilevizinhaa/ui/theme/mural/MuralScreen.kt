@@ -48,6 +48,7 @@ fun MuralScreen(
         val item = servicoSelecionadoParaDetalhes!!
 
         // SOLUÇÃO DO COMPILADOR: Converte dinamicamente o ServiceDetailBackend para o ServiceDetail antigo
+        // 🎯 AJUSTADO: Passando apenas a String direto no typeCategory para bater com o novo DataModels refatorado
         val servicoConvertido = com.example.mobilevizinhaa.ui.theme.data.ServiceDetail(
             id = item.id,
             title = item.title ?: "Sem título",
@@ -55,23 +56,24 @@ fun MuralScreen(
             estimatedTime = item.estimatedTime ?: 0,
             urgency = item.urgency ?: "MEDIUM",
             status = item.status ?: "ACTIVE",
-            photo = "",
+            photo = null,
             resident = com.example.mobilevizinhaa.ui.theme.data.ResidentDetail(
                 id = item.resident?.id ?: 0,
                 name = item.resident?.name ?: "Morador",
                 email = item.resident?.email ?: "",
                 apartment = item.resident?.apartment ?: "",
                 phone = item.resident?.phone ?: "",
-                cpf = null,
-                score = 0,
-                creationDate = null,
-                block = null
+                cpf = item.resident?.cpf,
+                score = item.resident?.score ?: 0,
+                creationDate = item.resident?.creationDate,
+                block = item.resident?.block
             ),
             category = com.example.mobilevizinhaa.ui.theme.data.CategoryDetail(
                 id = item.category?.id ?: 0,
                 name = item.category?.name ?: "Geral",
                 description = item.category?.description ?: "",
-                typeCategory = item.category?.typeCategory?.toString() ?: "MANUTENCAO"
+                // 🎯 CORREÇÃO CRÍTICA: Agora repassa a String direto, sem tentar criar o objeto que causava o crash
+                typeCategory = item.category?.typeCategory ?: "SERVICO"
             )
         )
 
