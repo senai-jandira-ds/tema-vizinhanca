@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Modal.module.css';
 import { getCondominiumData } from '../../../services/authService';
+import { getBlocks } from '../../../services/blockService';
 
 export default function Modal({
   isOpen,
@@ -100,9 +101,31 @@ function UsuarioModal({
 
   const condominioData = getCondominiumData();
 
+  const [blocos, setBlocos] = useState([]);
+  const [loadingBlocos, setLoadingBlocos] = useState(true);
+
+  // Buscar blocos dinamicamente
+  useEffect(() => {
+    const fetchBlocos = async () => {
+      try {
+        setLoadingBlocos(true);
+        const response = await getBlocks();
+        const blocksData = response?.response?.blocks || [];
+        setBlocos(blocksData);
+      } catch (error) {
+        setBlocos([]);
+      } finally {
+        setLoadingBlocos(false);
+      }
+    };
+
+    fetchBlocos();
+  }, []);
+
   const [formData, setFormData] = useState({
     nome: data?.linha?.nome || "",
     apto: data?.linha?.apto || "",
+    blocoId: data?.linha?.blocoId || "",
     bloco: data?.linha?.bloco || "",
     cpf:
       (data?.linha?.cpf &&
@@ -127,10 +150,13 @@ function UsuarioModal({
   const handleSubmit = () => {
     const { id, ...dadosSemId } = formData;
 
+    // Enviar o ID do bloco em vez do nome
+    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.blocoId));
+
     const dadosParaEnviar = {
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
-      block: dadosSemId.bloco || "",
+      block_id: blocoSelecionado?.id || null,
       cpf: dadosSemId.cpf || "",
       email: dadosSemId.email || "",
       phone: dadosSemId.telefone || "",
@@ -210,14 +236,22 @@ function UsuarioModal({
 
           <select
             className={styles.selectHalf}
-            value={formData.bloco}
+            value={formData.blocoId}
             onChange={(e) =>
-              handleChange('bloco', e.target.value)
+              handleChange('blocoId', e.target.value)
             }
+            disabled={loadingBlocos}
           >
             <option value="">Bloco</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
+            {loadingBlocos ? (
+              <option disabled>Carregando...</option>
+            ) : (
+              blocos.map((bloco) => (
+                <option key={bloco.id} value={bloco.id}>
+                  {bloco.block}
+                </option>
+              ))
+            )}
           </select>
         </div>
 
@@ -521,22 +555,26 @@ function BlocoModal({
   );
 }
 
-function ServicoModal({ data, onClose }) {
+function ServicoModal({ data, onClose, onSubmit, onDelete }) {
   return (
     <SplitLayoutModal
       data={data}
       onClose={onClose}
       isServico={true}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
     />
   );
 }
 
-function DenunciaModal({ data, onClose }) {
+function DenunciaModal({ data, onClose, onSubmit, onDelete }) {
   return (
     <SplitLayoutModal
       data={data}
       onClose={onClose}
       isServico={false}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
     />
   );
 }
@@ -544,14 +582,32 @@ function DenunciaModal({ data, onClose }) {
 function SplitLayoutModal({
   data,
   onClose,
-  isServico
+  isServico,
+  onSubmit,
+  onDelete
 }) {
   const imagemRelacionada =
     data?.linha?.imagem ||
     "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
 
-  console.log("TESTANDO ENDPOINT");
-  console.log(data);
+  const handleFinalizar = () => {
+    if (!data?.linha?.id) return;
+
+    // Atualizar status para Finalizado
+    const dadosAtualizacao = {
+      status: "FINISHED"
+    };
+
+    onSubmit && onSubmit(data.linha.id, dadosAtualizacao);
+    onClose();
+  };
+
+  const handleExcluir = () => {
+    if (!data?.linha?.id) return;
+
+    onDelete && onDelete(data.linha.id);
+    onClose();
+  };
 
   return (
     <div className={styles.splitModal}>
@@ -580,7 +636,7 @@ function SplitLayoutModal({
               <label>Tipo</label>
 
               <div className={styles.fakeInput}>
-                {data?.linha?.tipo ||
+                {data?.linha?.categoria ||
                   (isServico
                     ? "Serviço"
                     : "Denúncia")}
@@ -611,6 +667,7 @@ function SplitLayoutModal({
           <button
             className={styles.btnIconBlue}
             title="Excluir"
+            onClick={handleExcluir}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -639,7 +696,10 @@ function SplitLayoutModal({
               Cancelar
             </button>
 
-            <button className={styles.btnGreen}>
+            <button
+              className={styles.btnGreen}
+              onClick={handleFinalizar}
+            >
               Finalizar
             </button>
           </div>

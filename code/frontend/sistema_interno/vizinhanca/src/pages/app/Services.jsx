@@ -2,17 +2,40 @@ import { useEffect, useState } from "react";
 import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import { getActivities, formatActivityDate, formatActivityStatus } from "../../services/activityService";
+import { getActivities, formatActivityDate, formatActivityStatus, updateActivity, deleteActivity } from "../../services/activityService";
 import { toast } from 'react-toastify';
 import styles from "./Services.module.css";
 
 function Services() {
     const [loading, setLoading] = useState(true);
     const [dadosTabela, setDadosTabela] = useState([]);
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [filtrosSelecionados, setFiltrosSelecionados] = useState({});
 
     useEffect(() => {
         fetchServices();
     }, []);
+
+    useEffect(() => {
+        aplicarFiltros();
+    }, [filtrosSelecionados, dadosTabela]);
+
+    const aplicarFiltros = () => {
+        let filtrados = [...dadosTabela];
+
+        // Aplicar filtros selecionados
+        Object.entries(filtrosSelecionados).forEach(([secao, opcoes]) => {
+            if (opcoes && opcoes.length > 0) {
+                if (secao === 'Status') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.status));
+                } else if (secao === 'Tipo') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.categoria));
+                }
+            }
+        });
+
+        setDadosFiltrados(filtrados);
+    };
 
     const fetchServices = async () => {
         try {
@@ -25,8 +48,6 @@ function Services() {
                 setDadosTabela([]);
                 return;
             }
-
-            console.log(services)
 
             const mappedData = services
                 .map((activity) => ({
@@ -70,6 +91,26 @@ function Services() {
         // Clique na célula para abrir modal
     };
 
+    const handleSubmitService = async (id, dados) => {
+        try {
+            await updateActivity(id, dados);
+            toast.success("Serviço finalizado com sucesso!");
+            fetchServices();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao finalizar serviço");
+        }
+    };
+
+    const handleDeleteService = async (id) => {
+        try {
+            await deleteActivity(id);
+            toast.success("Serviço excluído com sucesso!");
+            fetchServices();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao excluir serviço");
+        }
+    };
+
     if (loading) {
         return (
             <div className={styles.loading}>
@@ -86,16 +127,24 @@ function Services() {
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
-                    <FilterOptions />
-                    <Searchbar placeholder="Pesquisar Nº ou Nome" type="text" />
+                    <FilterOptions
+                        filterConfig={{
+                            Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+                            Tipo: ["Serviço", "Objeto"]
+                        }}
+                        onFilterChange={setFiltrosSelecionados}
+                    />
+                    <Searchbar placeholder="Pesquisar serviço por nome ou descrição" type="text" />
                 </div>
                 <Table
                     columns={colunasTabela}
-                    data={dadosTabela}
+                    data={dadosFiltrados}
                     onCellClick={handleCellClick}
                     showPagination={true}
                     modalType="servico"
                     exportType="servicos"
+                    onSubmit={handleSubmitService}
+                    onDelete={handleDeleteService}
                 />
             </main>
         </>

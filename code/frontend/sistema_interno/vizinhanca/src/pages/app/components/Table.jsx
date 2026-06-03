@@ -25,7 +25,12 @@ export default function Table({
   modalType = '',
   onSubmit = null,
   onDelete = null,
-  onCadastrarNovo = null
+  onCadastrarNovo = null,
+  // Backend pagination props
+  useBackendPagination = false,
+  totalPages = null,
+  currentPage = 0,
+  onPageChange = null
 }) {
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,10 +38,19 @@ export default function Table({
 
   const [sorting, setSorting] = useState([]);
 
-  const [pagination, setPagination] = useState({
+  // Só usar paginação interna se não estiver usando paginação do backend
+  const [internalPagination, setInternalPagination] = useState({
     pageIndex: 0,
     pageSize
   });
+
+  const pagination = useBackendPagination
+    ? { pageIndex: currentPage, pageSize }
+    : internalPagination;
+
+  const setPagination = useBackendPagination
+    ? () => {} // Não fazer nada, controle é do backend
+    : setInternalPagination;
 
   const [columnWidths, setColumnWidths] = useState({});
 
@@ -173,14 +187,24 @@ export default function Table({
   const headerGroups = table.getHeaderGroups();
   const rowModel = table.getRowModel();
 
-  const itemsPerPage = table.getPageCount();
-  const currentPage = pagination.pageIndex;
+  // Usar paginação do backend ou front
+  const itemsPerPage = useBackendPagination
+    ? (totalPages || 1)
+    : table.getPageCount();
+
+  const displayCurrentPage = useBackendPagination
+    ? currentPage
+    : pagination.pageIndex;
 
   const irParaPagina = (pagina) => {
-    setPagination((prev) => ({
-      ...prev,
-      pageIndex: pagina
-    }));
+    if (useBackendPagination && onPageChange) {
+      onPageChange(pagina);
+    } else {
+      setPagination((prev) => ({
+        ...prev,
+        pageIndex: pagina
+      }));
+    }
   };
 
   return (
@@ -347,17 +371,17 @@ export default function Table({
           <div className={styles.paginacaoBotoes}>
 
             <button
-              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === 0 ? styles.inativo : ''}`}
+              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${displayCurrentPage === 0 ? styles.inativo : ''}`}
               onClick={() => irParaPagina(0)}
-              disabled={currentPage === 0}
+              disabled={displayCurrentPage === 0}
             >
               {'<<'}
             </button>
 
             <button
-              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === 0 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(currentPage - 1)}
-              disabled={currentPage === 0}
+              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${displayCurrentPage === 0 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(displayCurrentPage - 1)}
+              disabled={displayCurrentPage === 0}
             >
               {'<'}
             </button>
@@ -367,14 +391,14 @@ export default function Table({
               if (
                 i === 0 ||
                 i === itemsPerPage - 1 ||
-                (i >= currentPage - 1 &&
-                  i <= currentPage + 1)
+                (i >= displayCurrentPage - 1 &&
+                  i <= displayCurrentPage + 1)
               ) {
 
                 return (
                   <button
                     key={i}
-                    className={`${styles['btn-paginacao']} ${i === currentPage ? styles.ativo : ''}`}
+                    className={`${styles['btn-paginacao']} ${i === displayCurrentPage ? styles.ativo : ''}`}
                     onClick={() => irParaPagina(i)}
                   >
                     {i + 1}
@@ -386,17 +410,17 @@ export default function Table({
             })}
 
             <button
-              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
-              onClick={() => irParaPagina(currentPage + 1)}
-              disabled={currentPage === itemsPerPage - 1}
+              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${displayCurrentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+              onClick={() => irParaPagina(displayCurrentPage + 1)}
+              disabled={displayCurrentPage === itemsPerPage - 1}
             >
               {'>'}
             </button>
 
             <button
-              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${currentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
+              className={`${styles['btn-paginacao']} ${styles.arrowButton} ${displayCurrentPage === itemsPerPage - 1 ? styles.inativo : ''}`}
               onClick={() => irParaPagina(itemsPerPage - 1)}
-              disabled={currentPage === itemsPerPage - 1}
+              disabled={displayCurrentPage === itemsPerPage - 1}
             >
               {'>>'}
             </button>

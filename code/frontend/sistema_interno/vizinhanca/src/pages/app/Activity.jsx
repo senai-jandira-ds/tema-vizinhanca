@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType } from "../../services/activityService";
+import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType, updateActivity, deleteActivity } from "../../services/activityService";
+import { toast } from 'react-toastify';
 import styles from "./Activity.module.css";
 
 function Activity() {
@@ -10,26 +11,42 @@ function Activity() {
     const [dadosTabela, setDadosTabela] = useState([]);
     const [termoBusca, setTermoBusca] = useState('');
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [filtrosSelecionados, setFiltrosSelecionados] = useState({});
 
 
     useEffect(() => {
         fetchActivities();
-    }, []);   
+    }, []);
 
     useEffect(() => {
-        if (!termoBusca.trim()) {
-            setDadosFiltrados(dadosTabela);
-            return;
+        aplicarFiltrosEBusca();
+    }, [termoBusca, dadosTabela, filtrosSelecionados]);
+
+    const aplicarFiltrosEBusca = () => {
+        let filtrados = [...dadosTabela];
+
+        // Aplicar filtros selecionados
+        Object.entries(filtrosSelecionados).forEach(([secao, opcoes]) => {
+            if (opcoes && opcoes.length > 0) {
+                if (secao === 'Status') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.status));
+                } else if (secao === 'Categoria') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.categoria));
+                }
+            }
+        });
+
+        // Aplicar busca por texto
+        if (termoBusca.trim()) {
+            const termoLower = termoBusca.toLowerCase();
+            filtrados = filtrados.filter(dado =>
+                dado.nome.toLowerCase().includes(termoLower) ||
+                dado.descricao.toLowerCase().includes(termoLower)
+            );
         }
 
-        const termoLower = termoBusca.toLowerCase();
-        const filtrados = dadosTabela.filter(dado =>
-            dado.nome.toLowerCase().includes(termoLower) ||
-            dado.status.toLowerCase().includes(termoLower)
-        );
         setDadosFiltrados(filtrados);
-    
-    }, [termoBusca, dadosTabela]);
+    };
 
     const fetchActivities = async () => {
         try {
@@ -50,10 +67,9 @@ function Activity() {
                 data: formatActivityDate(activity.creation_date)
             }));
 
-            console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
         } catch (error) {
-            console.error('Erro ao buscar atividades:', error);
+            toast.error('Erro ao buscar atividades');
             setDadosTabela([]);
         } finally {
             setLoading(false);
@@ -80,7 +96,27 @@ function Activity() {
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
-        console.log('Clicou na célula:', { valor, colunaId, linha });
+        // Clique na célula para abrir modal
+    };
+
+    const handleSubmitActivity = async (id, dados) => {
+        try {
+            await updateActivity(id, dados);
+            toast.success("Atividade finalizada com sucesso!");
+            fetchActivities();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao finalizar atividade");
+        }
+    };
+
+    const handleDeleteActivity = async (id) => {
+        try {
+            await deleteActivity(id);
+            toast.success("Atividade excluída com sucesso!");
+            fetchActivities();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao excluir atividade");
+        }
     };
 
     if (loading) {
@@ -99,9 +135,15 @@ function Activity() {
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
-                    <FilterOptions />
+                    <FilterOptions
+                        filterConfig={{
+                            Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+                            Categoria: ["Serviço", "Publicação", "Denúncia"]
+                        }}
+                        onFilterChange={setFiltrosSelecionados}
+                    />
                     <Searchbar
-                    placeholder="Pesquisar por nome ou email"
+                    placeholder="Pesquisar atividade por nome ou status"
                     type="text"
                     value={termoBusca}
                     onChange={(e) => setTermoBusca(e.target.value)}
@@ -114,6 +156,8 @@ function Activity() {
                     showPagination={true}
                     modalType="servico"
                     exportType="atividade-geral"
+                    onSubmit={handleSubmitActivity}
+                    onDelete={handleDeleteActivity}
                 />
             </main>
         </>

@@ -9,10 +9,33 @@ import styles from "./Security.module.css";
 function Security() {
     const [loading, setLoading] = useState(true);
     const [dadosTabela, setDadosTabela] = useState([]);
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [filtrosSelecionados, setFiltrosSelecionados] = useState({});
 
     useEffect(() => {
         fetchReports();
     }, []);
+
+    useEffect(() => {
+        aplicarFiltros();
+    }, [filtrosSelecionados, dadosTabela]);
+
+    const aplicarFiltros = () => {
+        let filtrados = [...dadosTabela];
+
+        // Aplicar filtros selecionados
+        Object.entries(filtrosSelecionados).forEach(([secao, opcoes]) => {
+            if (opcoes && opcoes.length > 0) {
+                if (secao === 'Status') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.status));
+                } else if (secao === 'Motivo') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.motivo));
+                }
+            }
+        });
+
+        setDadosFiltrados(filtrados);
+    };
 
     const fetchReports = async () => {
         try {
@@ -27,7 +50,6 @@ function Security() {
             }
 
 
-            console.log(reports)
             const mappedData = reports.map((report) => ({
                 id: report.id?.toString() || '',
                 autor: report.resident?.name || 'Não identificado',
@@ -67,7 +89,7 @@ function Security() {
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
-        console.log('Clicou na célula:', { valor, colunaId, linha });
+        // Clique na célula para abrir modal
     };
 
     if (loading) {
@@ -86,12 +108,18 @@ function Security() {
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
-                    <FilterOptions />
-                    <Searchbar placeholder="Pesquisar Nº ou Nome" type="text" />
+                    <FilterOptions
+                        filterConfig={{
+                            Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+                            Motivo: ["Spam", "Ofensivo", "Inapropriado", "Falso", "Violência"]
+                        }}
+                        onFilterChange={setFiltrosSelecionados}
+                    />
+                    <Searchbar placeholder="Pesquisar denúncia por autor ou descrição" type="text" />
                 </div>
                 <Table
                     columns={colunasTabela}
-                    data={dadosTabela}
+                    data={dadosFiltrados}
                     onCellClick={handleCellClick}
                     showPagination={true}
                     modalType="denuncia"

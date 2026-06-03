@@ -13,35 +13,59 @@ function Users() {
     const [dadosTabela, setDadosTabela] = useState([]);
     const [termoBusca, setTermoBusca] = useState('');
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [filtrosSelecionados, setFiltrosSelecionados] = useState({});
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: 10,
+        totalPages: 1,
+        totalElements: 0
+    });
 
     useEffect(() => {
         fetchResidents();
     }, []);
 
     useEffect(() => {
-        if (!termoBusca.trim()) {
-            setDadosFiltrados(dadosTabela);
-            return;
+        aplicarFiltrosEBusca();
+    }, [termoBusca, dadosTabela, filtrosSelecionados]);
+
+    const aplicarFiltrosEBusca = () => {
+        let filtrados = [...dadosTabela];
+
+        // Aplicar filtros selecionados
+        Object.entries(filtrosSelecionados).forEach(([secao, opcoes]) => {
+            if (opcoes && opcoes.length > 0) {
+                if (secao === 'Bloco') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.bloco));
+                } else if (secao === 'Status') {
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.status));
+                }
+            }
+        });
+
+        // Aplicar busca por texto
+        if (termoBusca.trim()) {
+            const termoLower = termoBusca.toLowerCase();
+            filtrados = filtrados.filter(dado =>
+                dado.nome.toLowerCase().includes(termoLower) ||
+                dado.email.toLowerCase().includes(termoLower) ||
+                dado.apto.toLowerCase().includes(termoLower) ||
+                dado.cpf.toLowerCase().includes(termoLower) ||
+                dado.id.toLowerCase().includes(termoLower) ||
+                dado.status.toLowerCase().includes(termoLower)
+            );
         }
 
-        const termoLower = termoBusca.toLowerCase();
-        const filtrados = dadosTabela.filter(dado =>
-            dado.nome.toLowerCase().includes(termoLower) ||
-            dado.email.toLowerCase().includes(termoLower) ||
-            dado.apto.toLowerCase().includes(termoLower) ||
-            dado.cpf.toLowerCase().includes(termoLower) ||
-            dado.id.toLowerCase().includes(termoLower) ||
-            dado.status.toLowerCase().includes(termoLower)
-        );
         setDadosFiltrados(filtrados);
-    }, [termoBusca, dadosTabela]);
+    };
 
-        const fetchResidents = async () => {
+        const fetchResidents = async (page = pagination.page, size = pagination.size) => {
         try {
             setLoading(true);
-            const response = await getResidents();
-            
-            const residents = response?.response.content || [];
+            const response = await getResidents(page, size);
+
+            const residents = response?.response?.content || [];
+            const pageInfo = response?.response;
 
             if (!Array.isArray(residents)) {
                 setDadosTabela([]);
@@ -56,11 +80,21 @@ function Users() {
                 telefone: resident.phone || '',
                 cpf: formatarCPF(resident.cpf) || '',
                 status: 'Ativo',
-                apto: resident.apartment
+                apto: resident.apartment,
+                bloco: resident.block?.block || '',
+                blocoId: resident.block_id || resident.block?.id || ''
             }));
 
             setDadosTabela(mappedData);
             setDadosFiltrados(mappedData);
+
+            // Atualizar informações de paginação
+            setPagination({
+                page: pageInfo?.number || 0,
+                size: pageInfo?.size || 10,
+                totalPages: pageInfo?.totalPages || 1,
+                totalElements: pageInfo?.totalElements || 0
+            });
         } catch (error) {
             setDadosTabela([]);
             setDadosFiltrados([]);
@@ -70,13 +104,11 @@ function Users() {
     };
 
     const handleSubmitUpdate = async (id, dados) => {
-        console.log(dados)
         try {
             if (id) {
                 await updateResident(id, dados);
                 toast.success("Morador atualizado com sucesso!");
             } else {
-                console.log('POST /resident - Dados:', dados);
                 await createResident(dados);
                 toast.success("Morador cadastrado com sucesso!");
             }
@@ -88,18 +120,24 @@ function Users() {
 
     const handleDeleteUpdate = async (id) => {
         try {
-            console.log(`DELETE /resident/${id}`);
             await deleteResident(id);
             toast.success("Morador excluído com sucesso!");
-            fetchResidents();
+            fetchResidents(pagination.page, pagination.size);
         } catch (error) {
             toast.error(error.response?.data?.message || "Erro ao excluir morador");
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < pagination.totalPages) {
+            fetchResidents(newPage, pagination.size);
         }
     };
 
     const colunasTabela = [
         { id: 'id', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome ', width: 250 },
+        { id: 'bloco', label: 'Bloco', width: 100 },
         { id: 'apto', label: 'Apto ', width: 100 },
         { id: 'cpf', label: 'CPF', width: 250 },
         { id: 'email', label: 'Email', width: 250 },
@@ -139,9 +177,15 @@ function Users() {
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
-                <FilterOptions/>
+                <FilterOptions
+                    filterConfig={{
+                        Status: ["Ativo", "Inativo"]
+                    }}
+                    dynamicBlocks={true}
+                    onFilterChange={setFiltrosSelecionados}
+                />
                 <Searchbar
-                    placeholder="Pesquisar por nome ou email"
+                    placeholder="Pesquisar morador por nome, email, CPF ou apto"
                     type="text"
                     value={termoBusca}
                     onChange={(e) => setTermoBusca(e.target.value)}

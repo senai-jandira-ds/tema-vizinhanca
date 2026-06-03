@@ -1,7 +1,7 @@
 import api from "./api";
 
-export const getResidents = async () => {
-    const response = await api.get("/condominium/resident/me");
+export const getResidents = async (page = 0, size = 10) => {
+    const response = await api.get(`/condominium/resident/me?page=${page}&size=${size}`);
     return response.data;
 };
 

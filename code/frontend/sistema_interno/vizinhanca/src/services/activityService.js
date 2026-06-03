@@ -41,3 +41,13 @@ export const formatActivityDate = (date) => {
         year: "numeric"
     });
 };
+
+export const updateActivity = async (id, data) => {
+    const response = await api.put(`/activity/${id}`, data);
+    return response.data;
+};
+
+export const deleteActivity = async (id) => {
+    const response = await api.delete(`/activity/${id}`);
+    return response.data;
+};
