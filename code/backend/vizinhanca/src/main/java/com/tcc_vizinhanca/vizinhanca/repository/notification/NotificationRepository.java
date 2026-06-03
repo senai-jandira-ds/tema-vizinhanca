@@ -11,5 +11,14 @@ package com.tcc_vizinhanca.vizinhanca.repository.notification;
 import com.tcc_vizinhanca.vizinhanca.entity.notification.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
+    List<Notification> findByResidentIdOrderByCreationDateDesc(Long residentId);
+
+    List<Notification> findByResidentIdAndSeenFalseOrderByCreationDateDesc(Long residentId);
+
+    Long countByResidentIdAndSeenFalse(Long residentId);
+
 }

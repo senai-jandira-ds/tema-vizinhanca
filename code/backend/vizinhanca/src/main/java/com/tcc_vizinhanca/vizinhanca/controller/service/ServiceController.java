@@ -41,7 +41,7 @@ public class ServiceController {
     @Autowired
     private ServiceService serviceService;
 
-    // GET ALL BY CONDOMINIUM — ex: GET /api/v1/service?page=0&size=20
+    // GET ALL BY CONDOMINIUM
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ServiceDetailResponse>>> listAllServices(
             @RequestParam(defaultValue = "0") int page,
@@ -116,6 +116,7 @@ public class ServiceController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ServiceDetailResponse>> searchServiceById(@PathVariable Long id) {
         Service service = serviceService.getSelectServiceById(id);
+
         return ResponseEntity.ok(ResponseUtil.success(
                 new ServiceDetailResponse(service), "Serviço encontrado com sucesso!"));
     }
@@ -129,18 +130,10 @@ public class ServiceController {
         AuthenticatedUser user =
                 (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Service service = new Service();
-        service.setPhoto(request.getPhoto());
-        service.setTitle(request.getTitle());
-        service.setEstimatedTime(request.getEstimatedTime());
-        service.setUrgency(request.getUrgency());
-        service.setDescription(request.getDescription());
-        service.setStatus(request.getStatus());
+        Service service = new Service(request);
 
         Service saved = serviceService.setInsertService(
                 service, user.idResident(), user.idCondominium(), request.getCategoryId());
-
-        System.out.println(user.toString());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseUtil.success(new ServiceDetailResponse(saved), "Serviço criado com sucesso!"));
@@ -152,13 +145,7 @@ public class ServiceController {
             @PathVariable Long id,
             @RequestBody ServiceUpdateRequest request) {
 
-        Service service = new Service();
-        service.setPhoto(request.getPhoto());
-        service.setTitle(request.getTitle());
-        service.setEstimatedTime(request.getEstimatedTime());
-        service.setUrgency(request.getUrgency());
-        service.setDescription(request.getDescription());
-        service.setStatus(request.getStatus());
+        Service service = new Service(request);
 
         Service updated = serviceService.setUpdateService(id, service, request.getCategoryId());
 
@@ -170,6 +157,7 @@ public class ServiceController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteService(@PathVariable Long id) {
         serviceService.setDeleteServiceById(id);
+        
         return ResponseEntity.ok(ResponseUtil.success(null, "Serviço deletado com sucesso!"));
     }
 }

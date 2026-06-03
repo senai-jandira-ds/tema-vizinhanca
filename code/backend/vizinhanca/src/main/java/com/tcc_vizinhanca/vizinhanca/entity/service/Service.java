@@ -10,6 +10,8 @@
 
 package com.tcc_vizinhanca.vizinhanca.entity.service;
 
+import com.tcc_vizinhanca.vizinhanca.dto.request.service.ServiceCreateRequest;
+import com.tcc_vizinhanca.vizinhanca.dto.request.service.ServiceUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
@@ -21,7 +23,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tbl_servico")
@@ -74,5 +75,23 @@ public class Service {
     public void prePersist() {
         this.creationDate = LocalDate.now();
         this.status = Status.PENDENTE;
+    }
+
+    public Service(ServiceUpdateRequest request) {
+        this.setPhoto(request.getPhoto());
+        this.setTitle(request.getTitle());
+        this.setEstimatedTime(request.getEstimatedTime());
+        this.setUrgency(request.getUrgency());
+        this.setDescription(request.getDescription());
+        this.setStatus(request.getStatus());
+    }
+
+    public Service(ServiceCreateRequest request) {
+        this.setPhoto(request.getPhoto());
+        this.setTitle(request.getTitle());
+        this.setEstimatedTime(request.getEstimatedTime());
+        this.setUrgency(request.getUrgency());
+        this.setDescription(request.getDescription());
+        this.setStatus(request.getStatus());
     }
 }
