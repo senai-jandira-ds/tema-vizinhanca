@@ -54,7 +54,7 @@ function Services() {
                     id: activity.resident_id?.toString() || '',
                     nome: activity.resident_name || '',
                     descricao: activity.description || '',
-                    categoria: 'Serviço',
+                    categoria: activity.type || '',
                     status: formatActivityStatus(activity.status),
                     data: formatActivityDate(activity.creation_date)
                 }));
@@ -129,7 +129,7 @@ function Services() {
                 <div className={styles.filterOptions}>
                     <FilterOptions
                         filterConfig={{
-                            Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+                            Status: ["Disponível", "Pendente", "Em andamento", "Concluído", "Cancelado"],
                             Tipo: ["Serviço", "Objeto"]
                         }}
                         onFilterChange={setFiltrosSelecionados}

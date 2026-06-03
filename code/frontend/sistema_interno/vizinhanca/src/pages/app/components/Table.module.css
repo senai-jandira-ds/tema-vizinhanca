@@ -125,7 +125,7 @@ td {
     z-index: 1;
 }
 
-td:hover {
+tr:hover {
     background-color: #f9fafb;
 }
 
@@ -189,14 +189,14 @@ td:hover {
 }
 
 .btn-paginacao {
-    width: 38px;
+    width: 45px;
     height: 38px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 50%;
+    border-radius: 35%;
 
     border: 1px solid #d1d5db;
 
@@ -224,7 +224,7 @@ td:hover {
 
 .arrowButton {
     background-color: #2600FF;
-
+    color: white;
     border: none;
 
     gap: 2px;

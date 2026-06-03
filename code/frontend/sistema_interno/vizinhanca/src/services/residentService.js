@@ -16,7 +16,24 @@ export const createResident = async (data) => {
 };
 
 export const updateResident = async (id, data) => {
-    const response = await api.put(`/resident/${id}`, data);
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            formData.append(key, value);
+        }
+    });
+
+    const response = await api.put(
+        `/resident/${id}`,
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }
+    );
+
     return response.data;
 };
 

@@ -72,6 +72,9 @@ function Users() {
                 return;
             }
 
+            console.log("---------------------")
+            console.log(residents)
+
             const mappedData = residents.map(resident => ({
                 id: resident.id?.toString() || '',
                 nome: resident.name || '',
@@ -79,7 +82,8 @@ function Users() {
                 photo: resident.photo || '',
                 telefone: resident.phone || '',
                 cpf: formatarCPF(resident.cpf) || '',
-                status: 'Ativo',
+                status: resident.is_active === Boolean(true) ? 'Ativo' : 'Inativo',
+                score: resident.score || '',
                 apto: resident.apartment,
                 bloco: resident.block?.block || '',
                 blocoId: resident.block_id || resident.block?.id || ''
@@ -114,6 +118,12 @@ function Users() {
             }
             fetchResidents();
         } catch (error) {
+            console.log("---------------------")
+            console.log(dados)
+            console.log(error)
+            console.log("---------------------")
+            console.log(error.response.data.message)
+            console.log("---------------------")
             toast.error(error.response?.data?.message || "Erro ao salvar morador");
         }
     };
@@ -185,7 +195,7 @@ function Users() {
                     onFilterChange={setFiltrosSelecionados}
                 />
                 <Searchbar
-                    placeholder="Pesquisar morador por nome, email, CPF ou apto"
+                    placeholder="Pesquisar por nome, email ou cpf"
                     type="text"
                     value={termoBusca}
                     onChange={(e) => setTermoBusca(e.target.value)}

@@ -95,6 +95,9 @@ function UsuarioModal({
   onSubmit,
   onDelete
 }) {
+  console.log('data do usuario')
+
+  console.log(data)
   const isEdicao =
     data?.linha !== null &&
     data?.linha !== undefined;
@@ -125,14 +128,16 @@ function UsuarioModal({
   const [formData, setFormData] = useState({
     nome: data?.linha?.nome || "",
     apto: data?.linha?.apto || "",
-    blocoId: data?.linha?.blocoId || "",
+    id_bloco: data?.linha?.blocoId || "",
     bloco: data?.linha?.bloco || "",
     cpf:
       (data?.linha?.cpf &&
         data?.linha.cpf.replace(/\D/g, '')) || "",
     email: data?.linha?.email || "",
     telefone: data?.linha?.telefone || "",
-    status: data?.linha?.status || "",
+    is_active: data?.linha?.status === "Ativo" ? Boolean(true) : Boolean(false),
+    photo: data?.linha?.photo || "",
+    score: data?.linha?.score || "",
     condominium_id:
       condominioData?.id ||
       data?.linha?.condominium_id ||
@@ -151,16 +156,17 @@ function UsuarioModal({
     const { id, ...dadosSemId } = formData;
 
     // Enviar o ID do bloco em vez do nome
-    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.blocoId));
+    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.id_bloco));
 
     const dadosParaEnviar = {
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
-      block_id: blocoSelecionado?.id || null,
+      id_block: blocoSelecionado?.id || null,
       cpf: dadosSemId.cpf || "",
       email: dadosSemId.email || "",
       phone: dadosSemId.telefone || "",
-      status: dadosSemId.status || "Ativo",
+      score: dadosSemId.score || 0,
+      is_active: dadosSemId.is_active || "true",
       id_condominium: formData.condominium_id
     };
 
@@ -236,9 +242,9 @@ function UsuarioModal({
 
           <select
             className={styles.selectHalf}
-            value={formData.blocoId}
+            value={formData.id_bloco}
             onChange={(e) =>
-              handleChange('blocoId', e.target.value)
+              handleChange('id_bloco', e.target.value)
             }
             disabled={loadingBlocos}
           >
@@ -288,14 +294,14 @@ function UsuarioModal({
 
           <select
             className={styles.selectHalf}
-            value={formData.status}
+            value={formData.is_active}
             onChange={(e) =>
-              handleChange('status', e.target.value)
+              handleChange('is_active', e.target.value)
             }
           >
             <option value="">Status</option>
-            <option value="Ativo">Ativo</option>
-            <option value="Inativo">Inativo</option>
+            <option value={Boolean(true)}>Ativo</option>
+            <option value={Boolean(false)}>Inativo</option>
           </select>
         </div>
       </div>
