@@ -11,26 +11,20 @@ import lombok.Setter;
 @Setter
 public class CondominiumCreateRequest {
 
-    @JsonProperty("name")
     @NotBlank(message = "Nome é obrigatório")
-    private String nome;
+    private String name;
 
     @NotBlank(message = "CNPJ é obrigatório")
     @Size(min = 14, max = 14, message = "CNPJ deve ter 14 dígitos")
     private String cnpj;
 
-    @JsonProperty("photo")
-    private String foto;
-
-    @JsonProperty("amount_blocks")
     @NotNull(message = "Quantidade de blocos é obrigatória")
     @Positive(message = "Quantidade de blocos deve ser positiva")
-    private Integer qtdBlocos;
+    private Integer amount_blocks;
 
-    @JsonProperty("amount_apartments")
     @NotNull(message = "Quantidade de apartamentos é obrigatória")
     @Positive(message = "Quantidade de apartamentos deve ser positiva")
-    private Integer qtdApto;
+    private Integer amount_apartments;
 
     @NotBlank(message = "E-mail é obrigatório")
     @Email(message = "E-mail inválido")
