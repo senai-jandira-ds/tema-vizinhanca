@@ -126,7 +126,7 @@ data class CreatePostDataResponse(
 )
 
 // ==========================================
-// 4. MODELOS PARA CRIAÇÃO E LISTAGEM DE SERVIÇO (SWAGGER / JSON)
+// 4. MODELOS PARA CRIAÇÃO DE SERVIÇO (JSON)
 // ==========================================
 
 data class CreateServiceRequest(
@@ -181,7 +181,7 @@ data class ServiceDetail(
 )
 
 // ==========================================
-// 4.1 MODELOS DE LISTAGEM PAGINADA DO SWAGGER (GET /service)
+// 4.1 MODELOS DE LISTAGEM PAGINADA REAL DO BACKEND (GET /service)
 // ==========================================
 
 data class ServicePagedResponse(
@@ -200,7 +200,7 @@ data class ServicePageContainer(
     @SerializedName("total_pages") val totalPages: Int,
     @SerializedName("current_page") val currentPage: Int,
     @SerializedName("page_size") val pageSize: Int,
-    @SerializedName("content") val content: List<ServiceDetailBackend>
+    @SerializedName("content") val content: List<ServiceDetailBackend> // <- O array mapeado com sucesso do Log!
 )
 
 data class ServiceDetailBackend(
@@ -225,7 +225,8 @@ data class CreateObjectRequest(
     @SerializedName("description") val description: String,
     @SerializedName("photoBase64") val photoBase64: String,
     @SerializedName("deadline") val deadline: String,
-    @SerializedName("categoryId") val categoryId: Int
+    @SerializedName("categoryId") val categoryId: Int,
+    @SerializedName("status") val status: String = "INDISPONIVEL"
 )
 
 data class CreateObjectResponse(
@@ -297,11 +298,7 @@ data class CategoryDetail(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String?,
     @SerializedName("description") val description: String?,
-
-    // 🎯 CORREÇÃO CRUCIAL AQUI: Mudado de TypeCategoryDetail? para String?
-    // O backend retorna apenas uma string comum ("Serviço", "Objeto", etc.) nesta rota.
-    @SerializedName("type_category", alternate = ["typeCategory"])
-    val typeCategory: String? = null
+    @SerializedName("type_category", alternate = ["typeCategory"]) val typeCategory: String? = null
 )
 
 data class CategoryListResponse(
@@ -328,7 +325,7 @@ data class ServiceUpdateRequest(
 )
 
 // ==========================================
-// 5. INTERFACE DA API (ROTAS DE RETROFIT)
+// 5. INTERFACE DA API (ROTAS DE RETROFIT) - CORRIGIDA!
 // ==========================================
 interface AuthApiService {
 
@@ -363,10 +360,12 @@ interface AuthApiService {
         @Body request: CreateServiceRequest
     ): Response<CreateServiceResponse>
 
+    // 🎯 AJUSTADO: Ambos os métodos de listagem agora retornam ServicePagedResponse
+    // garantindo que o Gson consiga ler o objeto de paginação retornado pelo Render.
     @GET("api/v1/service")
     suspend fun listarServicos(
         @Header("Authorization") token: String
-    ): Response<CreateServiceResponse>
+    ): Response<ServicePagedResponse>
 
     @GET("api/v1/service")
     suspend fun listarServicosPaginados(
@@ -392,7 +391,7 @@ interface AuthApiService {
     ): Response<Unit>
 
     // ------------------------------------------------------------------------
-    // ROTAS DE INTEGRAÇÃO DE OBJETOS DO CONDOMÍNIO (CORRIGIDO E VALIDADO)
+    // ROTAS DE OBJETOS DO CONDOMÍNIO
     // ------------------------------------------------------------------------
 
     @Multipart
@@ -411,4 +410,3 @@ interface AuthApiService {
     suspend fun listarObjetosPaginados(
         @Header("Authorization") token: String
     ): Response<ObjectPagedResponse>
-}

@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 import com.example.mobilevizinhaa.ui.theme.data.ServiceUpdateRequest
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class PedidosObjetosViewModel : ViewModel() {
@@ -22,9 +23,6 @@ class PedidosObjetosViewModel : ViewModel() {
     var listaMeusItens by mutableStateOf<List<ServiceDetailBackend>>(emptyList())
         private set
 
-    /**
-     * Busca todos os serviços da API e realiza o filtro local pelo ID do residente logado.
-     */
     fun carregarItensDoUsuario(token: String, idUsuarioLogado: Int) {
         if (isLoading) return
 
@@ -33,23 +31,70 @@ class PedidosObjetosViewModel : ViewModel() {
             errorMessage = null
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
-                val response = RetrofitClient.authApiParaServico.listarServicosPaginados(authHeader)
 
-                if (response.isSuccessful && response.body() != null) {
-                    val envelope = response.body()!!
-                    val listaGeralDoCondominio = envelope.responseData.content
+                // Busca serviços e objetos em paralelo para maior desempenho de rede
+                val chamadaServicos = async { RetrofitClient.authApiParaServico.listarServicosPaginados(authHeader) }
+                val chamadaObjetos = async { RetrofitClient.authApiParaServico.listarObjetosPaginados(authHeader) }
 
-                    val filtradoParaOusuario = listaGeralDoCondominio.filter { item ->
+                val responseServicos = chamadaServicos.await()
+                val responseObjetos = chamadaObjetos.await()
+
+                val listaFinalUnificada = mutableListOf<ServiceDetailBackend>()
+
+                // 1. Processamento de Serviços (Garante remoção de espaços e caixa alta estável)
+                if (responseServicos.isSuccessful && responseServicos.body() != null) {
+                    val envelopeServicos = responseServicos.body()!!
+                    val listaGeralServicos = envelopeServicos.responseData.content
+
+                    val servicosFiltrados = listaGeralServicos.filter { item ->
                         item.resident?.id == idUsuarioLogado
+                    }.map { item ->
+                        item.copy(status = item.status?.uppercase()?.trim() ?: "PENDENTE")
                     }
-
-                    listaMeusItens = filtradoParaOusuario
-                    Log.d("PEDIDOS_OBJETOS_VM", "Itens carregados: ${filtradoParaOusuario.size}")
+                    listaFinalUnificada.addAll(servicosFiltrados)
                 } else {
-                    errorMessage = "Erro ${response.code()}: Não foi possível sincronizar suas solicitações."
+                    Log.e("PEDIDOS_OBJETOS_VM", "Erro ao carregar serviços: ${responseServicos.code()}")
                 }
+
+                // 2. Processamento e Normalização de Objetos
+                if (responseObjetos.isSuccessful && responseObjetos.body() != null) {
+                    val envelopeObjetos = responseObjetos.body()!!
+                    val listaGeralObjetos = envelopeObjetos.responseData.content
+
+                    val objetosFiltradosEConvertidos = listaGeralObjetos
+                        .filter { obj -> obj.resident?.id == idUsuarioLogado }
+                        .map { obj ->
+                            // Garante uma string limpa sem acentos ou espaços invisíveis vindos da API
+                            val statusTratado = obj.status?.uppercase()?.trim() ?: "DISPONIVEL"
+
+                            ServiceDetailBackend(
+                                id = obj.id,
+                                photoBase64 = obj.photo,
+                                title = obj.title ?: "Sem título",
+                                estimatedTime = 0,
+                                urgency = "NORMAL",
+                                description = obj.description ?: "Nenhuma descrição informada.",
+                                creationDate = obj.creationDate ?: "Recentemente",
+                                status = statusTratado,
+                                resident = obj.resident,
+                                category = obj.category
+                            )
+                        }
+                    listaFinalUnificada.addAll(objetosFiltradosEConvertidos)
+                } else {
+                    Log.e("PEDIDOS_OBJETOS_VM", "Erro ao carregar objetos: ${responseObjetos.code()}")
+                }
+
+                // Substitui a lista inteira de uma vez para notificar o Compose
+                listaMeusItens = listaFinalUnificada
+                Log.d("PEDIDOS_OBJETOS_VM", "Mesclagem concluída. Total de itens carregados: ${listaFinalUnificada.size}")
+
+                if (!responseServicos.isSuccessful && !responseObjetos.isSuccessful) {
+                    errorMessage = "Não foi possível sincronizar suas solicitações."
+                }
+
             } catch (e: Exception) {
-                Log.e("PEDIDOS_OBJETOS_VM", "Falha de rede: ${e.message}", e)
+                Log.e("PEDIDOS_OBJETOS_VM", "Falha de rede ao unificar listas: ${e.message}", e)
                 errorMessage = "Não foi possível conectar ao servidor."
             } finally {
                 isLoading = false
@@ -58,29 +103,27 @@ class PedidosObjetosViewModel : ViewModel() {
     }
 
     /**
-     * CORRIGIDO: Agora envia o DTO ServiceUpdateRequest no corpo do método PUT
-     * para sanar o erro 500 de falta de request body gerado pelo Spring Boot.
+     * Atualiza o status do item enviando a requisição DTO correta para o servidor.
+     * Atualiza o estado reativo local imediatamente para redesenhar a tela e aplicar os filtros.
      */
-    fun mudarStatusParaAndamento(token: String, idItem: Int) {
+    fun atualizarStatusItem(token: String, idItem: Int, novoStatus: String) {
         viewModelScope.launch {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+                val statusCaixaAlta = novoStatus.uppercase().trim()
+                val corpoRequest = ServiceUpdateRequest(status = statusCaixaAlta)
 
-                // 1. Cria o corpo do JSON encapsulando a String exigida pela API do condomínio
-                val corpoRequest = ServiceUpdateRequest(status = "EM_ANDAMENTO")
-
-                // 2. Envia o objeto via @Body para o endpoint mapeado no Retrofit
                 val response = RetrofitClient.authApiParaServico.atualizarStatusServico(authHeader, idItem, corpoRequest)
 
                 if (response.isSuccessful) {
-                    // Mapeia a lista existente modificando APENAS o item que mudou de status.
-                    // Isso força a tela que você criou a se redesenhar automaticamente na hora!
+                    // Força a atualização do estado criando uma nova lista mapeada.
+                    // Isso aciona instantaneamente a filtragem horizontal e vertical na Screen.
                     listaMeusItens = listaMeusItens.map { item ->
-                        if (item.id == idItem) item.copy(status = "EM_ANDAMENTO") else item
+                        if (item.id == idItem) item.copy(status = statusCaixaAlta) else item
                     }
-                    Log.d("INTEGRACAO_VM", "Status do item $idItem alterado para EM_ANDAMENTO com sucesso local e remoto.")
+                    Log.d("INTEGRACAO_VM", "Status updated successfully on API and locally to $statusCaixaAlta.")
                 } else {
-                    Log.e("INTEGRACAO_VM", "Falha ao mudar status. Código HTTP: ${response.code()} | Erro: ${response.errorBody()?.string()}")
+                    Log.e("INTEGRACAO_VM", "Falha HTTP ao mudar status: ${response.code()} | Erro: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Log.e("INTEGRACAO_VM", "Erro na requisição de alteração de status", e)
@@ -89,31 +132,33 @@ class PedidosObjetosViewModel : ViewModel() {
     }
 
     /**
-     * INTEGRADO: Deleta a solicitação permanentemente no backend e remove da lista local na hora.
+     * Deleta permanentemente o item selecionado e limpa o estado reativo local.
      */
     fun excluirItemDoUsuario(token: String, idItem: Int) {
         viewModelScope.launch {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
-
-                // Dispara o DELETE para a API
                 val response = RetrofitClient.authApiParaServico.deletarServico(authHeader, idItem)
 
                 if (response.isSuccessful) {
-                    // Remove o item excluído da lista local para sumir da tela instantaneamente
+                    // Remove localmente provocando a animação de saída na Screen
                     listaMeusItens = listaMeusItens.filter { item -> item.id != idItem }
-                    Log.d("INTEGRACAO_VM", "Item $idItem deletado com sucesso.")
+                    Log.d("INTEGRACAO_VM", "Item $idItem deletado com sucesso na API e localmente.")
                 } else {
-                    Log.e("INTEGRACAO_VM", "Falha ao deletar item: ${response.code()}")
+                    Log.e("INTEGRACAO_VM", "Falha ao deletar na API: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("INTEGRACAO_VM", "Erro na requisição de exclusão", e)
+                Log.e("INTEGRACAO_VM", "Erro ao deletar", e)
             }
         }
     }
 
+    /**
+     * Limpa as referências de memória ao deslogar ou sair da tela.
+     */
     fun limparDados() {
         listaMeusItens = emptyList()
         errorMessage = null
+        Log.d("PEDIDOS_OBJETOS_VM", "Dados limpos com sucesso.")
     }
 }

@@ -11,14 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f77298ba-0efe-4966-bd11-6c34033f3c3c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/data/AuphyApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/data/AuphyApiService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createobjeto/CriarObjetoScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createobjeto/CriarObjetoScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createobjeto/CriarObjetoViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createobjeto/CriarObjetoViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CreateServiçoComponents.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CreateServiçoComponents.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CreateServiçoScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CreateServiçoScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CriarServiçoViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/createservice/CriarServiçoViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/detalhes/DetalhesScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/detalhes/DetalhesScreen.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -30,61 +31,106 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobilevizinhaa.R
-import com.example.mobilevizinhaa.ui.theme.*
+import com.example.mobilevizinhaa.ui.theme.* // Puxa GradientBlueStart, GradientBlueEnd e BluePrimary originais
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PedidosObjetosScreen(
-    tokenUsuario: String,         // Recebe o Token do usuário autenticado
-    idUsuarioLogado: Int,         // Recebe o ID do residente logado para fazer o filtro pessoal
-    viewModel: PedidosObjetosViewModel = viewModel() // Instancia a sua ViewModel real
+    tokenUsuario: String,
+    idUsuarioLogado: Int,
+    viewModel: PedidosObjetosViewModel = viewModel()
 ) {
-    // Controla o estado da aba atual: 0 para Pedidos, 1 para Objetos
     var selectedTab by remember { mutableIntStateOf(0) }
-    var filtroSelecionado by remember { mutableStateOf("Todos") }
-
-    // Estado que gerencia qual item foi clicado para abrir e preencher a pop-up
+    var filtroSelecionado by remember { mutableStateOf("TODOS") }
     var itemSelecionadoParaDetalhe by remember { mutableStateOf<ServiceDetailBackend?>(null) }
 
-    // Dispara a busca e o filtro no banco de dados assim que a tela abre ou as credenciais mudam
+    // 🕵️ CONSOLE.LOG 1: Monitoriza quando a lista bruta muda vinda da API/ViewModel
+    LaunchedEffect(viewModel.listaMeusItens) {
+        Log.d("BUG_HUNT", "=== [CONSOLE.LOG 1] Nova lista bruta recebida do ViewModel ===")
+        Log.d("BUG_HUNT", "Total de itens brutos: ${viewModel.listaMeusItens.size}")
+        viewModel.listaMeusItens.forEachIndexed { index, item ->
+            Log.d("BUG_HUNT", "Item [$index] -> ID: ${item.id} | Titulo: ${item.title} | Status Bruto: '${item.status}' | Categoria: '${item.category?.name}'")
+        }
+    }
+
+    // Dispara a busca de dados assim que a tela abre ou o Token valida
     LaunchedEffect(tokenUsuario, idUsuarioLogado) {
         if (tokenUsuario.isNotEmpty()) {
+            Log.d("BUG_HUNT", "Chamando carregarItensDoUsuario... ID Logado: $idUsuarioLogado")
             viewModel.carregarItensDoUsuario(tokenUsuario, idUsuarioLogado)
         }
     }
 
-    // Reseta o filtro horizontal para "Todos" toda vez que o valor da Tab mudar
+    // Sincroniza o reset do filtro horizontal limpando espaços e forçando Caixa Alta sempre
     LaunchedEffect(selectedTab) {
-        filtroSelecionado = "Todos"
+        Log.d("BUG_HUNT", "Aba alterada para: $selectedTab -> Forçando filtro para TODOS")
+        filtroSelecionado = "TODOS"
     }
 
-    // --- CORRIGIDO: Alinhado "IN_PROGRESS" para "EM_ANDAMENTO" conforme o padrão real da API ---
+    // Filtros padronizados em String pura de banco de dados
     val filtrosAtuais = if (selectedTab == 0) {
-        listOf("Todos", "PENDENTE", "EM_ANDAMENTO", "COMPLETED")
+        listOf("TODOS", "PENDENTE", "EM_AND_AMENTO", "EM_ANDAMENTO", "COMPLETED")
     } else {
-        listOf("Todos", "DISPONIVEL", "EMPRESTIMO", "DOACAO", "ACHADOS")
+        listOf("TODOS", "INDISPONÍVEL", "DISPONÍVEL", "EMPRESTADO")
     }
 
-    // --- SEPARAÇÃO LOCAL INTELIGENTE (PEDIDO DE SERVIÇO vs OBJETO) ---
+    // --- 🎯 FILTRAGEM DEFINITIVA DE ABAS ---
     val dadosFiltradosPorAba = remember(viewModel.listaMeusItens, selectedTab) {
-        viewModel.listaMeusItens.filter { item ->
-            val tipoCategoriaString = item.category?.typeCategory?.toString()?.uppercase() ?: ""
-            if (selectedTab == 0) {
-                !tipoCategoriaString.contains("OBJETO")
-            } else {
-                tipoCategoriaString.contains("OBJETO")
-            }
+        val listaFiltrada = viewModel.listaMeusItens.filter { item ->
+            val statusItem = item.status?.uppercase()?.trim() ?: ""
+            val nomeCategoria = item.category?.name?.uppercase()?.trim() ?: ""
+            val tipoCategoriaString = item.category?.typeCategory?.toString()?.uppercase()?.trim() ?: ""
+
+            val ehObjeto = statusItem in listOf("INDISPONÍVEL", "DISPONÍVEL", "EMPRESTADO") ||
+                    nomeCategoria.contains("OBJETO") ||
+                    tipoCategoriaString.contains("OBJETO") ||
+                    nomeCategoria.contains("ACHADOS") ||
+                    nomeCategoria.contains("DOAÇ") ||
+                    nomeCategoria.contains("DOAC")
+
+            if (selectedTab == 0) !ehObjeto else ehObjeto
         }
+
+        // 🕵️ CONSOLE.LOG 2: Vê o resultado da separação por Aba (Pedidos vs Objetos)
+        Log.d("BUG_HUNT", "=== [CONSOLE.LOG 2] Itens separados para a Aba Atual ($selectedTab) ===")
+        Log.d("BUG_HUNT", "Quantidade de itens nesta aba: ${listaFiltrada.size}")
+        listaFiltrada.forEach { item ->
+            Log.d("BUG_HUNT", " -> ID: ${item.id} | Status: '${item.status}' | Titulo: ${item.title}")
+        }
+
+        listaFiltrada
     }
 
-    // Aplica o filtro de chips horizontais sobre os dados da aba activa (com tratamento ignoreCase e uppercase)
+    // --- 🎯 FILTRAGEM DOS CHIPS HORIZONTAIS CORRIGIDA ---
     val listaExibida = remember(dadosFiltradosPorAba, filtroSelecionado) {
-        if (filtroSelecionado.uppercase() == "TODOS") {
+        val filtroFormatado = filtroSelecionado.uppercase().trim()
+
+        val resultadoFinal = if (filtroFormatado == "TODOS") {
             dadosFiltradosPorAba
         } else {
-            dadosFiltradosPorAba.filter { it.status.uppercase() == filtroSelecionado.uppercase() }
+            dadosFiltradosPorAba.filter { item ->
+                val statusItem = item.status?.uppercase()?.trim() ?: ""
+
+                // Trata mapeamentos estendidos do backend para garantir consistência total
+                val statusNormalizado = when (statusItem) {
+                    "IN_PROGRESS", "EM_AND_AMENTO" -> "EM_ANDAMENTO"
+                    "CONCLUIDO" -> "COMPLETED"
+                    else -> statusItem
+                }
+
+                statusNormalizado == filtroFormatado
+            }
         }
+
+        // 🕵️ CONSOLE.LOG 3: O que realmente vai ser renderizado na tela após o clique do chip
+        Log.d("BUG_HUNT", "=== [CONSOLE.LOG 3] Resultado Final da Filtragem ===")
+        Log.d("BUG_HUNT", "Filtro ativo: '$filtroFormatado' | Itens visíveis finais na lista: ${resultadoFinal.size}")
+        resultadoFinal.forEach { item ->
+            Log.d("BUG_HUNT", " -> VISÍVEL NO CARD: ID: ${item.id} | Status Final: '${item.status}' | Titulo: ${item.title}")
+        }
+
+        resultadoFinal
     }
 
     Column(
@@ -92,17 +138,14 @@ fun PedidosObjetosScreen(
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        // --- HEADER COM O DEGRADÊ LUMINOSO ---
+        // --- HEADER ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            com.example.mobilevizinhaa.ui.theme.GradientBlueStart,
-                            com.example.mobilevizinhaa.ui.theme.GradientBlueEnd
-                        )
+                        colors = listOf(GradientBlueStart, GradientBlueEnd)
                     )
                 )
                 .padding(24.dp)
@@ -122,7 +165,7 @@ fun PedidosObjetosScreen(
             }
         }
 
-        // --- TABROW (Troca o estado de qual aba está ativa) ---
+        // --- TABROW (Alternância de Abas Verticais) ---
         TabRow(
             selectedTabIndex = selectedTab,
             containerColor = Color.White,
@@ -139,26 +182,14 @@ fun PedidosObjetosScreen(
             divider = {}
         ) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text(
-                    text = "Pedidos",
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = if (selectedTab == 0) BluePrimary else Color.Gray
-                )
+                Text("Pedidos", modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = if (selectedTab == 0) BluePrimary else Color.Gray)
             }
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text(
-                    text = "Objetos",
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = if (selectedTab == 1) BluePrimary else Color.Gray
-                )
+                Text("Objetos", modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = if (selectedTab == 1) BluePrimary else Color.Gray)
             }
         }
 
-        // --- LAZYROW DE FILTROS ---
+        // --- FILTROS HORIZONTAIS ---
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,47 +198,47 @@ fun PedidosObjetosScreen(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(filtrosAtuais) { filtro ->
-                val labelExibicao = when (filtro.uppercase()) {
+                val filtroFormatado = filtro.uppercase().trim()
+                val estaSelecionado = filtroSelecionado == filtroFormatado
+
+                val labelExibicao = when (filtroFormatado) {
                     "PENDENTE" -> "Pendente"
-                    "EM_ANDAMENTO" -> "Em andamento"
+                    "EM_AND_AMENTO", "EM_ANDAMENTO" -> "Em andamento"
                     "COMPLETED" -> "Concluído"
-                    "DISPONIVEL" -> "Disponível"
-                    "EMPRESTIMO" -> "Empréstimo"
-                    "DOACAO" -> "Doação"
-                    "ACHADOS" -> "Achados"
+                    "INDISPONÍVEL" -> "Indisponível"
+                    "DISPONÍVEL" -> "Disponível"
+                    "EMPRESTADO" -> "Emprestado"
                     else -> "Todos"
                 }
 
-                FilterChip(
-                    selected = filtroSelecionado.uppercase() == filtro.uppercase(),
-                    onClick = { filtroSelecionado = filtro },
-                    label = { Text(labelExibicao) },
-                    shape = CircleShape,
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = BluePrimary,
-                        selectedLabelColor = Color.White,
-                        containerColor = Color(0xFFF5F5F5),
-                        labelColor = Color.Black
-                    ),
-                    border = null
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(if (estaSelecionado) BluePrimary else Color(0xFFF5F5F5))
+                        .clickable {
+                            // 🕵️ CONSOLE.LOG 4: Captura o clique seco do usuário
+                            Log.d("BUG_HUNT", "=== [CONSOLE.LOG 4] CLIQUE DO USUÁRIO ===")
+                            Log.d("BUG_HUNT", "Clicaste no chip: '$filtroFormatado'. Mudando filtro de '$filtroSelecionado' para '$filtroFormatado'")
+                            filtroSelecionado = filtroFormatado
+                        }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = labelExibicao,
+                        color = if (estaSelecionado) Color.White else Color.Black,
+                        fontSize = 14.sp,
+                        fontWeight = if (estaSelecionado) FontWeight.Bold else FontWeight.Normal
+                    )
+                }
             }
         }
 
-        // --- EXIBIÇÃO TRATADA DO CONTEÚDO ---
+        // --- LISTA DE ITENS REATIVA ---
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
             if (viewModel.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = BluePrimary
-                )
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = BluePrimary)
             } else if (viewModel.errorMessage != null) {
-                Text(
-                    text = viewModel.errorMessage!!,
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp),
-                    fontSize = 14.sp
-                )
+                Text(text = viewModel.errorMessage!!, color = Color.Red, modifier = Modifier.align(Alignment.Center).padding(16.dp), fontSize = 14.sp)
             } else if (listaExibida.isEmpty()) {
                 Text(
                     text = if (selectedTab == 0) "Você não possui solicitações de pedidos." else "Você não possui objetos cadastrados.",
@@ -217,17 +248,15 @@ fun PedidosObjetosScreen(
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     items(listaExibida) { item ->
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .clickable { itemSelecionadoParaDetalhe = item }
                         ) {
                             PedidoCard(servico = item)
@@ -238,7 +267,7 @@ fun PedidosObjetosScreen(
         }
     }
 
-    // --- INTEGRADO: DIÁLOGO POP-UP COM REQUISIÇÕES REAIS ---
+    // --- POP-UP DETALHES ---
     itemSelecionadoParaDetalhe?.let { item ->
         AlertDialog(
             onDismissRequest = { itemSelecionadoParaDetalhe = null },
@@ -247,12 +276,7 @@ fun PedidosObjetosScreen(
             shape = RoundedCornerShape(16.dp),
             containerColor = Color.White,
             title = {
-                Text(
-                    text = item.title ?: "Sem título",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BluePrimary
-                )
+                Text(text = item.title ?: "Sem título", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = BluePrimary)
             },
             text = {
                 Column(
@@ -270,7 +294,17 @@ fun PedidosObjetosScreen(
                     ) {
                         Column {
                             Text(text = "Status:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
-                            Text(text = item.status ?: "PENDENTE", color = BluePrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+
+                            val statusFormatado = when (item.status?.uppercase()?.trim() ?: "") {
+                                "INDISPONÍVEL" -> "Indisponível"
+                                "DISPONÍVEL" -> "Disponível"
+                                "EMPRESTADO" -> "Emprestado"
+                                "EM_AND_AMENTO", "EM_ANDAMENTO", "IN_PROGRESS" -> "Em andamento"
+                                "COMPLETED", "CONCLUIDO" -> "Concluído"
+                                "PENDENTE" -> "Pendente"
+                                else -> item.status ?: "Desconhecido"
+                            }
+                            Text(text = statusFormatado, color = BluePrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(text = "Categoria:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
@@ -280,20 +314,34 @@ fun PedidosObjetosScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // CHAMADA INTEGRADA: Colocar no Mural (Mudar status para andamento)
-                    Button(
-                        onClick = {
-                            viewModel.mudarStatusParaAndamento(tokenUsuario, item.id)
-                            itemSelecionadoParaDetalhe = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(text = "Colocar no Mural (Andamento)", color = Color.White, fontWeight = FontWeight.Medium)
+                    val statusItem = item.status?.uppercase()?.trim() ?: ""
+                    val nomeCategoria = item.category?.name?.uppercase()?.trim() ?: ""
+                    val tipoCategoriaString = item.category?.typeCategory?.toString()?.uppercase()?.trim() ?: ""
+
+                    val ehObjeto = statusItem in listOf("INDISPONÍVEL", "DISPONÍVEL", "EMPRESTADO") ||
+                            nomeCategoria.contains("OBJETO") ||
+                            tipoCategoriaString.contains("OBJETO") ||
+                            nomeCategoria.contains("ACHADOS") ||
+                            nomeCategoria.contains("DOAÇ") ||
+                            nomeCategoria.contains("DOAC")
+
+                    val textoBotaoMural = if (ehObjeto) "Disponibilizar no Mural" else "Colocar no Mural (Andamento)"
+
+                    if (statusItem == "PENDENTE" || statusItem == "INDISPONÍVEL") {
+                        Button(
+                            onClick = {
+                                val statusAlvo = if (ehObjeto) "DISPONÍVEL" else "EM_ANDAMENTO"
+                                viewModel.atualizarStatusItem(tokenUsuario, item.id, statusAlvo)
+                                itemSelecionadoParaDetalhe = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(text = textoBotaoMural, color = Color.White, fontWeight = FontWeight.Medium)
+                        }
                     }
 
-                    // CHAMADA INTEGRADA: Excluir item permanentemente da API
                     OutlinedButton(
                         onClick = {
                             viewModel.excluirItemDoUsuario(tokenUsuario, item.id)
@@ -302,7 +350,7 @@ fun PedidosObjetosScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                         border = ButtonDefaults.outlinedButtonBorder.copy(
-                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444))
+                            brush = SolidColor(Color(0xFFEF4444))
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {

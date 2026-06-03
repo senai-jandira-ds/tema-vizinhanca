@@ -29,49 +29,53 @@ val GradientBlueStart = Color(0xFF2196F3)
 val GradientBlueEnd = Color(0xFF42A5F5)
 val BluePrimary = Color(0xFF2196F3)
 
-
-
-
-
-
 // ==========================================
-// SEU COMPONENTE DE CARD ADAPTADO PARA AS CORES DA FOTO
+// COMPONENTE DE CARD TOTALMENTE BLINDADO
 // ==========================================
 @Composable
 fun PedidoCard(servico: ServiceDetailBackend) {
-    // Decodifica a string Base64 vinda do banco em uma imagem usável pelo Compose
+    // Decodifica de forma segura a string Base64 vinda do banco usando a função abaixo
     val bitmapDaFoto = lembrarBase64ComoImageBitmap(servico.photoBase64)
 
-    // Converte o status cru em String amigável
-    val textoStatusExibicao = when (servico.status.uppercase()) {
+    // Converte o status garantindo proteção total contra nulos corporativos
+    val statusCru = servico.status?.uppercase()?.trim() ?: "PENDENTE"
+
+    // 🎯 Mantém o mapeamento visual idêntico ao esperado pelas validações da Screen
+    val textoStatusExibicao = when (statusCru) {
         "PENDENTE" -> "Pendente"
         "IN_PROGRESS", "EM_ANDAMENTO" -> "Em andamento"
         "COMPLETED", "CONCLUIDO" -> "Concluído"
-        "DISPONIVEL" -> "Disponível"
-        "EMPRESTIMO" -> "Empréstimo"
-        "DOACAO" -> "Doação"
-        else -> servico.status
+        "INDISPONÍVEL" -> "Indisponível"
+        "DISPONÍVEL" -> "Disponível"
+        "EMPRESTADO" -> "Emprestado"
+        "DOACAO", "DOAÇÃO" -> "Doação"
+        "ACHADOS" -> "Achados"
+        else -> statusCru.lowercase().replaceFirstChar { it.uppercase() }
     }
 
-    // RESTAURADO: Mapeamento EXATO de par de cores (Fundo e Texto) baseado na foto enviada
-    val (backgroundColor, textColor) = when (textoStatusExibicao) {
-        "Pendente" -> {
-            Color(0xFFFFEAD2) to Color(0xFFFF9800) // Laranja Pastel da foto
+    // Mapeamento exato de par de cores (Fundo e Texto) baseado nos status do backend
+    val (backgroundColor, textColor) = when (statusCru) {
+        "PENDENTE" -> {
+            Color(0xFFFFEAD2) to Color(0xFFFF9800) // Laranja Pastel
         }
-        "Em andamento", "Empréstimo" -> {
-            Color(0xFFE3F2FD) to Color(0xFF1E88E5) // Azul suave da foto
+        "IN_PROGRESS", "EM_ANDAMENTO", "EMPRESTADO" -> {
+            Color(0xFFE3F2FD) to Color(0xFF1E88E5) // Azul suave
         }
-        "Concluído", "Disponível", "Doação" -> {
-            Color(0xFFE8F5E9) to Color(0xFF4CAF50) // Verde claro da foto
+        "COMPLETED", "CONCLUIDO", "DISPONIVEL", "DOACAO", "DOAÇÃO", "ACHADOS" -> {
+            Color(0xFFE8F5E9) to Color(0xFF4CAF50) // Verde claro
+        }
+        "INDISPONIVEL" -> {
+            Color(0xFFFCE4EC) to Color(0xFFD81B60) // Rosa/Vermelho Pastel suave
         }
         else -> {
-            Color(0xFFF5F5F5) to Color(0xFF616161) // Cinza padrão de fallback
+            Color(0xFFF5F5F5) to Color(0xFF616161) // Cinza padrão
         }
     }
 
-    // Trata e formata a data de criação retornada pelo banco
-    val dataExibicao = if (!servico.creationDate.isNullOrBlank()) {
-        if (servico.creationDate.length >= 10) servico.creationDate.substring(0, 10) else servico.creationDate
+    // Tratamento ultra seguro de datas para evitar crashes de String
+    val dataCrua = servico.creationDate
+    val dataExibicao = if (!dataCrua.isNullOrBlank()) {
+        if (dataCrua.length >= 10) dataCrua.substring(0, 10) else dataCrua
     } else {
         "Recentemente"
     }
@@ -90,7 +94,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagem lateral dinâmica com fallback seguro contra fotos nulas
+            // Imagem lateral com fallback seguro
             if (bitmapDaFoto != null) {
                 Image(
                     bitmap = bitmapDaFoto,
@@ -101,7 +105,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // RESTAURADO: Placeholder elegante cinza usando o R.drawable.objeto como na foto
+                // Placeholder caso a imagem falhe ou venha nula
                 Box(
                     modifier = Modifier
                         .size(85.dp)
@@ -126,7 +130,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = servico.title,
+                        text = servico.title ?: "Sem título",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Color.Black,
@@ -137,7 +141,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de Status oval em formato de pílula com as cores restauradas da foto
+                    // Badge de Status com formato pílula dinâmico
                     Surface(
                         color = backgroundColor,
                         shape = CircleShape
@@ -152,9 +156,9 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                     }
                 }
 
-                // Descrição controlada para até 2 linhas com elipse (...)
+                // Descrição com elipse controlada para nulos
                 Text(
-                    text = servico.description,
+                    text = servico.description ?: "Nenhuma descrição fornecida.",
                     fontSize = 12.sp,
                     color = Color.Gray,
                     maxLines = 2,
@@ -165,7 +169,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Rodapé com metadados reais vindo do banco
+                // Rodapé contendo Categoria tratada contra nulos e data formatada
                 val nomeCategoria = servico.category?.name ?: "Geral"
                 Text(
                     text = "$nomeCategoria - $dataExibicao",
@@ -186,8 +190,12 @@ fun lembrarBase64ComoImageBitmap(base64String: String?): ImageBitmap? {
     if (base64String.isNullOrBlank()) return null
     return remember(base64String) {
         try {
-            val cleanString = base64String.substringAfter(",")
-            val decodedBytes = Base64.decode(cleanString, Base64.DEFAULT)
+            val cleanString = if (base64String.contains(",")) {
+                base64String.substringAfter(",")
+            } else {
+                base64String
+            }
+            val decodedBytes = Base64.decode(cleanString.trim(), Base64.DEFAULT)
             val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
             bitmap?.asImageBitmap()
         } catch (e: Exception) {
