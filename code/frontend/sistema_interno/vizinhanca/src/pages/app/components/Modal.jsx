@@ -34,6 +34,16 @@ export default function Modal({
           />
         );
 
+      case 'bloco':
+        return (
+          <BlocoModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
       case 'servico':
         return (
           <ServicoModal
@@ -387,6 +397,100 @@ function CategoriaModal({
             Serviço
           </option>
         </select>
+      </div>
+
+      <div className={styles.userButtons}>
+        {isEdicao && (
+          <button
+            className={styles.btnBlue}
+            onClick={handleDelete}
+          >
+            Deletar
+          </button>
+        )}
+
+        <button
+          className={styles.btnRed}
+          onClick={onClose}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className={styles.btnGreen}
+          onClick={handleSubmit}
+        >
+          Finalizar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BlocoModal({
+  data,
+  onClose,
+  onSubmit,
+  onDelete
+}) {
+  const isEdicao =
+    data?.linha !== null &&
+    data?.linha !== undefined;
+
+  const [formData, setFormData] = useState({
+    block: data?.linha?.nome || "",
+    id: data?.linha?.id || null
+  });
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = () => {
+    const dadosParaEnviar = {
+      block: formData.block,
+    };
+
+    if (isEdicao) {
+      onSubmit &&
+        onSubmit(formData.id, dadosParaEnviar);
+    } else {
+      onSubmit &&
+        onSubmit(null, dadosParaEnviar);
+    }
+
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (!isEdicao || !formData.id) return;
+
+    onDelete && onDelete(formData.id);
+
+    onClose();
+  };
+
+  return (
+    <div className={styles.userModal}>
+      <h1>
+        {isEdicao
+          ? 'Detalhes do bloco'
+          : 'Cadastro de bloco'}
+      </h1>
+
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={formData.block}
+          onChange={(e) =>
+            handleChange('block', e.target.value)
+          }
+          placeholder="Nome do bloco"
+          className={styles.inputFull}
+        />
       </div>
 
       <div className={styles.userButtons}>

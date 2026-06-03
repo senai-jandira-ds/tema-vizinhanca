@@ -4,6 +4,7 @@ import Table from "./components/Table";
 import FilterOptions from "../../components/ui/Filter"
 import styles from "./Users.module.css";
 import { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 import { getResidents, updateResident, deleteResident, createResident } from "../../services/residentService";
 import { formatarCPF } from "../../utils/format";
 
@@ -39,15 +40,13 @@ function Users() {
         try {
             setLoading(true);
             const response = await getResidents();
-
+            
             const residents = response?.response.content || [];
 
             if (!Array.isArray(residents)) {
                 setDadosTabela([]);
                 return;
             }
-
-            console.log(residents)
 
             const mappedData = residents.map(resident => ({
                 id: resident.id?.toString() || '',
@@ -60,7 +59,6 @@ function Users() {
                 apto: resident.apartment
             }));
 
-            console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
             setDadosFiltrados(mappedData);
         } catch (error) {
@@ -76,13 +74,15 @@ function Users() {
         try {
             if (id) {
                 await updateResident(id, dados);
+                toast.success("Morador atualizado com sucesso!");
             } else {
-                // POST - Criar
                 console.log('POST /resident - Dados:', dados);
                 await createResident(dados);
+                toast.success("Morador cadastrado com sucesso!");
             }
             fetchResidents();
         } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao salvar morador");
         }
     };
 
@@ -90,8 +90,10 @@ function Users() {
         try {
             console.log(`DELETE /resident/${id}`);
             await deleteResident(id);
+            toast.success("Morador excluído com sucesso!");
             fetchResidents();
         } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao excluir morador");
         }
     };
 

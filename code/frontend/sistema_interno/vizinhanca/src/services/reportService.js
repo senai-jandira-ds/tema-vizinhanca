@@ -40,6 +40,27 @@ export const formatReportType = (report) => {
     return "Outro";
 };
 
+export const formatStatus = (status) => {
+    const statusMap = {
+        OPEN: "Aberto",
+        PENDING: "Pendente",
+        IN_PROGRESS: "Em andamento",
+        FINISHED: "Finalizado",
+        CANCELED: "Cancelado",
+        ABERTO: "Aberto",
+        DISPONÍVEL: "Disponível",
+        INDISPONÍVEL: "Indisponível",
+        PENDENTE: "Pendente",
+        EM_ANDAMENTO: "Em andamento",
+        FINALIZADO: "Finalizado",
+        CANCELADO: "Cancelado",
+        ATIVO: "Ativo",
+        CONCLUÍDO: "Concluído"
+    };
+
+    return statusMap[status] || status;
+};
+
 export const formatReportReason = (reason) => {
     const reasonMap = {
         SPAM: "Spam",

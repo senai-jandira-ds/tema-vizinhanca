@@ -70,9 +70,9 @@ function Activity() {
             label: 'Status',
             width: 160,
             getCellClass: (status) => {
-                if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
-                if (status === 'CONCLUIDO' || status === 'FINALIZADO') return styles['status-azul'];
-                if (status === 'PENDENTE' || status === 'INDISPONÍVEL') return styles['status-amarelo'];
+                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
+                if (status === 'Concluido' || status === 'Finalizado') return styles['status-azul'];
+                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento')return styles['status-amarelo'];
                 return '';
             }
         },

@@ -113,6 +113,18 @@
     font-size: 2.2rem;
 }
 
+.status-verde {
+    color: #1fc01f;
+}
+
+.status-azul {
+    color: #3b18ff;
+}
+
+.status-amarelo{
+    color: rgb(196, 194, 123);
+}
+
 @media (max-width: 1440px) {
     .header h1{
         height: 15%;

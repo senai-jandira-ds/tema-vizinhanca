@@ -11,11 +11,31 @@ export const getCondominiumById = async (id) => {
 };
 
 export const createCondominium = async (data) => {
+    // Se data for FormData, envia com headers multipart
+    if (data instanceof FormData) {
+        const response = await api.post("/condominium", data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    }
+    // Caso contrário, envia como JSON normalmente
     const response = await api.post("/condominium", data);
     return response.data;
 };
 
 export const updateCondominium = async (id, data) => {
+    // Se data for FormData, envia com headers multipart
+    if (data instanceof FormData) {
+        const response = await api.put(`/condominium/${id}`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    }
+    // Caso contrário, envia como JSON normalmente
     const response = await api.put(`/condominium/${id}`, data);
     return response.data;
 };

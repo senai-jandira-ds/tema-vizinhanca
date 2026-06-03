@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import { getReports, formatReportType, formatReportReason } from "../../services/reportService";
+import { getReports, formatReportType, formatReportReason, formatStatus, formatReportDate } from "../../services/reportService";
+import { toast } from 'react-toastify';
 import styles from "./Security.module.css";
 
 function Security() {
@@ -24,22 +25,22 @@ function Security() {
                 setDadosTabela([]);
                 return;
             }
-            
-            console.log(data)
 
-        const mappedData = reports.map((report) => ({
-            id: report.id?.toString() || '',
-            autor: report.resident?.name || 'Não identificado',
-            photo: report.resident.photo || report.object.photo || report.report.photo,
-            descricao: report.description || '',
-            motivo: report.reason_report.name || '',
-            status: report.status || '',
-            data: report.creation_date || ''
-        }));
+
+            console.log(reports)
+            const mappedData = reports.map((report) => ({
+                id: report.id?.toString() || '',
+                autor: report.resident?.name || 'Não identificado',
+                photo: report.resident.photo || report.object.photo || report.report.photo,
+                descricao: report.description || '',
+                motivo: report.reason_report.name || '',
+                status: formatStatus(report.status) || '',
+                data: formatReportDate(report.cration_date || report.creation_date || '')
+            }));
 
             setDadosTabela(mappedData);
         } catch (error) {
-            console.error('Erro ao buscar denúncias:', error);
+            toast.error('Erro ao buscar denúncias');
             setDadosTabela([]);
         } finally {
             setLoading(false);

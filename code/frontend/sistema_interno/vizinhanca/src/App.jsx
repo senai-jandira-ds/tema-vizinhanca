@@ -14,7 +14,8 @@ import Login from "./pages/login";
 import Sign from "./pages/cadastro";
 
 import AppLayout from "./pages/app/AppLayout";
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Dashboard from "./pages/app/Dashboard";
 import Activity from "./pages/app/Activity";
 import Users from "./pages/app/Users";
@@ -58,6 +59,12 @@ function AnimatedRoutes() {
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        theme="colored"
+      />
       <AnimatedRoutes />
     </BrowserRouter>
   );

@@ -7,6 +7,7 @@ import {
   updateCategory,
   deleteCategory
 } from "../../services/categoryService";
+import { toast } from 'react-toastify';
 
 import styles from "./Categories.module.css";
 
@@ -25,9 +26,6 @@ function Categories() {
       const tableData = await getCategories();
       const categoriesType =
         await getCategoryTypes();
-
-      console.log(tableData);
-      console.log(categoriesType);
 
       if (
         !Array.isArray(
@@ -78,31 +76,17 @@ function Categories() {
     dados
   ) => {
     try {
-      console.log(
-        "Dados enviados:",
-        dados
-      );
-
       if (id) {
         await updateCategory(id, dados);
-
-        console.log(
-          "Categoria atualizada com sucesso"
-        );
+        toast.success("Categoria atualizada com sucesso!");
       } else {
         await createCategory(dados);
-
-        console.log(
-          "Categoria criada com sucesso"
-        );
+        toast.success("Categoria criada com sucesso!");
       }
 
       await fetchCategories();
     } catch (error) {
-      console.error(
-        "Erro ao salvar categoria:",
-        error
-      );
+      toast.error(error.response?.data?.message || "Erro ao salvar categoria");
     }
   };
 
@@ -111,17 +95,10 @@ function Categories() {
   ) => {
     try {
       await deleteCategory(id);
-
-      console.log(
-        "Categoria deletada com sucesso"
-      );
-
+      toast.success("Categoria deletada com sucesso!");
       await fetchCategories();
     } catch (error) {
-      console.error(
-        "Erro ao deletar categoria:",
-        error
-      );
+      toast.error(error.response?.data?.message || "Erro ao deletar categoria");
     }
   };
 

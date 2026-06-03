@@ -31,7 +31,7 @@ export default function ActivityListPdf({ data }) {
     {
       key: 'descricao',
       label: 'Descrição',
-      width: '34%',
+      width: '40%',
     },
     {
       key: 'data',

@@ -26,7 +26,7 @@ export default function ServicesPdf({ data }) {
     {
       key: 'descricao',
       label: 'Descrição',
-      width: '35%',
+      width: '45%',
     },
     {
       key: 'solicitante',

@@ -1,6 +1,7 @@
 import styles from "./style.module.css";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { toast } from 'react-toastify';
 import { motion } from "framer-motion";
 import logo from "../../assets/icons/logo.png";
 import condominio from "../../assets/icons/condominio.png";
@@ -23,7 +24,7 @@ function LoginScreen() {
 
         try {
             const response = await loginCondominium(email, password);
-
+            toast.success("Login realizado com sucesso!");
             if (response.response?.token) {
                 saveToken(response.response.token);
                 // Salva os dados do condomínio (id, nome, etc)
@@ -32,13 +33,14 @@ function LoginScreen() {
                 }
                 navigate('/app');
             } else {
-                setError('Email ou senha incorretos');
+                toast.error("Erro de conexão com servidor, tente novamente mais tarde.");
             }
         } catch (err) {
             if (err.code === 'ERR_NETWORK') {
-                setError('Erro de conexão. Verifique se o servidor está rodando.');
+                console.log(err)
+                toast.error("Erro de conexão com servidor, tente novamente mais tarde.");
             } else {
-                setError('Erro ao fazer login. Verifique suas credenciais.');
+                toast.error("Erro ao fazer login. Verifique suas credenciais.");
             }
         } finally {
             setLoading(false);
@@ -71,31 +73,39 @@ function LoginScreen() {
                     exit={{ opacity: 0, x: -60 }}
                     transition={{ duration: 0.35 }}
                 >
-                        
+
                     <img src={logo} alt="" />
 
-                    <Input
-                        placeholder="Login"
-                        type="text"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <Input
-                        placeholder="Senha"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
+                    {loading ? (
+                        <div className={styles.loading}>
+                            <div className={styles.spinner}></div>
+                        </div>
+                    ) : (
+                        <>
+                            <Input
+                                placeholder="Login"
+                                type="text"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <Input
+                                placeholder="Senha"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
 
-                    {error && <p className={styles.error}>{error}</p>}
+                            {error && <p className={styles.error}>{error}</p>}
 
-                    <button className={styles.loginButton} onClick={handleLogin} disabled={loading}>
-                        {loading ? 'Entrando' : 'Entrar'}
-                    </button>
+                            <button className={styles.loginButton} onClick={handleLogin} disabled={loading}>
+                                Entrar
+                            </button>
 
-                    <p className={styles.loginText}>
-                        Ainda não tem uma conta? <Link to="cadastro">Crie uma aqui!</Link>
-                    </p>
+                            <p className={styles.loginText}>
+                                Ainda não tem uma conta? <Link to="cadastro">Crie uma aqui!</Link>
+                            </p>
+                        </>
+                    )}
                 </motion.div>
             </div>
 
@@ -104,7 +114,7 @@ function LoginScreen() {
             </div>
         </div>
 
-        
+
     )
 }
 

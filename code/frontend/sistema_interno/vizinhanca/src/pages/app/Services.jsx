@@ -3,6 +3,7 @@ import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
 import { getActivities, formatActivityDate, formatActivityStatus } from "../../services/activityService";
+import { toast } from 'react-toastify';
 import styles from "./Services.module.css";
 
 function Services() {
@@ -17,7 +18,6 @@ function Services() {
         try {
             setLoading(true);
             const data = await getActivities();
-            console.log('Dados mapeados:', data);
 
             const services = data.response?.activities
 
@@ -26,6 +26,8 @@ function Services() {
                 return;
             }
 
+            console.log(services)
+
             const mappedData = services
                 .map((activity) => ({
                     id: activity.resident_id?.toString() || '',
@@ -33,13 +35,12 @@ function Services() {
                     descricao: activity.description || '',
                     categoria: 'Serviço',
                     status: formatActivityStatus(activity.status),
-                    data: formatActivityDate(activity.created_at)
+                    data: formatActivityDate(activity.creation_date)
                 }));
 
-           //console.log('Dados mapeados:', mappedData);
             setDadosTabela(mappedData);
         } catch (error) {
-            console.error('Erro ao buscar serviços:', error);
+            toast.error('Erro ao buscar serviços');
             setDadosTabela([]);
         } finally {
             setLoading(false);
@@ -56,10 +57,9 @@ function Services() {
             label: 'Status',
             width: 150,
             getCellClass: (status) => {
-                if (status === 'ABERTO' || status === 'DISPONÍVEL') return styles['status-verde'];
-                if (status === 'CONCLUÍDO' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'PENDENTE' || status === 'Em andamento') return styles['status-amarelo'];
-                if (status === 'Cancelado') return styles['status-vermelho'];
+                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
+                if (status === 'Concluido' || status === 'Finalizado') return styles['status-azul'];
+                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento')return styles['status-amarelo'];
                 return '';
             }
         },
@@ -67,7 +67,7 @@ function Services() {
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
-        console.log('Clicou na célula:', { valor, colunaId, linha });
+        // Clique na célula para abrir modal
     };
 
     if (loading) {

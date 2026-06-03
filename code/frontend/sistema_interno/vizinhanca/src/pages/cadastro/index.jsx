@@ -3,6 +3,7 @@ import styles from "./style.module.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from 'react-toastify';
 
 import { createCondominium } from "../../services/condominiumService";
 
@@ -79,18 +80,13 @@ function SignScreen() {
                 }
             };
 
-            console.log(data);
-
             const response = await createCondominium(data);
 
-            console.log(response);
-
-            alert("Condomínio cadastrado com sucesso!");
+            toast.success("Condomínio cadastrado com sucesso!");
 
         } catch (error) {
-            console.error(error.response?.data || error);
 
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Erro ao cadastrar condomínio"
             );

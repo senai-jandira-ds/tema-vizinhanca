@@ -320,7 +320,8 @@ export default function Table({
         )}
 
         {(modalType === 'usuario' ||
-          modalType === 'categoria') &&
+          modalType === 'categoria' ||
+          modalType === 'bloco') &&
           onCadastrarNovo && (
 
             <button
@@ -334,6 +335,8 @@ export default function Table({
 
               {modalType === 'categoria'
                 ? 'Cadastrar Categoria'
+                : modalType === 'bloco'
+                ? 'Cadastrar Bloco'
                 : 'Cadastrar Morador'}
 
             </button>

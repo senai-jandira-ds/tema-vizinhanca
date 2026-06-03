@@ -50,6 +50,18 @@
     animation: spin 1s linear infinite;
 }
 
+.status-verde {
+    color: #1fc01f;
+}
+
+.status-azul {
+    color: #3b18ff;
+}
+
+.status-amarelo{
+    color: rgb(196, 194, 123);
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);

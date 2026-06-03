@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Table from "./components/Table";
-import { getBlocks } from "../../services/blockService";
+import { getBlocks, createBlock, updateBlock, deleteBlock } from "../../services/blockService";
+import { toast } from 'react-toastify';
 import styles from "./Categories.module.css";
 
 function Categories() {
@@ -53,6 +54,31 @@ function Categories() {
         console.log(valor, colunaId, linha);
     };
 
+    const handleSubmitBloco = async (id, dados) => {
+        try {
+            if (id) {
+                await updateBlock(id, dados);
+                toast.success("Bloco atualizado com sucesso!");
+            } else {
+                await createBlock(dados);
+                toast.success("Bloco cadastrado com sucesso!");
+            }
+            fetchBlocks();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao salvar bloco");
+        }
+    };
+
+    const handleDeleteBloco = async (id) => {
+        try {
+            await deleteBlock(id);
+            toast.success("Bloco excluído com sucesso!");
+            fetchBlocks();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Erro ao excluir bloco");
+        }
+    };
+
     if (loading) {
         return (
             <div className={styles.loading}>
@@ -76,6 +102,8 @@ function Categories() {
                     pageSize={7}
                     modalType="bloco"
                     onCadastrarNovo={() => {}}
+                    onSubmit={handleSubmitBloco}
+                    onDelete={handleDeleteBloco}
                 />
             </div>
         </div>
