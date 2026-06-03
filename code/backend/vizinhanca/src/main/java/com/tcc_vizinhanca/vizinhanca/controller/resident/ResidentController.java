@@ -161,9 +161,12 @@ public class ResidentController {
 
         Condominium condominium = condominiumService
                 .getSelectCondominiumById(residentCreateRequest.getIdCondominium());
+
         Block block = blockService.getSelectBlockById(residentCreateRequest.getIdBlock());
+
         Resident resident = ResidentMapper.toEntity(residentCreateRequest, condominium, block);
         Resident newResident = residentService.setInsertResident(resident);
+
         ResidentDetailResponse response = new ResidentDetailResponse(newResident);
 
         return ResponseEntity.status(HttpStatus.CREATED)

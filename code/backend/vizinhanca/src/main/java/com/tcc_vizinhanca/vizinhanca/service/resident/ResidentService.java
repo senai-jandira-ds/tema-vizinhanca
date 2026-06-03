@@ -22,6 +22,7 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import com.tcc_vizinhanca.vizinhanca.specification.resident.ResidentSpecification;
 import lombok.NonNull;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -138,6 +139,7 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
+    @Transactional
     public Resident setUpdateResident(
             @NonNull ResidentUpdateRequest dto,
             MultipartFile photo,
@@ -165,7 +167,13 @@ public class ResidentService {
 
         ResidentMapper.updateEntity(dto, existingResident, block);
 
-        return residentRepository.save(existingResident);
+        Resident saved = residentRepository.save(existingResident);
+
+        Hibernate.initialize(saved.getPublications());
+        Hibernate.initialize(saved.getServices());
+        Hibernate.initialize(saved.getCondominium());
+
+        return saved;
     }
 
     // DELETE RESIDENT
