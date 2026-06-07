@@ -35,6 +35,7 @@ export default function Table({
 
   const [modalOpen, setModalOpen] = useState(false);
   const [cellData, setCellData] = useState(null);
+  const [dynamicModalType, setDynamicModalType] = useState('');
 
   const [sorting, setSorting] = useState([]);
 
@@ -49,7 +50,7 @@ export default function Table({
     : internalPagination;
 
   const setPagination = useBackendPagination
-    ? () => {} // Não fazer nada, controle é do backend
+    ? () => { } // Não fazer nada, controle é do backend
     : setInternalPagination;
 
   const [columnWidths, setColumnWidths] = useState({});
@@ -102,11 +103,13 @@ export default function Table({
     data,
     columns: tableColumns,
 
+    manualPagination: useBackendPagination,
+
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
 
     getPaginationRowModel:
-      showPagination
+      showPagination && !useBackendPagination
         ? getPaginationRowModel()
         : undefined,
 
@@ -159,6 +162,12 @@ export default function Table({
 
   const handleCliqueCelula = (valor, colunaId, linha) => {
 
+    // Determinar o modalType (se modalType for função, chamar com a linha)
+    let resolvedModalType = modalType;
+    if (typeof modalType === 'function') {
+      resolvedModalType = modalType(linha);
+    }
+
     if (onCellClick) {
       onCellClick(valor, colunaId, linha);
     }
@@ -169,6 +178,7 @@ export default function Table({
       linha
     });
 
+    setDynamicModalType(resolvedModalType);
     setModalOpen(true);
   };
 
@@ -189,7 +199,7 @@ export default function Table({
 
   // Usar paginação do backend ou front
   const itemsPerPage = useBackendPagination
-    ? (totalPages || 1)
+    ? totalPages || 1
     : table.getPageCount();
 
   const displayCurrentPage = useBackendPagination
@@ -360,8 +370,8 @@ export default function Table({
               {modalType === 'categoria'
                 ? 'Cadastrar Categoria'
                 : modalType === 'bloco'
-                ? 'Cadastrar Bloco'
-                : 'Cadastrar Morador'}
+                  ? 'Cadastrar Bloco'
+                  : 'Cadastrar Morador'}
 
             </button>
           )}
@@ -434,7 +444,7 @@ export default function Table({
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         data={cellData}
-        type={modalType}
+        type={dynamicModalType}
         onSubmit={onSubmit}
         onDelete={onDelete}
       />

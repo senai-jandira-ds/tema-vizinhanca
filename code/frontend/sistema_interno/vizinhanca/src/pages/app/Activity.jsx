@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType, updateActivity, deleteActivity } from "../../services/activityService";
+import { getActivities, formatActivityDate, formatActivityStatus, formatActivityType } from "../../services/activityService";
+import { updateService, deleteService } from "../../services/serviceService";
+import { updateObject, deleteObject } from "../../services/objectService";
+import { updateReport, deleteReport } from "../../services/reportService";
 import { toast } from 'react-toastify';
 import styles from "./Activity.module.css";
 
@@ -10,22 +13,15 @@ function Activity() {
     const [loading, setLoading] = useState(true);
     const [dadosTabela, setDadosTabela] = useState([]);
     const [termoBusca, setTermoBusca] = useState('');
-    const [dadosFiltrados, setDadosFiltrados] = useState([]);
     const [filtrosSelecionados, setFiltrosSelecionados] = useState({});
-
 
     useEffect(() => {
         fetchActivities();
     }, []);
 
-    useEffect(() => {
-        aplicarFiltrosEBusca();
-    }, [termoBusca, dadosTabela, filtrosSelecionados]);
-
-    const aplicarFiltrosEBusca = () => {
+    const dadosFiltrados = useMemo(() => {
         let filtrados = [...dadosTabela];
 
-        // Aplicar filtros selecionados
         Object.entries(filtrosSelecionados).forEach(([secao, opcoes]) => {
             if (opcoes && opcoes.length > 0) {
                 if (secao === 'Status') {
@@ -36,7 +32,6 @@ function Activity() {
             }
         });
 
-        // Aplicar busca por texto
         if (termoBusca.trim()) {
             const termoLower = termoBusca.toLowerCase();
             filtrados = filtrados.filter(dado =>
@@ -45,26 +40,43 @@ function Activity() {
             );
         }
 
-        setDadosFiltrados(filtrados);
-    };
+        return filtrados;
+    }, [dadosTabela, termoBusca, filtrosSelecionados]);
 
     const fetchActivities = async () => {
         try {
             setLoading(true);
             const data = await getActivities();
-
-            if (!Array.isArray(data.response.activities)) {
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            console.log(data)
+            if (!data?.response?.activities || !Array.isArray(data.response.activities)) {
                 setDadosTabela([]);
                 return;
             }
 
             const mappedData = data.response.activities.map((activity, index) => ({
-                id: activity.resident_id?.toString() || (index + 1).toString(),
+                displayId: activity.resident_id?.toString() || (index + 1).toString(),
+                
+                // Mapeamento EXATO e seguro. Não usamos mais o displayId como fallback aqui.
+                // Se a API não mandar um desses campos, o valor será null.
+                idRealDaEntidade: activity.id || activity.entity_id || activity.service_id || activity.object_id || activity.report_id || null,
+
+                tipoOriginal: activity.type, 
                 nome: activity.resident_name || '',
                 descricao: activity.description || '',
                 categoria: formatActivityType(activity.type),
                 status: formatActivityStatus(activity.status),
-                data: formatActivityDate(activity.creation_date)
+                data: formatActivityDate(activity.creation_date),
+                rawStatus: activity.status
             }));
 
             setDadosTabela(mappedData);
@@ -76,8 +88,77 @@ function Activity() {
         }
     };
 
+    const handleUpdateActivity = async (param1, param2) => {
+        const linha = param2?.linha || param1?.linha || param1;
+        
+        if (!linha || !linha.tipoOriginal) {
+            toast.error("Erro: Dados da linha não encontrados.");
+            return;
+        }
+
+        const tipo = linha.tipoOriginal?.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const idDaEntidade = linha.idRealDaEntidade;
+
+        if (!idDaEntidade) {
+            toast.error("Erro Crítico: A API não forneceu o ID desta atividade. Solicite ao backend a inclusão do campo 'id' no retorno da listagem.");
+            return;
+        }
+
+        try {
+            if (tipo === 'servico') {
+                await updateService(idDaEntidade, { status: 'Concluido' });
+            } else if (tipo === 'objeto') {
+                await updateObject(idDaEntidade, { status: 'FINALIZADO' });
+            } else if (tipo === 'report') {
+                await updateReport(idDaEntidade, { status: 'FINISHED' });
+            } else {
+                toast.warning("Tipo de atividade não suportado.");
+                return;
+            }
+
+            toast.success("Atualizado com sucesso!");
+            fetchActivities(); 
+        } catch (error) {
+            console.error("Erro no update:", error);
+            toast.error("Erro ao atualizar atividade no servidor.");
+        }
+    };
+
+    const handleDeleteActivity = async (dadoModal) => {
+        const linha = dadoModal;
+
+        if (!linha || !linha.tipoOriginal) {
+            toast.error("Erro ao identificar a atividade para exclusão.");
+            return;
+        }
+
+        const tipo = linha.tipoOriginal?.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const idDaEntidade = linha.idRealDaEntidade;
+
+        if (!idDaEntidade) {
+            toast.error("Erro Crítico: Impossível excluir. A API não forneceu o ID desta atividade. Solicite ao backend a inclusão do campo 'id' no retorno da listagem.");
+            return;
+        }
+
+        try {
+            if (tipo === 'servico') {
+                await deleteService(idDaEntidade);
+            } else if (tipo === 'objeto') {
+                await deleteObject(idDaEntidade);
+            } else if (tipo === 'report') {
+                await deleteReport(idDaEntidade);
+            }
+
+            toast.success("Atividade excluída com sucesso!");
+            fetchActivities(); 
+        } catch (error) {
+            console.error("Erro no delete:", error);
+            toast.error("Erro ao tentar excluir a atividade.");
+        }
+    };
+
     const colunasTabela = [
-        { id: 'id', label: 'Nº', width: 100 },
+        { id: 'displayId', label: 'Nº', width: 100 },
         { id: 'nome', label: 'Nome', width: 220 },
         { id: 'descricao', label: 'Descrição', width: 350 },
         { id: 'categoria', label: 'Categoria', width: 180 },
@@ -86,9 +167,10 @@ function Activity() {
             label: 'Status',
             width: 160,
             getCellClass: (status) => {
-                if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluido' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento')return styles['status-amarelo'];
+                const statusLower = status?.toLowerCase();
+                if (['aberto', 'disponível', 'disponivel'].includes(statusLower)) return styles['status-verde'];
+                if (['concluido', 'concluído', 'finalizado'].includes(statusLower)) return styles['status-azul'];
+                if (['pendente', 'indisponível', 'indisponivel', 'em andamento'].includes(statusLower)) return styles['status-amarelo'];
                 return '';
             }
         },
@@ -96,27 +178,24 @@ function Activity() {
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
-        // Clique na célula para abrir modal
-    };
+        const statusAtual = linha.status?.toLowerCase();
+        const jaFinalizado = ['finalizado', 'concluido', 'concluído'].includes(statusAtual);
 
-    const handleSubmitActivity = async (id, dados) => {
-        try {
-            await updateActivity(id, dados);
-            toast.success("Atividade finalizada com sucesso!");
-            fetchActivities();
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Erro ao finalizar atividade");
+        if (jaFinalizado) {
+            toast.info("Apenas visualização. Esta atividade já foi concluída.");
         }
     };
 
-    const handleDeleteActivity = async (id) => {
-        try {
-            await deleteActivity(id);
-            toast.success("Atividade excluída com sucesso!");
-            fetchActivities();
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Erro ao excluir atividade");
-        }
+    const getModalType = (linha) => {
+        if (!linha) return 'usuario';
+
+        const tipo = linha.tipoOriginal?.toLowerCase();
+
+        if (tipo === 'serviço' || tipo === 'servico' || tipo === 'objeto') return 'servico';
+        if (tipo === 'report' || tipo === 'denúncia' || tipo === 'denuncia') return 'denuncia';
+        if (tipo === 'publication' || tipo === 'publicação' || tipo === 'publicacao') return 'publicacao';
+
+        return 'usuario';
     };
 
     if (loading) {
@@ -143,21 +222,22 @@ function Activity() {
                         onFilterChange={setFiltrosSelecionados}
                     />
                     <Searchbar
-                    placeholder="Pesquisar atividade por nome ou status"
-                    type="text"
-                    value={termoBusca}
-                    onChange={(e) => setTermoBusca(e.target.value)}
-                />
+                        placeholder="Pesquisar atividade por nome ou status"
+                        type="text"
+                        value={termoBusca}
+                        onChange={(e) => setTermoBusca(e.target.value)}
+                    />
                 </div>
                 <Table
                     columns={colunasTabela}
                     data={dadosFiltrados}
                     onCellClick={handleCellClick}
-                    showPagination={true}
-                    modalType="servico"
-                    exportType="atividade-geral"
-                    onSubmit={handleSubmitActivity}
+                    onSubmit={handleUpdateActivity}
                     onDelete={handleDeleteActivity}
+                    showPagination={true}
+                    pageSize={8}
+                    modalType={getModalType}
+                    exportType="atividade-geral"
                 />
             </main>
         </>

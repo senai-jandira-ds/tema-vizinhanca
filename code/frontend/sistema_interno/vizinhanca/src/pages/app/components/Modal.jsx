@@ -95,9 +95,7 @@ function UsuarioModal({
   onSubmit,
   onDelete
 }) {
-  console.log('data do usuario')
 
-  console.log(data)
   const isEdicao =
     data?.linha !== null &&
     data?.linha !== undefined;
@@ -369,8 +367,6 @@ function CategoriaModal({
       ),
     };
 
-
-    console.log(dadosParaEnviar)
     if (isEdicao) {
       onSubmit &&
         onSubmit(formData.id, dadosParaEnviar);
@@ -574,6 +570,7 @@ function ServicoModal({ data, onClose, onSubmit, onDelete }) {
 }
 
 function DenunciaModal({ data, onClose, onSubmit, onDelete }) {
+  console.log(data)
   return (
     <SplitLayoutModal
       data={data}
@@ -593,25 +590,39 @@ function SplitLayoutModal({
   onDelete
 }) {
   const imagemRelacionada =
+    data?.linha?.photo ||
     data?.linha?.imagem ||
     "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
 
   const handleFinalizar = () => {
-    if (!data?.linha?.id) return;
+    if (!data?.linha) return;
 
-    // Atualizar status para Finalizado
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Atualizar status para Finalizado/Concluído
     const dadosAtualizacao = {
-      status: "FINISHED"
+      status: isServico ? "CONCLUIDO" : "FINISHED"
     };
 
-    onSubmit && onSubmit(data.linha.id, dadosAtualizacao);
+    onSubmit && onSubmit(entityId, { ...dadosAtualizacao, linha: data.linha });
     onClose();
   };
 
   const handleExcluir = () => {
-    if (!data?.linha?.id) return;
+    if (!data?.linha) return;
 
-    onDelete && onDelete(data.linha.id);
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Para deletar, passar a linha completa para identificar o tipo
+    if (typeof onDelete === 'function') {
+      if (data.linha) {
+        onDelete(data.linha);
+      } else {
+        onDelete(entityId);
+      }
+    }
     onClose();
   };
 
