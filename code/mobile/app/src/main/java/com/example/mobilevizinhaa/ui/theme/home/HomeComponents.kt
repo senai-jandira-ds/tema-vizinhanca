@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -41,6 +42,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.*
+
+// Imports de dados e utilitários
+import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 // --- 1. HOME HEADER ---
 @Composable
@@ -267,7 +274,7 @@ fun PostGridSection(
     }
 }
 
-// --- 4. NAVBAR ATUALIZADA E CORRIGIDA PARA ENVIAR O TOKEN AO MURAL ---
+// --- 4. NAVBAR PERSONALIZADA (PASSANDO ARGUMENTOS COM PROTEÇÃO CONTRA CRASH) ---
 @Composable
 fun CustomBottomNavBar(navController: NavController? = null) {
     val navBackStackEntry = navController?.currentBackStackEntryAsState()
@@ -277,10 +284,29 @@ fun CustomBottomNavBar(navController: NavController? = null) {
     val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
     val tokenString = sharedPreferences.getString("auth_token", "") ?: ""
-    val idUsuarioInt = sharedPreferences.getInt("auth_user_id", 0)
+
+    val jsonUsuario = sharedPreferences.getString("saved_user", null)
+    val idUsuarioInt = if (!jsonUsuario.isNullOrBlank()) {
+        try {
+            Gson().fromJson(jsonUsuario, ResidentResponse::class.java).id
+        } catch (e: Exception) {
+            0
+        }
+    } else {
+        0
+    }
+
+    // Codifica com segurança o Token para que caracteres como "." ou "/" não quebrem as URLs internas do Android
+    val tokenCodificadoSeguro = try {
+        URLEncoder.encode(tokenString, StandardCharsets.UTF_8.toString())
+    } catch (e: Exception) {
+        tokenString
+    }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().height(80.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
         color = Color.White,
         shadowElevation = 25.dp
     ) {
@@ -299,7 +325,6 @@ fun CustomBottomNavBar(navController: NavController? = null) {
             )
 
             items.forEach { item ->
-                // Verifica se a rota atual condiz com o botão selecionado
                 val isSelected = currentRoute?.startsWith(item.second) == true
 
                 BottomNavItem(
@@ -307,12 +332,15 @@ fun CustomBottomNavBar(navController: NavController? = null) {
                     isSelected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            // Mapeia dinamicamente as rotas que exigem os parâmetros do Token do usuário logado
+                            // 🎯 ESTRUTURA EXATAMENTE COMO VOCÊ PEDIU, MAS USANDO O TOKEN HIGIENIZADO CONTRA CRASH
                             val rotaDestino = when (item.second) {
-                                "pedido" -> "pedido/$tokenString/$idUsuarioInt"
-                                "mural" -> "mural/$tokenString" // 👈 CORRIGIDO: Agora passa o token real para a rota do Mural abrir e funcionar!
+                                "pedido" -> "pedido/$tokenCodificadoSeguro/$idUsuarioInt"
+                                "mural" -> "mural/$tokenCodificadoSeguro"
+                                "mensagens" -> "mensagens/$tokenCodificadoSeguro/$idUsuarioInt"
                                 else -> item.second
                             }
+
+                            Log.d("NAV_BAR", "Mudando para a rota: $rotaDestino | ID do morador: $idUsuarioInt")
 
                             navController?.navigate(rotaDestino) {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -327,10 +355,14 @@ fun CustomBottomNavBar(navController: NavController? = null) {
     }
 }
 
+// --- 5. ITEM DA NAVBAR ---
 @Composable
 fun BottomNavItem(painter: Painter, isSelected: Boolean = false, onClick: () -> Unit) {
     Box(
-        modifier = Modifier.size(50.dp).clip(CircleShape).clickable { onClick() },
+        modifier = Modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {

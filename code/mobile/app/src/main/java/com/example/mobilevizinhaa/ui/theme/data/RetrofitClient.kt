@@ -86,6 +86,7 @@ object RetrofitClient {
      * garantindo que o JSON vá 100% preenchido para a API do Leonardo Scotti.
      */
     private val okHttpClientParaServico = OkHttpClient.Builder()
+        .addInterceptor(contentTypeInterceptor) // 🎯 Adicionado o interceptor corretivo universal aqui também para blindar a rota multipart de Objetos
         .addInterceptor(loggingInterceptor) // Mantém o log ativo para você acompanhar
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)

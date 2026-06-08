@@ -1,12 +1,14 @@
 package com.example.mobilevizinhaa.ui.theme.notificacoes
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,23 +16,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// Importações importantes que faltavam ou são necessárias
+import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.ui.theme.login.bounceClick
 import com.example.mobilevizinhaa.ui.theme.menssage.ChatConversation
 
 @Composable
-fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
+fun MessageItem(
+    chat: ChatConversation,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable { onClick() }
-            .bounceClick(),
+            .bounceClick() // Mantém o efeito elástico customizado do seu app ao pressionar
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -41,33 +45,54 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = chat.profileImage),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(55.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+
+            // 🎯 Tratamento dinâmico da imagem de perfil (URL do Servidor vs Sem Foto)
+            if (!chat.profileImageUrl.isNullOrBlank() && chat.profileImageUrl != "string") {
+                AsyncImage(
+                    model = chat.profileImageUrl,
+                    contentDescription = "Foto de perfil de ${chat.name}",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Caso o usuário não tenha foto válida no banco de dados, exibe o ícone padrão estilizado
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Usuário sem foto",
+                    modifier = Modifier
+                        .size(55.dp)
+                        .clip(CircleShape),
+                    tint = Color(0xFFCCCCCC)
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween, // Agora o Arrangement funciona
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = chat.name,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
-                        color = Color(0xFF333333)
+                        color = Color(0xFF333333),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f) // Evita que nomes gigantescos quebrem o layout do horário
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     Text(
                         text = chat.time,
                         color = Color.Gray,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
 
@@ -75,7 +100,8 @@ fun MessageItem(chat: ChatConversation, onClick: () -> Unit) {
 
                 Text(
                     text = chat.lastMessage,
-                    color = Color.Gray,
+                    // Deixa o texto padrão cinza claro se for apenas o aviso para abrir o chat
+                    color = if (chat.lastMessage == "Clique para abrir a conversa") Color(0xFFBBBBBB) else Color(0xFF666666),
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

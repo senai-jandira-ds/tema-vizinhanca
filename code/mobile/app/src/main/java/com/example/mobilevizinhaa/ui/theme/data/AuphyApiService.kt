@@ -3,6 +3,8 @@ package com.example.mobilevizinhaa.ui.theme.data
 import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -200,12 +202,12 @@ data class ServicePageContainer(
     @SerializedName("total_pages") val totalPages: Int,
     @SerializedName("current_page") val currentPage: Int,
     @SerializedName("page_size") val pageSize: Int,
-    @SerializedName("content") val content: List<ServiceDetailBackend> // <- O array mapeado com sucesso do Log!
+    @SerializedName("content") val content: List<ServiceDetailBackend>
 )
 
 data class ServiceDetailBackend(
     @SerializedName("id") val id: Int,
-    @SerializedName("photo") val photoBase64: String?,
+    @SerializedName("photo", alternate = ["photoBase64"]) val photoBase64: String?,
     @SerializedName("title") val title: String,
     @SerializedName("estimated_time") val estimatedTime: Int,
     @SerializedName("urgency") val urgency: String,
@@ -250,16 +252,25 @@ data class ObjectPagedResponse(
 )
 
 data class ObjectPageContainer(
-    @SerializedName("total_elements") val totalElements: Int,
-    @SerializedName("total_pages") val totalPages: Int,
-    @SerializedName("current_page") val currentPage: Int,
-    @SerializedName("page_size") val pageSize: Int,
-    @SerializedName("content") val content: List<ObjectDetailBackend>
+    @SerializedName("total_elements") val totalElements: Int? = 1,
+    @SerializedName("total_pages") val totalPages: Int? = 1,
+    @SerializedName("current_page") val currentPage: Int? = 1,
+    @SerializedName("page_size") val pageSize: Int? = 20,
+    @SerializedName("content", alternate = ["objects", "services"]) val content: List<ObjectDetailBackend>? = emptyList(),
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("photo") val photo: String? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("deadline") val deadline: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("creation_date") val creationDate: String? = null,
+    @SerializedName("status") val status: String? = null,
+    @SerializedName("resident") val resident: ResidentDetail? = null,
+    @SerializedName("category") val category: CategoryDetail? = null
 )
 
 data class ObjectDetailBackend(
     @SerializedName("id") val id: Int,
-    @SerializedName("photo") val photo: String?,
+    @SerializedName("photo", alternate = ["photoBase64"]) val photo: String?,
     @SerializedName("title") val title: String,
     @SerializedName("deadline") val deadline: String?,
     @SerializedName("description") val description: String,
@@ -281,7 +292,8 @@ data class ResidentDetail(
     @SerializedName("email") val email: String,
     @SerializedName("phone") val phone: String?,
     @SerializedName("score") val score: Int?,
-    @SerializedName("creationDate", alternate = ["creation_date"]) val creationDate: String?,
+    @SerializedName("creation_date", alternate = ["creationDate"]) val creationDate: String?,
+    @SerializedName("is_active") val isActive: Boolean? = true,
     @SerializedName("block") val block: BlockDetail?
 )
 
@@ -318,14 +330,93 @@ data class CategoryResponseData(
 )
 
 // ==========================================
-// DTO ADICIONADO PARA ENVIAR O STATUS NO CORPO (JSON)
+// DTOs ADICIONADOS PARA ATUALIZAÇÃO DE STATUS (JSON)
 // ==========================================
 data class ServiceUpdateRequest(
     @SerializedName("status") val status: String
 )
 
+data class ObjectUpdateRequest(
+    @SerializedName("status") val status: String
+)
+
 // ==========================================
-// 5. INTERFACE DA API (ROTAS DE RETROFIT) - CORRIGIDA!
+// 6. NOVO: MODELOS INTEGRADOS DO CHAT E CONVERSAS
+// ==========================================
+
+data class ResidentPagedResponse(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val responseData: ResidentPageContainer
+)
+
+data class ResidentPageContainer(
+    @SerializedName("total_elements") val totalElements: Int? = 0,
+    @SerializedName("total_pages") val totalPages: Int? = 0,
+    @SerializedName("current_page") val currentPage: Int? = 0,
+    @SerializedName("page_size") val pageSize: Int? = 20,
+    @SerializedName("content") val content: List<ResidentDetail>? = emptyList()
+)
+
+data class ApiResponseListConversation(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val response: List<ConversationSummaryResponse>?
+)
+
+data class ApiResponseConversationDetail(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val response: ConversationDetailResponse?
+)
+
+data class ApiResponseListMessage(
+    @SerializedName("status") val status: Boolean,
+    @SerializedName("status_code") val statusCode: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("response") val response: List<MessageResponse>?
+)
+
+data class ConversationSummaryResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("createdDate") val createdDate: String?,
+    @SerializedName("participants") val participants: List<ParticipantResponse>?
+)
+
+data class ConversationDetailResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("createdDate") val createdDate: String?,
+    @SerializedName("participants") val participants: List<ParticipantResponse>?,
+    @SerializedName("messages") val messages: List<MessageResponse>?
+)
+
+data class ParticipantResponse(
+    @SerializedName("residentId") val residentId: Long,
+    @SerializedName("residentName") val residentName: String?,
+    @SerializedName("residentPhoto") val residentPhoto: String?
+)
+
+data class MessageResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("text") val text: String?,
+    @SerializedName("createdDate") val createdDate: String?,
+    @SerializedName("status") val status: String?,
+    @SerializedName("conversationId") val conversationId: Long,
+    @SerializedName("residentId") val residentId: Long,
+    @SerializedName("residentName") val residentName: String?,
+    @SerializedName("residentPhoto") val residentPhoto: String?
+)
+
+data class ConversationRequest(
+    @SerializedName("targetResidentId") val targetResidentId: Long
+)
+
+
+// ==========================================
+// 7. INTERFACE DA API (ROTAS DE RETROFIT INTEGRADAS)
 // ==========================================
 interface AuthApiService {
 
@@ -360,8 +451,6 @@ interface AuthApiService {
         @Body request: CreateServiceRequest
     ): Response<CreateServiceResponse>
 
-    // 🎯 AJUSTADO: Ambos os métodos de listagem agora retornam ServicePagedResponse
-    // garantindo que o Gson consiga ler o objeto de paginação retornado pelo Render.
     @GET("api/v1/service")
     suspend fun listarServicos(
         @Header("Authorization") token: String
@@ -410,3 +499,55 @@ interface AuthApiService {
     suspend fun listarObjetosPaginados(
         @Header("Authorization") token: String
     ): Response<ObjectPagedResponse>
+
+    // 🎯 AJUSTADO CIRURGICAMENTE DE ACORDO COM O SWAGGER (Multipart)
+    // O backend espera o status como uma parte textual do formulário (@Part)
+    @Multipart
+    @PUT("api/v1/object/{id}")
+    suspend fun atualizarStatusObjeto(
+        @Header("Authorization") token: String,
+        @Path("id") idObjeto: Int,
+        @Part("status") status: RequestBody
+    ): Response<Unit>
+
+    // 🎯 NOVA ROTA COMPATÍVEL COM O SWAGGER PARA EXCLUSÃO DE OBJETOS
+    @DELETE("api/v1/object/{id}")
+    suspend fun deletarObjeto(
+        @Header("Authorization") token: String,
+        @Path("id") idObjeto: Int
+    ): Response<Unit>
+
+    // ------------------------------------------------------------------------
+    // ROTAS DE CHAT E CONVERSAS (SINCRO COM SWAGGER)
+    // ------------------------------------------------------------------------
+
+    @GET("api/v1/resident")
+    suspend fun obterTodosMoradoresPaginados(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 50
+    ): Response<ResidentPagedResponse>
+
+    @GET("api/v1/conversation")
+    suspend fun listarMinhasConversas(
+        @Header("Authorization") token: String
+    ): Response<ApiResponseListConversation>
+
+    @POST("api/v1/conversation")
+    suspend fun criarConversa(
+        @Header("Authorization") token: String,
+        @Body request: ConversationRequest
+    ): Response<ApiResponseConversationDetail>
+
+    @GET("api/v1/conversation/{id}")
+    suspend fun obterConversaPorId(
+        @Header("Authorization") token: String,
+        @Path("id") idConversa: Long
+    ): Response<ApiResponseConversationDetail>
+
+    @GET("api/v1/conversation/{id}/messages")
+    suspend fun obterMensagensDaConversa(
+        @Header("Authorization") token: String,
+        @Path("id") idConversa: Long
+    ): Response<ApiResponseListMessage>
+}

@@ -2,6 +2,7 @@ package com.example.mobilevizinhaa.ui.theme.listaitens
 
 import android.graphics.BitmapFactory
 import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,63 +17,72 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 
-// Cores padrão mantidas para o Header Gradiente
 val GradientBlueStart = Color(0xFF2196F3)
 val GradientBlueEnd = Color(0xFF42A5F5)
 val BluePrimary = Color(0xFF2196F3)
 
 // ==========================================
-// COMPONENTE DE CARD TOTALMENTE BLINDADO
+// COMPONENTE HÍBRIDO BLINDADO COM LOGS DE MONITORAMENTO
 // ==========================================
 @Composable
 fun PedidoCard(servico: ServiceDetailBackend) {
-    // Decodifica de forma segura a string Base64 vinda do banco usando a função abaixo
-    val bitmapDaFoto = lembrarBase64ComoImageBitmap(servico.photoBase64)
 
-    // Converte o status garantindo proteção total contra nulos corporativos
-    val statusCru = servico.status?.uppercase()?.trim() ?: "PENDENTE"
+    val stringDaFoto = servico.photoBase64?.trim()
 
-    // 🎯 Mantém o mapeamento visual idêntico ao esperado pelas validações da Screen
+    // Identificação Inteligente do Tipo de Conteúdo (URLs da web ou caminhos de servidores)
+    val ehUrlDeInternet = remember(stringDaFoto) {
+        if (stringDaFoto.isNullOrBlank()) false else {
+            stringDaFoto.startsWith("http://", ignoreCase = true) ||
+                    stringDaFoto.startsWith("https://", ignoreCase = true) ||
+                    stringDaFoto.contains("blob.core.windows.net", ignoreCase = true) ||
+                    stringDaFoto.contains(".jpg", ignoreCase = true) ||
+                    stringDaFoto.contains(".png", ignoreCase = true)
+        }
+    }
+
+    // Processa como Base64 apenas se NÃO for uma URL da Web
+    val bitmapDaFoto = if (!ehUrlDeInternet) {
+        lembrarBase64ComoImageBitmap(stringDaFoto)
+    } else {
+        null
+    }
+
+    // Normalização estável e segura de status
+    val statusCru = servico.status?.uppercase()?.trim()
+        ?.replace("Í", "I")?.replace("Á", "A")
+        ?.replace("Ã", "A")?.replace("Ç", "C") ?: "PENDENTE"
+
     val textoStatusExibicao = when (statusCru) {
         "PENDENTE" -> "Pendente"
         "IN_PROGRESS", "EM_ANDAMENTO" -> "Em andamento"
         "COMPLETED", "CONCLUIDO" -> "Concluído"
-        "INDISPONÍVEL" -> "Indisponível"
-        "DISPONÍVEL" -> "Disponível"
+        "INDISPONIVEL" -> "Indisponível"
+        "DISPONIVEL" -> "Disponível"
         "EMPRESTADO" -> "Emprestado"
-        "DOACAO", "DOAÇÃO" -> "Doação"
+        "DOACAO" -> "Doação"
         "ACHADOS" -> "Achados"
         else -> statusCru.lowercase().replaceFirstChar { it.uppercase() }
     }
 
-    // Mapeamento exato de par de cores (Fundo e Texto) baseado nos status do backend
     val (backgroundColor, textColor) = when (statusCru) {
-        "PENDENTE" -> {
-            Color(0xFFFFEAD2) to Color(0xFFFF9800) // Laranja Pastel
-        }
-        "IN_PROGRESS", "EM_ANDAMENTO", "EMPRESTADO" -> {
-            Color(0xFFE3F2FD) to Color(0xFF1E88E5) // Azul suave
-        }
-        "COMPLETED", "CONCLUIDO", "DISPONIVEL", "DOACAO", "DOAÇÃO", "ACHADOS" -> {
-            Color(0xFFE8F5E9) to Color(0xFF4CAF50) // Verde claro
-        }
-        "INDISPONIVEL" -> {
-            Color(0xFFFCE4EC) to Color(0xFFD81B60) // Rosa/Vermelho Pastel suave
-        }
-        else -> {
-            Color(0xFFF5F5F5) to Color(0xFF616161) // Cinza padrão
-        }
+        "PENDENTE" -> { Color(0xFFFFEAD2) to Color(0xFFFF9800) }
+        "IN_PROGRESS", "EM_ANDAMENTO", "EMPRESTADO" -> { Color(0xFFE3F2FD) to Color(0xFF1E88E5) }
+        "COMPLETED", "CONCLUIDO", "DISPONIVEL", "DOACAO", "ACHADOS" -> { Color(0xFFE8F5E9) to Color(0xFF4CAF50) }
+        "INDISPONIVEL" -> { Color(0xFFFCE4EC) to Color(0xFFD81B60) }
+        else -> { Color(0xFFF5F5F5) to Color(0xFF616161) }
     }
 
-    // Tratamento ultra seguro de datas para evitar crashes de String
     val dataCrua = servico.creationDate
     val dataExibicao = if (!dataCrua.isNullOrBlank()) {
         if (dataCrua.length >= 10) dataCrua.substring(0, 10) else dataCrua
@@ -94,18 +104,42 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagem lateral com fallback seguro
-            if (bitmapDaFoto != null) {
+
+            // CONTAINER DE IMAGEM ADAPTATIVO
+            if (ehUrlDeInternet && !stringDaFoto.isNullOrBlank()) {
+                // 1️⃣ Cenário: Link Web / Nuvem (Objeto). Monitorado com Listeners via Logcat.
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(stringDaFoto)
+                        .crossfade(true)
+                        .listener(
+                            onStart = { Log.i("COIL_DEBUG", "Iniciando download da imagem ID ${servico.id}: $stringDaFoto") },
+                            onSuccess = { _, _ -> Log.i("COIL_DEBUG", "Sucesso ao carregar imagem do ID ${servico.id}") },
+                            onError = { _, result ->
+                                Log.e("COIL_DEBUG", "Erro crítico no Coil para o ID ${servico.id}! Causa: ${result.throwable.message}", result.throwable)
+                            }
+                        )
+                        .placeholder(R.drawable.objeto)
+                        .error(R.drawable.objeto)
+                        .build(),
+                    contentDescription = "Foto vinda da URL da API",
+                    modifier = Modifier
+                        .size(85.dp)
+                        .clip(RoundedCornerShape(15.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else if (bitmapDaFoto != null) {
+                // 2️⃣ Cenário: Dados Base64 locais (Serviço).
                 Image(
                     bitmap = bitmapDaFoto,
-                    contentDescription = null,
+                    contentDescription = "Foto vinda de String Base64",
                     modifier = Modifier
                         .size(85.dp)
                         .clip(RoundedCornerShape(15.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Placeholder caso a imagem falhe ou venha nula
+                // 3️⃣ Cenário: Sem imagem cadastrada ou formato corrompido ("string" ou nulo).
                 Box(
                     modifier = Modifier
                         .size(85.dp)
@@ -114,7 +148,7 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.objeto),
-                        contentDescription = "Sem imagem",
+                        contentDescription = "Sem imagem disponível",
                         tint = Color.Gray,
                         modifier = Modifier.size(32.dp)
                     )
@@ -141,7 +175,6 @@ fun PedidoCard(servico: ServiceDetailBackend) {
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Badge de Status com formato pílula dinâmico
                     Surface(
                         color = backgroundColor,
                         shape = CircleShape
@@ -156,7 +189,6 @@ fun PedidoCard(servico: ServiceDetailBackend) {
                     }
                 }
 
-                // Descrição com elipse controlada para nulos
                 Text(
                     text = servico.description ?: "Nenhuma descrição fornecida.",
                     fontSize = 12.sp,
@@ -169,7 +201,6 @@ fun PedidoCard(servico: ServiceDetailBackend) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Rodapé contendo Categoria tratada contra nulos e data formatada
                 val nomeCategoria = servico.category?.name ?: "Geral"
                 Text(
                     text = "$nomeCategoria - $dataExibicao",
@@ -182,14 +213,12 @@ fun PedidoCard(servico: ServiceDetailBackend) {
     }
 }
 
-// ==========================================
-// FUNÇÃO AUXILIAR PARA PROCESSAMENTO DE IMAGEM BASE64
-// ==========================================
 @Composable
 fun lembrarBase64ComoImageBitmap(base64String: String?): ImageBitmap? {
-    if (base64String.isNullOrBlank()) return null
+    if (base64String.isNullOrBlank() || base64String.lowercase().trim() == "string") return null
     return remember(base64String) {
         try {
+            // Remove cabeçalhos de dados comuns em strings base64 vindas da web
             val cleanString = if (base64String.contains(",")) {
                 base64String.substringAfter(",")
             } else {
@@ -199,6 +228,7 @@ fun lembrarBase64ComoImageBitmap(base64String: String?): ImageBitmap? {
             val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
             bitmap?.asImageBitmap()
         } catch (e: Exception) {
+            Log.e("BASE64_DECODE", "Falha ao decodificar imagem Base64: ${e.message}")
             null
         }
     }

@@ -55,7 +55,10 @@ class CriarObjetoViewModel : ViewModel() {
                 val titlePart = MultipartBody.Part.createFormData("title", titulo.trim())
                 val descriptionPart = MultipartBody.Part.createFormData("description", descricao.trim())
                 val deadlinePart = MultipartBody.Part.createFormData("deadline", dataDeadline)
-                val statusPart = MultipartBody.Part.createFormData("status", "DISPONIVEL")
+
+                // 🎯 MODIFICADO APENAS AQUI: Força o objeto novo a nascer estritamente como INDISPONIVEL
+                val statusPart = MultipartBody.Part.createFormData("status", "INDISPONIVEL")
+
                 val categoryIdPart = MultipartBody.Part.createFormData("categoryId", categoryId.toString())
 
                 // 🎯 REVOLUÇÃO DO COMPILADOR:
@@ -94,7 +97,7 @@ class CriarObjetoViewModel : ViewModel() {
                     }
 
                     Log.e("API_OBJETO", "Falha no cadastro do objeto: $erroTexto")
-                    _uiState.value = CriarObjetoUiState(errorMessage = msgErro ?: "Erro desconhecido ao cadastrar objeto.")
+                    _uiState.value = CriarObjetoUiState(errorMessage = msgErro ?: "Erro desconheunknown ao cadastrar objeto.")
                 }
             } catch (e: Exception) {
                 Log.e("API_OBJETO_CRITICAL", "Falha de infraestrutura/conexão física: ${e.message}")

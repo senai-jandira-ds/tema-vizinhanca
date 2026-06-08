@@ -1,5 +1,6 @@
 package com.example.mobilevizinhaa.ui.theme.listaitens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,12 +18,30 @@ import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 fun DetalheItemDialog(
     item: ServiceDetailBackend,
     onDismiss: () -> Unit,
-    onExcluir: (Int) -> Unit,
-    onMudarParaAndamento: (Int) -> Unit
+    onExcluir: (Int, Boolean) -> Unit, // 🎯 Recebe o ID do item e a flag booleana indicando se é um Objeto
+    onMudarParaAndamento: (Int) -> Unit // Dispara a ação do ViewModel para transicionar o status e publicar no Mural
 ) {
+    // 🎯 IDENTIFICA SE É UM OBJETO OU SERVIÇO ATRAVÉS DA TAG INJETADA NO VIEWMODEL
+    val ehObjeto = item.urgency == "OBJETO" ||
+            item.category?.name?.contains("Objeto", ignoreCase = true) == true ||
+            item.title?.contains("Objeto", ignoreCase = true) == true
+
+    // 🎯 DEFINE O TEXTO DO BOTÃO BASEADO NA REGRA DE NEGÓCIO DO SEU TCC
+    val textoBotaoMural = if (ehObjeto) {
+        "Colocar no Mural (Disponível)"
+    } else {
+        "Colocar no Mural (Em Andamento)"
+    }
+
+    // 🎯 VERIFICA SE O ITEM ESTÁ APTO PARA IR AO MURAL (PENDENTE OU INDISPONÍVEL)
+    val statusAtual = item.status?.uppercase()?.trim() ?: "PENDENTE"
+    val podeIrParaOMural = statusAtual == "PENDENTE" ||
+            statusAtual == "INDISPONIVEL" ||
+            statusAtual == "INDISPONÍVEL"
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {}, // Mantido em branco para usar o layout customizado no corpo
+        confirmButton = {},
         dismissButton = {},
         shape = RoundedCornerShape(16.dp),
         containerColor = Color.White,
@@ -67,8 +86,12 @@ fun DetalheItemDialog(
                             color = Color.Black
                         )
                         Text(
-                            text = item.status ?: "PENDENTE",
-                            color = BluePrimary,
+                            text = statusAtual,
+                            color = if (statusAtual == "PENDENTE" || statusAtual == "INDISPONIVEL" || statusAtual == "INDISPONÍVEL") {
+                                Color(0xFFEAB308) // Amarelo/Laranja para estados pendentes
+                            } else {
+                                BluePrimary // Azul para Disponível/Em Andamento
+                            },
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -90,34 +113,35 @@ fun DetalheItemDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // BOTÃO: Colocar no Mural (Dispara a alteração para EM_ANDAMENTO e fecha o diálogo)
-                Button(
-                    onClick = {
-                        onMudarParaAndamento(item.id)
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Colocar no Mural (Andamento)",
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
-                    )
+                // BOTÃO: Colocar no Mural (Apenas se estiver Pendente ou Indisponível)
+                if (podeIrParaOMural) {
+                    Button(
+                        onClick = {
+                            onMudarParaAndamento(item.id)
+                            onDismiss()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = textoBotaoMural,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
-                // BOTÃO: Excluir Item (Dispara o DELETE físico na API e fecha o diálogo)
+                // BOTÃO: Excluir Item (Dispara o DELETE físico na API passando se é objeto ou não)
                 OutlinedButton(
                     onClick = {
-                        onExcluir(item.id)
+                        onExcluir(item.id, ehObjeto) // 🎯 Passa a informação do tipo de item para a exclusão correta no VM
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFEF4444))
-                    ),
+                    // 🎯 CORRIGIDO: Substituído o código deprecated por BorderStroke estável
+                    border = BorderStroke(1.dp, Color(0xFFEF4444)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(

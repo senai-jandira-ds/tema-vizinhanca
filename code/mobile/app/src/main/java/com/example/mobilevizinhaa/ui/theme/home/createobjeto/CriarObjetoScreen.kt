@@ -52,7 +52,7 @@ fun CriarObjetoScreen(
     var diasDisponiveis by remember { mutableStateOf(1) }
     var fotoUri by remember { mutableStateOf<Uri?>(null) }
 
-    // 🎯 CORRIGIDO: Removido 'fotoBase64' e inserido o estado correto de bytes para compilar perfeitamente
+    // 🎯 Mantido o estado correto de bytes para compilar perfeitamente
     var fotoBytes by remember { mutableStateOf<ByteArray?>(null) }
     var bitmapExibicao by remember { mutableStateOf<Bitmap?>(null) }
 
@@ -77,7 +77,7 @@ fun CriarObjetoScreen(
                 val outputStream = ByteArrayOutputStream()
                 bitmapRedimensionado.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
 
-                // 🎯 ATRIBUÍDO: Alimenta os bytes que serão lidos pelo gatilho do botão Enviar
+                // 🎯 Alimenta os bytes que serão lidos pelo gatilho do botão Enviar
                 fotoBytes = outputStream.toByteArray()
                 outputStream.close()
             } catch (e: Exception) {
@@ -89,7 +89,8 @@ fun CriarObjetoScreen(
 
     LaunchedEffect(uiState) {
         if (uiState.isSuccess) {
-            Toast.makeText(context, "Objeto compartilhado com sucesso!", Toast.LENGTH_LONG).show()
+            // 🎯 TEXTO SINCRO: Alinha o feedback com a regra (o objeto é criado como INDISPONÍVEL por padrão)
+            Toast.makeText(context, "Objeto guardado! Disponibilize-o no mural para os seus vizinhos.", Toast.LENGTH_LONG).show()
             viewModel.limparEstado()
             onVoltarClick()
         }
@@ -304,7 +305,7 @@ fun CriarObjetoScreen(
                                 token = tokenUsuario,
                                 titulo = titulo,
                                 descricao = descricao,
-                                fotoBytes = fotoBytes, // 🎯 COMPILANDO: Agora mapeado com os dados reais em ByteArray
+                                fotoBytes = fotoBytes,
                                 diasDisponiveis = diasDisponiveis,
                                 categoryId = 1
                             )

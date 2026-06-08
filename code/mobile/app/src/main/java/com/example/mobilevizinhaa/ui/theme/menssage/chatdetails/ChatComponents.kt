@@ -1,11 +1,11 @@
 package com.example.mobilevizinhaa.ui.theme.menssage.chatdetails
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.CameraAlt
@@ -17,14 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage // 🎯 Importante para carregar imagens da internet
 import com.example.mobilevizinhaa.ui.theme.BluePrimary
 import com.example.mobilevizinhaa.ui.theme.menssage.ChatConversation
 import com.example.mobilevizinhaa.ui.theme.menssage.Message
-import coil.compose.AsyncImage
 
 @Composable
 fun WhatsAppBubble(message: Message) {
@@ -51,31 +50,25 @@ fun WhatsAppBubble(message: Message) {
             shape = shape,
             shadowElevation = 1.dp
         ) {
-            // Usamos Column aqui para a imagem ficar SOBRE o texto
             Column(
                 modifier = Modifier
                     .padding(all = 4.dp) // Espaço interno do balão
                     .widthIn(max = 280.dp)
             ) {
-                // 1. SE TIVER IMAGEM, MOSTRA PRIMEIRO
-                message.imageUri?.let { uri ->
-                    AsyncImage(
-                        model = uri,
+                // Se no futuro houver imagens trafegando, ela renderiza aqui com segurança
+                if (message.text.startsWith("📷")) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
                         contentDescription = null,
+                        tint = if (message.isFromMe) Color.White else Color.Gray,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 300.dp)
-                            .clip(RoundedCornerShape(10.dp)), // Imagem com cantos arredondados
-                        contentScale = ContentScale.Crop
+                            .padding(8.dp)
+                            .size(40.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
-
-                    if (message.text.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
                 }
 
-                // 2. TEXTO E HORA
-                // Usamos um Box ou Row para alinhar a hora no cantinho inferior
+                // TEXTO E HORA
                 Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) {
                     if (message.text.isNotEmpty()) {
                         Text(
@@ -100,26 +93,61 @@ fun WhatsAppBubble(message: Message) {
 @Composable
 fun ChatHeader(chat: ChatConversation, onBack: () -> Unit) {
     Surface(color = BluePrimary, shadowElevation = 4.dp) {
-        Row(modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 8.dp, start = 8.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null, tint = Color.White) }
-            Image(painter = painterResource(id = chat.profileImage), contentDescription = null, modifier = Modifier.size(40.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 40.dp, bottom = 8.dp, start = 8.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = Color.White)
+            }
+
+            // 🎯 CORREÇÃO CRÍTICA: Substituído o Image local por AsyncImage para ler a URL do servidor
+            if (!chat.profileImageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = chat.profileImageUrl,
+                    contentDescription = "Foto de ${chat.name}",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback elegante caso o morador não tenha imagem cadastrada no sistema
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Sem foto",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape),
+                    tint = Color.White.copy(alpha = 0.8f)
+                )
+            }
+
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text = chat.name, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            Text(
+                text = chat.name,
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun ChatInputBar(
     text: String,
     onValueChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    onGalleryClick: () -> Unit, // Clique para abrir Galeria (o ícone de clipe)
+    onGalleryClick: () -> Unit, // Clique para abrir Galeria
     onCameraClick: () -> Unit   // Clique para abrir Câmera real
 ) {
     Surface(
-        color = BluePrimary, // Certifique-se que BluePrimary está definido no seu Color.kt
+        color = BluePrimary,
         tonalElevation = 2.dp
     ) {
         Row(
@@ -127,7 +155,7 @@ fun ChatInputBar(
                 .fillMaxWidth()
                 .padding(8.dp)
                 .navigationBarsPadding()
-                .imePadding(),
+                .imePadding(), // Faz com que a barra suba junto com o teclado do Android automaticamente
             verticalAlignment = Alignment.CenterVertically
         ) {
             // BOTÃO DA GALERIA (Anexo)
@@ -151,7 +179,9 @@ fun ChatInputBar(
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = BluePrimary
+                    cursorColor = BluePrimary,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
