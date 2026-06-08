@@ -24,8 +24,6 @@ function Categories() {
       setLoading(true);
 
       const tableData = await getCategories();
-      const categoriesType =
-        await getCategoryTypes();
 
       if (
         !Array.isArray(

@@ -18,7 +18,12 @@ export const createObject = async (data) => {
 };
 
 export const updateObject = async (id, data) => {
-    const response = await api.put(`/object/${id}`, data);
+
+    const response = await api.put(`/object/${id}`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
     return response.data;
 };
 

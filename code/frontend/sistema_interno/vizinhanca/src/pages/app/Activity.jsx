@@ -8,6 +8,7 @@ import { updateObject, deleteObject } from "../../services/objectService";
 import { updateReport, deleteReport } from "../../services/reportService";
 import { toast } from 'react-toastify';
 import styles from "./Activity.module.css";
+import { delay } from "framer-motion";
 
 function Activity() {
     const [loading, setLoading] = useState(true);
@@ -44,33 +45,23 @@ function Activity() {
     }, [dadosTabela, termoBusca, filtrosSelecionados]);
 
     const fetchActivities = async () => {
+        console.log("Buscando atividades...");
         try {
             setLoading(true);
             const data = await getActivities();
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
             if (!data?.response?.activities || !Array.isArray(data.response.activities)) {
                 setDadosTabela([]);
                 return;
             }
 
             const mappedData = data.response.activities.map((activity, index) => ({
-                displayId: activity.resident_id?.toString() || (index + 1).toString(),
-                
+                displayId: activity.id?.toString() || (index + 1).toString(),
+
                 // Mapeamento EXATO e seguro. Não usamos mais o displayId como fallback aqui.
                 // Se a API não mandar um desses campos, o valor será null.
-                idRealDaEntidade: activity.id || activity.entity_id || activity.service_id || activity.object_id || activity.report_id || null,
+                idRealDaEntidade: activity.entity_id || activity.service_id || activity.object_id || activity.report_id || null,
 
-                tipoOriginal: activity.type, 
+                tipoOriginal: activity.type,
                 nome: activity.resident_name || '',
                 descricao: activity.description || '',
                 categoria: formatActivityType(activity.type),
@@ -89,8 +80,12 @@ function Activity() {
     };
 
     const handleUpdateActivity = async (param1, param2) => {
-        const linha = param2?.linha || param1?.linha || param1;
+
+        console.log("HANDLE UPDATE CHAMADO");
+        console.log(param1, param2);
         
+        const linha = param2?.linha || param1?.linha || param1;
+
         if (!linha || !linha.tipoOriginal) {
             toast.error("Erro: Dados da linha não encontrados.");
             return;
@@ -105,19 +100,38 @@ function Activity() {
         }
 
         try {
+
+            const formData = new FormData()
+
             if (tipo === 'servico') {
-                await updateService(idDaEntidade, { status: 'Concluido' });
+
+                formData.append('status', 'Concluido')
+                console.log(Object.fromEntries(formData));
+
+                console.log("ANTES DO UPDATE");
+
+                await updateService(idDaEntidade, formData);
+
+                console.log("DEPOIS DO UPDATE");
             } else if (tipo === 'objeto') {
-                await updateObject(idDaEntidade, { status: 'FINALIZADO' });
+
+                formData.append('status', 'INDISPONÍVEL')
+
+                await updateObject(idDaEntidade, formData);
+
             } else if (tipo === 'report') {
-                await updateReport(idDaEntidade, { status: 'FINISHED' });
+
+                formData.append('status', 'FINISHED')
+
+                await updateReport(idDaEntidade, formData);
             } else {
                 toast.warning("Tipo de atividade não suportado.");
                 return;
             }
 
             toast.success("Atualizado com sucesso!");
-            fetchActivities(); 
+            fetchActivities();
+            toast.success("Atualizando dados da tabela com sucesso!");
         } catch (error) {
             console.error("Erro no update:", error);
             toast.error("Erro ao atualizar atividade no servidor.");
@@ -150,7 +164,10 @@ function Activity() {
             }
 
             toast.success("Atividade excluída com sucesso!");
-            fetchActivities(); 
+            console.log("CHAMANDO FETCH APÓS DELETE");
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            await fetchActivities();
+            console.log("FETCH FINALIZADO");
         } catch (error) {
             console.error("Erro no delete:", error);
             toast.error("Erro ao tentar excluir a atividade.");

@@ -121,7 +121,7 @@ function Services() {
             getCellClass: (status) => {
                 if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
                 if (status === 'Concluído' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento')return styles['status-amarelo'];
+                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento' || status === 'Emprestado') return styles['status-amarelo'];
                 return '';
             }
         }
@@ -134,12 +134,22 @@ function Services() {
     const handleSubmitService = async (id, dados) => {
         try {
             const linha = dados.linha;
-
+            const formData = new FormData();
             if (linha.tipoEntidade === 'SERVICE') {
-                await updateServiceService(id, { status: 'CONCLUIDO' });
+                
+
+                formData.append("status", "CONCLUIDO");
+                console.log([...formData.entries()]);
+
+                await updateServiceService(id, formData);
+
                 toast.success("Serviço concluído com sucesso!");
             } else if (linha.tipoEntidade === 'OBJECT') {
-                await updateObjectService(id, { status: 'FINALIZADO' });
+
+                formData.append("status", "EMPRESTADO");
+                console.log([...formData.entries()]);
+                await updateObjectService(id, formData);
+
                 toast.success("Objeto finalizado com sucesso!");
             }
 

@@ -19,6 +19,11 @@ export const createService = async (data) => {
 
 export const updateService = async (id, data) => {
     const response = await api.put(`/service/${id}`, data);
+
+    const dedo = await response.json()
+    console.log(dedo)
+    console.log(dedo)
+
     return response.data;
 };
 

@@ -361,8 +361,8 @@ export default function Table({
             <button
               className={styles.btnCadastrar}
               onClick={() => {
-
                 setCellData(null);
+                setDynamicModalType(modalType);
                 setModalOpen(true);
               }}
             >
