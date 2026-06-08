@@ -10,6 +10,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.request.publication;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 public class PublicationRequest {
 
-    @NotBlank(message = "Foto é obrigatória")
+    @NotNull(message = "Foto é obrigatória")
     private MultipartFile photo;
 
     @NotBlank(message = "Título é obrigatório")
