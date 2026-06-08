@@ -13,11 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -50,7 +56,7 @@ import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
 // Import do tema global e dados
 import com.example.mobilevizinhaa.ui.theme.MobileVizinhaçaTheme
 import com.example.mobilevizinhaa.ui.theme.data.ResidentResponse
-import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient // 🎯 Aponta corretamente para o seu objeto de rede
+import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
 import com.google.gson.Gson
 
 // IMPORTS ESSENCIAIS PARA TRATAR O TOKEN COM SEGURANÇA
@@ -183,7 +189,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
 
             composable("notificacoes") { NotificationsScreen() }
 
-            // --- TELA DE MENSAGENS / CHAT (SINCRONIZADO E COM VIEWMODEL INJETADO VIA FACTORY) ---
+            // --- TELA DE MENSAGENS / CHAT ---
             composable(
                 route = "mensagens/{tokenUsuario}/{idUsuarioLogado}",
                 arguments = listOf(
@@ -193,21 +199,15 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
             ) { backStackEntry ->
                 val tokenBruto = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
                 val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
+                val tokenDecodificado = try { URLDecoder.decode(tokenBruto, StandardCharsets.UTF_8.toString()) } catch (e: Exception) { tokenBruto }
 
-                val tokenDecodificado = try {
-                    URLDecoder.decode(tokenBruto, StandardCharsets.UTF_8.toString())
-                } catch (e: Exception) {
-                    tokenBruto
-                }
-
-                // 🎯 SUCESSO: Apontando exatamente para 'RetrofitClient.authApi' mapeado no seu arquivo!
                 val messagesViewModel: MessagesViewModel = viewModel(
                     factory = MessagesViewModel.provideFactory(
                         apiService = RetrofitClient.authApi
                     )
                 )
 
-                Log.d("MAIN_ACTIVITY", "Abrindo MessagesScreen -> ID: $idUsuario | ViewModel Configurado com Sucesso")
+                Log.d("MAIN_ACTIVITY", "Abrindo MessagesScreen -> ID: $idUsuario")
 
                 MessagesScreen(
                     tokenUsuario = tokenDecodificado,
@@ -217,15 +217,22 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 )
             }
 
-            // --- MURAL ---
+            // --- 🎯 CORRIGIDO: MURAL DO CONDOMÍNIO (Agora aceita e repassa o idUsuarioLogado) ---
             composable(
-                route = "mural/{tokenUsuario}",
-                arguments = listOf(navArgument("tokenUsuario") { type = NavType.StringType })
+                route = "mural/{tokenUsuario}/{idUsuarioLogado}",
+                arguments = listOf(
+                    navArgument("tokenUsuario") { type = NavType.StringType },
+                    navArgument("idUsuarioLogado") { type = NavType.IntType }
+                )
             ) { backStackEntry ->
                 val tokenBruto = backStackEntry.arguments?.getString("tokenUsuario") ?: ""
+                val idUsuario = backStackEntry.arguments?.getInt("idUsuarioLogado") ?: 0
                 val tokenDecodificado = try { URLDecoder.decode(tokenBruto, StandardCharsets.UTF_8.toString()) } catch (e: Exception) { tokenBruto }
 
-                MuralScreen(tokenUsuario = tokenDecodificado)
+                MuralScreen(
+                    tokenUsuario = tokenDecodificado,
+                    idUsuarioLogado = idUsuario
+                )
             }
 
             composable("ranking") { RankingScreen() }

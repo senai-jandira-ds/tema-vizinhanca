@@ -26,6 +26,7 @@ import com.example.mobilevizinhaa.ui.theme.mural.detalhes.MuralDetalheScreen
 @Composable
 fun MuralScreen(
     tokenUsuario: String, // Recebe o token do usuário logado para autorizar a requisição na API
+    idUsuarioLogado: Int, // ID do morador autenticado
     viewModel: MuralViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -48,7 +49,6 @@ fun MuralScreen(
         val item = servicoSelecionadoParaDetalhes!!
 
         // SOLUÇÃO DO COMPILADOR: Converte dinamicamente o ServiceDetailBackend para o ServiceDetail antigo
-        // 🎯 AJUSTADO: Passando tanto a foto do post quanto a foto do morador recebidas da API backend
         val servicoConvertido = com.example.mobilevizinhaa.ui.theme.data.ServiceDetail(
             id = item.id,
             title = item.title ?: "Sem título",
@@ -67,7 +67,7 @@ fun MuralScreen(
                 score = item.resident?.score ?: 0,
                 creationDate = item.resident?.creationDate,
                 block = item.resident?.block,
-                photo = item.resident?.photo // 🎯 CRÍTICO: Repassa a foto de perfil recebida do backend para a tela de detalhes conseguir renderizar
+                photo = item.resident?.photo // Repassa a foto de perfil recebida do backend
             ),
             category = com.example.mobilevizinhaa.ui.theme.data.CategoryDetail(
                 id = item.category?.id ?: 0,
@@ -77,10 +77,18 @@ fun MuralScreen(
             )
         )
 
-        // Abre a tela de detalhes passando o objeto convertido esperado por ela
+        // Abre a tela de detalhes passando o objeto convertido, token e o ID do morador logado
         MuralDetalheScreen(
             servico = servicoConvertido,
-            onBackClick = { servicoSelecionadoParaDetalhes = null } // Volta para o mural limpando o estado
+            idUsuarioLogado = idUsuarioLogado, // Passando com segurança para a tela de detalhes
+            tokenUsuario = tokenUsuario,       // 🎯 ADICIONADO: Fornece o token necessário para a rota de remoção da API
+            onBackClick = {
+                servicoSelecionadoParaDetalhes = null
+                // 🎯 SINCRO: Recarrega a lista do mural para remover o item instantaneamente caso ele tenha sido deletado
+                if (tokenUsuario.isNotEmpty()) {
+                    viewModel.carregarPostsReais(tokenUsuario)
+                }
+            }
         )
     } else {
         // Layout principal do Mural caso nenhum detalhe esteja aberto
@@ -97,7 +105,7 @@ fun MuralScreen(
                 ) {
                     Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
                         Text("Mural", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Text("Veja as últimas atualizações da vizinhaça", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                        Text("Veja as últimas updates da vizinhança", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
                     }
                 }
 
@@ -121,9 +129,10 @@ fun MuralScreen(
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(uiState.posts) { post ->
-                            // Chamamos o PostItem passando o objeto real, mapeando os cliques com segurança
+                            // Chamamos o PostItem passando o objeto real e o ID logado
                             PostItem(
                                 post = post,
+                                idUsuarioLogado = idUsuarioLogado, // Passando para ocultar botões se for o dono
                                 onDetalhesClick = { itemClicado ->
                                     servicoSelecionadoParaDetalhes = itemClicado
                                 },
@@ -138,13 +147,16 @@ fun MuralScreen(
 
             // --- POPUP DIALOG RÁPIDO DE AÇÃO (Direto do Feed) ---
             if (servicoParaOferecerAjuda != null) {
-                val ehObjeto = servicoParaOferecerAjuda?.urgency == "OBJETO"
+                val itemAjuda = servicoParaOferecerAjuda!!
+                val ehObjeto = itemAjuda.urgency?.uppercase() == "OBJETO" ||
+                        itemAjuda.category?.typeCategory?.uppercase() == "OBJETO" ||
+                        itemAjuda.category?.name?.contains("Objeto", ignoreCase = true) == true
 
                 // Adapta dinamicamente o texto do diálogo conforme o tipo do item
                 val mensagemDialogo = if (ehObjeto) {
-                    "Você deseja pegar o objeto \"${servicoParaOferecerAjuda?.title}\" emprestado?\nApós confirmar, vocês poderão combinar a entrega pelo chat."
+                    "Você deseja pegar o objeto \"${itemAjuda.title}\" emprestado?\nApós confirmar, vocês poderão combinar a entrega pelo chat."
                 } else {
-                    "Você deseja oferecer ajuda para o pedido \"${servicoParaOferecerAjuda?.title}\"?\nApós confirmar, vocês poderão combinar o serviço pelo chat."
+                    "Você deseja oferecer ajuda para o pedido \"${itemAjuda.title}\"?\nApós confirmar, vocês poderão combinar o serviço pelo chat."
                 }
 
                 val textoBotaoConfirmar = if (ehObjeto) "Pegar Emprestado" else "Confirmar"
@@ -165,7 +177,6 @@ fun MuralScreen(
                     confirmButton = {
                         Button(
                             onClick = {
-                                // Pronto para acoplar a ação de chat ou reserva do seu TCC
                                 servicoParaOferecerAjuda = null
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = corBotaoConfirmar)

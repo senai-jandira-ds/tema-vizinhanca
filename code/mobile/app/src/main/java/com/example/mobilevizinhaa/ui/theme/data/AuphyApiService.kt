@@ -190,9 +190,9 @@ data class ServicePagedResponse(
     @SerializedName("status") val status: Boolean,
     @SerializedName("status_code") val statusCode: Int,
     @SerializedName("developer") val developer: String? = null,
-    @SerializedName("api_description") val apiDescription: String? = null,
+    @SerializedName("api_description", alternate = ["apiDescription"]) val apiDescription: String? = null,
     @SerializedName("version") val version: String? = null,
-    @SerializedName("request_date") val requestDate: String? = null,
+    @SerializedName("request_date", alternate = ["requestDate"]) val requestDate: String? = null,
     @SerializedName("message") val message: String?,
     @SerializedName("response") val responseData: ServicePageContainer
 )
@@ -295,8 +295,6 @@ data class ResidentDetail(
     @SerializedName("creation_date", alternate = ["creationDate"]) val creationDate: String?,
     @SerializedName("is_active") val isActive: Boolean? = true,
     @SerializedName("block") val block: BlockDetail?,
-
-    // 🎯 ADICIONADO: Campo injetado para resolver o erro "Unresolved reference: photo" do PostItem
     @SerializedName("photo", alternate = ["photoUrl", "avatar"]) val photo: String? = null
 )
 
@@ -551,3 +549,4 @@ interface AuthApiService {
         @Path("id") idConversa: Long
     ): Response<ApiResponseListMessage>
 }
+

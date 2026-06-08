@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -23,14 +24,19 @@ import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
 /**
  * Componente do Card do Mural unificado (Serviços e Objetos)
  * Suporta dinamicamente carregamento por URL (HTTP/HTTPS) ou decodificação de Base64.
+ * Ajustado para validar se o anúncio pertence ao usuário atualmente logado.
  */
 @Composable
 fun PostItem(
     post: ServiceDetailBackend,
+    idUsuarioLogado: Int, // 🎯 ADICIONADO: Recebe o ID do morador logado para validar se ele é o dono do post
     onDetalhesClick: (ServiceDetailBackend) -> Unit,
     onOferecerAjudaClick: (ServiceDetailBackend) -> Unit
 ) {
     val ehObjeto = post.urgency == "OBJETO"
+
+    // 🎯 REGRA DE NEGÓCIO CRÍTICA: Verifica se o ID do dono do post é igual ao do usuário logado
+    val souDonoDoPost = post.resident?.id == idUsuarioLogado
 
     // Fallback de segurança para a imagem principal do post
     val imagemPadraoLocal = remember(post.id, post.title) {
@@ -62,17 +68,15 @@ fun PostItem(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                // 🎯 1. PROCESSAMENTO HÍBRIDO DA FOTO DE PERFIL (Detecta link URL ou Base64)
+                // PROCESSAMENTO HÍBRIDO DA FOTO DE PERFIL (Detecta link URL ou Base64)
                 val modeloFotoPerfil: Any = remember(post.resident?.photo, fotoPerfilFallback) {
                     try {
                         val fotoStr = post.resident?.photo?.trim() ?: ""
 
                         if (fotoStr.isNotBlank() && fotoStr.lowercase() != "string") {
                             if (fotoStr.startsWith("http://") || fotoStr.startsWith("https://")) {
-                                // Se for o link direto retornado no JSON, entrega a String da URL diretamente ao Coil
                                 fotoStr
                             } else if (fotoStr.length > 50) {
-                                // Caso o formato mude para Base64 em outros fluxos
                                 val base64Limpo = if (fotoStr.contains(",")) {
                                     fotoStr.substringAfter(",")
                                 } else {
@@ -90,7 +94,7 @@ fun PostItem(
                     }
                 }
 
-                // 🎯 2. EXIBIÇÃO ASYNCIMAGE DA FOTO DE PERFIL
+                // EXIBIÇÃO ASYNCIMAGE DA FOTO DE PERFIL
                 AsyncImage(
                     model = modeloFotoPerfil,
                     contentDescription = "Foto de perfil do morador",
@@ -155,17 +159,15 @@ fun PostItem(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- 🎯 3. IMAGEM DO PROBLEMA / OBJETO (Suporta URL do Azure ou Base64) ---
+        // --- IMAGEM DO PROBLEMA / OBJETO (Suporta URL ou Base64) ---
         val modeloImagemMural: Any = remember(post.photoBase64, imagemPadraoLocal) {
             val stringFoto = post.photoBase64 ?: ""
 
             if (stringFoto.isNotBlank() && stringFoto.lowercase() != "string") {
                 try {
                     if (stringFoto.startsWith("http://") || stringFoto.startsWith("https://")) {
-                        // Trata o link do Azure Storage ou Placehold fornecido pelo Backend para Objetos
                         stringFoto
                     } else if (stringFoto.length > 50) {
-                        // Trata se vier codificado em Base64 nativo
                         val base64Limpo = if (stringFoto.contains(",")) {
                             stringFoto.substringAfter(",")
                         } else {
@@ -197,30 +199,63 @@ fun PostItem(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- BOTÕES DE AÇÃO INTERATIVOS ---
+        // --- 🎯 EXIBIÇÃO CONDICIONAL DOS BOTÕES DE AÇÃO INTERATIVOS ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
-                onClick = { onDetalhesClick(post) },
-                modifier = Modifier.weight(1f).height(40.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("Detalhes", fontSize = 13.sp)
-            }
+            if (souDonoDoPost) {
+                // 🎯 Se for o próprio anúncio do morador logado, o botão interativo some
+                // e o botão de Detalhes expande para ocupar a linha inteira de forma limpa.
+                Button(
+                    onClick = { onDetalhesClick(post) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Ver Meu Anúncio",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1
+                    )
+                }
+            } else {
+                // Se NÃO for o dono (outros vizinhos visualizando), o comportamento normal com dois botões é exibido.
+                Button(
+                    onClick = { onDetalhesClick(post) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    Text(
+                        text = "Detalhes",
+                        fontSize = 13.sp,
+                        maxLines = 1
+                    )
+                }
 
-            Button(
-                onClick = { onOferecerAjudaClick(post) },
-                modifier = Modifier.weight(1f).height(40.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26A69A)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = if (ehObjeto) "Pegar Emprestado" else "Oferecer ajuda",
-                    fontSize = 13.sp
-                )
+                Button(
+                    onClick = { onOferecerAjudaClick(post) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26A69A)),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    Text(
+                        text = if (ehObjeto) "Pegar Objeto" else "Oferecer ajuda", // "Pegar Objeto" ajustado para evitar bugs de quebra de layout
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
 

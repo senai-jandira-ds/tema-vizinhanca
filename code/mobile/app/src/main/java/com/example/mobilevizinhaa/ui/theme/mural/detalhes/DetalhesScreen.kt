@@ -1,5 +1,8 @@
 package com.example.mobilevizinhaa.ui.theme.mural.detalhes
 
+import android.util.Base64
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,21 +27,35 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetail
+import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
+import com.example.mobilevizinhaa.ui.theme.data.ServiceUpdateRequest
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Tela de Detalhes do Pedido/Objeto (Versão totalmente Dinâmica, Adaptável e com Decoder Híbrido de Imagem).
+ * Configurada com botão vermelho de alteração de status para exclusão de anúncios do próprio usuário.
  */
 @Composable
 fun MuralDetalheScreen(
     servico: ServiceDetail,
+    idUsuarioLogado: Int,
+    tokenUsuario: String, // 🎯 ADICIONADO: Necessário para a autenticação no Header da requisição HTTP
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var mostrarAlerta by remember { mutableStateOf(false) }
+    var carregandoRemocao by remember { mutableStateOf(false) }
 
     // 🎯 IDENTIFICAÇÃO CRÍTICA: Descobre se o item detalhado é um Objeto ou um Serviço
     val ehObjeto = servico.urgency?.uppercase() == "OBJETO" ||
             servico.category?.typeCategory?.uppercase() == "OBJETO" ||
             servico.category?.name?.contains("Objeto", ignoreCase = true) == true
+
+    // 🎯 REGRA DE NEGÓCIO CRÍTICA: Verifica se o ID do dono do post é igual ao do usuário atualmente logado
+    val souDonoDoPost = servico.resident?.id == idUsuarioLogado
 
     // Define qual recurso local serve de fallback de segurança para esse item específico
     val imagemPadraoLocal = remember(servico.id, servico.title) {
@@ -78,7 +96,7 @@ fun MuralDetalheScreen(
             // --- HEADER COM FOTO DINÂMICA DO SERVIÇO OU OBJETO (COIL) ---
             Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
 
-                // 🎯 PROCESSAMENTO HÍBROS DA IMAGEM DO ANÚNCIO (Aceita URL ou Base64)
+                // PROCESSAMENTO HÍBRIDO DA FOTO DO ANÚNCIO (Aceita URL ou Base64)
                 val modeloImagemDetalhe: Any = remember(servico.photo, imagemPadraoLocal) {
                     try {
                         val foto = servico.photo ?: ""
@@ -88,7 +106,7 @@ fun MuralDetalheScreen(
                                 foto
                             } else if (foto.length > 50) {
                                 val base64Limpo = if (foto.contains(",")) foto.substringAfter(",") else foto
-                                android.util.Base64.decode(base64Limpo, android.util.Base64.DEFAULT)
+                                Base64.decode(base64Limpo, Base64.DEFAULT)
                             } else {
                                 imagemPadraoLocal
                             }
@@ -140,7 +158,7 @@ fun MuralDetalheScreen(
             // --- CORPO DA TELA ---
             Column(modifier = Modifier.fillMaxWidth().weight(1f).padding(20.dp)) {
 
-                // 🎯 DADOS DO MORADOR (FOTO DE PERFIL DINÂMICA)
+                // DADOS DO MORADOR (FOTO DE PERFIL DINÂMICA)
                 Row(verticalAlignment = Alignment.CenterVertically) {
 
                     val modeloFotoPerfil: Any = remember(servico.resident?.photo, fotoPerfilFallback) {
@@ -152,7 +170,7 @@ fun MuralDetalheScreen(
                                     fotoStr
                                 } else if (fotoStr.length > 50) {
                                     val base64Limpo = if (fotoStr.contains(",")) fotoStr.substringAfter(",") else fotoStr
-                                    android.util.Base64.decode(base64Limpo, android.util.Base64.DEFAULT)
+                                    Base64.decode(base64Limpo, Base64.DEFAULT)
                                 } else {
                                     fotoPerfilFallback
                                 }
@@ -229,13 +247,14 @@ fun MuralDetalheScreen(
                 )
             }
 
-            // --- 🎯 BOTÕES INFERIORES ADAPTADOS (CORRIGIDO PARA NÃO BUGAR) ---
+            // --- 🎯 SEÇÃO DE BOTÕES INFERIORES MODIFICADOS ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Botão de fechar sempre ativo
                 Button(
                     onClick = { onBackClick() },
                     modifier = Modifier
@@ -254,23 +273,93 @@ fun MuralDetalheScreen(
                     )
                 }
 
-                Button(
-                    onClick = { mostrarAlerta = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(46.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = if (ehObjeto) Color(0xFF26A69A) else Color(0xFF26A69A)),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp) // Dá uma folga interna para o texto respirar
-                ) {
-                    Text(
-                        text = if (ehObjeto) "Pegar Objeto" else "Oferecer Ajuda", // Troca estratégica de "Pegar Emprestado" para "Pegar Objeto"
-                        color = Color.White,
-                        fontSize = 14.sp, // Sutil ajuste no tamanho da fonte para encaixar perfeitamente
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1, // Trava em apenas uma linha
-                        overflow = TextOverflow.Ellipsis // Se faltar meio milímetro, coloca "..." em vez de quebrar a estrutura
-                    )
+                if (souDonoDoPost) {
+                    // 🎯 BOTÃO VERMELHO: Exibido e ativo unicamente para o criador do post remover o anúncio
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                try {
+                                    carregandoRemocao = true
+                                    val tokenHeader = "Bearer $tokenUsuario"
+
+                                    // 🎯 RESOLUÇÃO DA INTEGRAÇÃO: Mapeia dinamicamente para a rota nativa do Swagger
+                                    val resposta = if (ehObjeto) {
+                                        val statusBody = "INDISPONIVEL".toRequestBody("text/plain".toMediaTypeOrNull())
+                                        RetrofitClient.authApi.atualizarStatusObjeto(
+                                            token = tokenHeader,
+                                            idObjeto = servico.id,
+                                            status = statusBody
+                                        )
+                                    } else {
+                                        RetrofitClient.authApi.atualizarStatusServico(
+                                            token = tokenHeader,
+                                            idServico = servico.id,
+                                            request = ServiceUpdateRequest(status = "PENDENTE")
+                                        )
+                                    }
+
+                                    if (resposta.isSuccessful) {
+                                        Toast.makeText(context, "Anúncio removido com sucesso!", Toast.LENGTH_SHORT).show()
+                                        onBackClick() // Fecha a tela e retorna à listagem principal atualizada
+                                    } else {
+                                        Toast.makeText(context, "Servidor rejeitou a remoção do item.", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("MURAL_REMOVER", "Erro de conexão: ${e.message}")
+                                    Toast.makeText(context, "Falha de rede ao conectar à API.", Toast.LENGTH_SHORT).show()
+                                } finally {
+                                    carregandoRemocao = false
+                                }
+                            }
+                        },
+                        enabled = !carregandoRemocao,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFEF5350), // Vermelho Red 500
+                            disabledContainerColor = Color(0xFFE57373)
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        if (carregandoRemocao) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "Remover do Mural",
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                } else {
+                    // Caso contrário (outro morador vendo o anúncio), exibe o botão normal de engajamento
+                    Button(
+                        onClick = { mostrarAlerta = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26A69A)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = if (ehObjeto) "Pegar Objeto" else "Oferecer Ajuda",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
@@ -297,7 +386,7 @@ fun MuralDetalheScreen(
                     TextButton(onClick = { mostrarAlerta = false }) {
                         Text(
                             text = if (ehObjeto) "Pegar Emprestado" else "Confirmar",
-                            color = if (ehObjeto) Color(0xFF26A69A) else Color(0xFF26A69A),
+                            color = Color(0xFF26A69A),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )

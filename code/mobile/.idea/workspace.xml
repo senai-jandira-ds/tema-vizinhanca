@@ -11,10 +11,11 @@
   <component name="ChangeListManager">
     <list default="true" id="f77298ba-0efe-4966-bd11-6c34033f3c3c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/MainActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/data/AuphyApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/data/AuphyApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/HomeComponents.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/home/HomeComponents.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralComponents.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralComponents.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/MuralViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/detalhes/DetalhesScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/mobilevizinhaa/ui/theme/mural/detalhes/DetalhesScreen.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
