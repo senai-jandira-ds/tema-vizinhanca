@@ -1,6 +1,5 @@
 package com.example.mobilevizinhaa.ui.theme.mural.detalhes
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,13 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.mobilevizinhaa.R
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetail
 
 /**
- * Tela de Detalhes do Pedido (Versão totalmente Dinâmica e Segura contra NullPointer).
+ * Tela de Detalhes do Pedido/Objeto (Versão totalmente Dinâmica, Adaptável e com Decoder Híbrido de Imagem).
  */
 @Composable
 fun MuralDetalheScreen(
@@ -33,7 +34,31 @@ fun MuralDetalheScreen(
 ) {
     var mostrarAlerta by remember { mutableStateOf(false) }
 
-    // Tratamento seguro da tag de urgência (evita que quebre caso venha nulo)
+    // 🎯 IDENTIFICAÇÃO CRÍTICA: Descobre se o item detalhado é um Objeto ou um Serviço
+    val ehObjeto = servico.urgency?.uppercase() == "OBJETO" ||
+            servico.category?.typeCategory?.uppercase() == "OBJETO" ||
+            servico.category?.name?.contains("Objeto", ignoreCase = true) == true
+
+    // Define qual recurso local serve de fallback de segurança para esse item específico
+    val imagemPadraoLocal = remember(servico.id, servico.title) {
+        if (servico.id == 1 || (servico.title ?: "").contains("Vazamento", ignoreCase = true)) {
+            R.drawable.vazamento
+        } else {
+            R.drawable.djuntor
+        }
+    }
+
+    // Fallback de segurança para a foto de perfil baseando-se no nome do morador
+    val fotoPerfilFallback = remember(servico.resident?.name) {
+        val nomeLimpo = servico.resident?.name ?: ""
+        if (nomeLimpo.contains("Rosana", ignoreCase = true)) {
+            R.drawable.mulher
+        } else {
+            R.drawable.wellington
+        }
+    }
+
+    // Tratamento seguro da tag de urgência (apenas se for Serviço)
     val urgenciaString = servico.urgency ?: "BAIXA"
     val textoUrgencia = when (urgenciaString.uppercase()) {
         "ALTA" -> "Urgente"
@@ -42,28 +67,54 @@ fun MuralDetalheScreen(
     }
 
     val corUrgencia = when (urgenciaString.uppercase()) {
-        "ALTA" -> Color(0xFFEF5350) // Vermelho
-        "MEDIA", "MÉDIA" -> Color(0xFFFFB74D) // Laranja
-        else -> Color(0xFF81C784) // Verde
+        "ALTA" -> Color(0xFFEF5350)
+        "MEDIA", "MÉDIA" -> Color(0xFFFFB74D)
+        else -> Color(0xFF81C784)
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // --- HEADER COM FOTO ---
+            // --- HEADER COM FOTO DINÂMICA DO SERVIÇO OU OBJETO (COIL) ---
             Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
-                Image(
-                    painter = painterResource(id = R.drawable.vazamento),
-                    contentDescription = "Foto do Pedido",
+
+                // 🎯 PROCESSAMENTO HÍBROS DA IMAGEM DO ANÚNCIO (Aceita URL ou Base64)
+                val modeloImagemDetalhe: Any = remember(servico.photo, imagemPadraoLocal) {
+                    try {
+                        val foto = servico.photo ?: ""
+
+                        if (foto.isNotBlank() && foto.lowercase() != "string") {
+                            if (foto.startsWith("http://") || foto.startsWith("https://")) {
+                                foto
+                            } else if (foto.length > 50) {
+                                val base64Limpo = if (foto.contains(",")) foto.substringAfter(",") else foto
+                                android.util.Base64.decode(base64Limpo, android.util.Base64.DEFAULT)
+                            } else {
+                                imagemPadraoLocal
+                            }
+                        } else {
+                            imagemPadraoLocal
+                        }
+                    } catch (e: Exception) {
+                        imagemPadraoLocal
+                    }
+                }
+
+                AsyncImage(
+                    model = modeloImagemDetalhe,
+                    contentDescription = "Foto do Pedido ou Objeto",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(id = imagemPadraoLocal),
+                    placeholder = painterResource(id = imagemPadraoLocal)
                 )
 
+                // Sombra gradiente superior para dar leitura ao botão de voltar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp)
-                        .background(Brush.verticalGradient(colors = listOf(Color(0xFF0056B3), Color.Transparent)))
+                        .background(Brush.verticalGradient(colors = listOf(Color(0xFF002D5A), Color.Transparent)))
                 )
 
                 Row(
@@ -77,24 +128,55 @@ fun MuralDetalheScreen(
                         modifier = Modifier.size(28.dp).clickable { onBackClick() }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Detalhes do Pedido", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = if (ehObjeto) "Detalhes do Objeto" else "Detalhes do Pedido",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
-            // --- CORPO DA TELA TOTALMENTE SEGURO (?.) ---
+            // --- CORPO DA TELA ---
             Column(modifier = Modifier.fillMaxWidth().weight(1f).padding(20.dp)) {
 
-                // Dados do Morador que criou o pedido
+                // 🎯 DADOS DO MORADOR (FOTO DE PERFIL DINÂMICA)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.wellington),
-                        contentDescription = "Foto perfil",
-                        modifier = Modifier.size(45.dp).clip(CircleShape),
-                        contentScale = ContentScale.Crop
+
+                    val modeloFotoPerfil: Any = remember(servico.resident?.photo, fotoPerfilFallback) {
+                        try {
+                            val fotoStr = servico.resident?.photo?.trim() ?: ""
+
+                            if (fotoStr.isNotBlank() && fotoStr.lowercase() != "string") {
+                                if (fotoStr.startsWith("http://") || fotoStr.startsWith("https://")) {
+                                    fotoStr
+                                } else if (fotoStr.length > 50) {
+                                    val base64Limpo = if (fotoStr.contains(",")) fotoStr.substringAfter(",") else fotoStr
+                                    android.util.Base64.decode(base64Limpo, android.util.Base64.DEFAULT)
+                                } else {
+                                    fotoPerfilFallback
+                                }
+                            } else {
+                                fotoPerfilFallback
+                            }
+                        } catch (e: Exception) {
+                            fotoPerfilFallback
+                        }
+                    }
+
+                    AsyncImage(
+                        model = modeloFotoPerfil,
+                        contentDescription = "Foto de perfil do morador",
+                        modifier = Modifier
+                            .size(45.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = fotoPerfilFallback),
+                        placeholder = painterResource(id = fotoPerfilFallback)
                     )
+
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        // Correção do erro: Acesso seguro usando ?. e operador Elvis ?: para String padrão
                         Text(
                             text = servico.resident?.name ?: "Morador",
                             fontSize = 18.sp,
@@ -102,7 +184,6 @@ fun MuralDetalheScreen(
                             color = Color.Black
                         )
 
-                        // Verificação segura para exibir o apartamento se ele existir
                         val apto = servico.resident?.apartment
                         if (!apto.isNullOrBlank()) {
                             Text(text = "Apto: $apto", fontSize = 13.sp, color = Color.Gray)
@@ -111,75 +192,115 @@ fun MuralDetalheScreen(
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
-                // Título real do pedido com fallback seguro
                 Text(text = servico.title ?: "Sem título", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Tags de Categorias e Metadados dinâmicos
+                // --- TAGS INFORMATIVAS ADAPTÁVEIS ---
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
 
-                    // Correção do erro: Nome da categoria tratado com segurança
+                    // Tag Principal de Categoria
                     Box(modifier = Modifier.background(Color(0xFF26A69A), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
                         Text(text = servico.category?.name ?: "Geral", color = Color.White, fontSize = 13.sp)
                     }
 
-                    // Tempo estimado tratado de forma segura
-                    Box(modifier = Modifier.background(Color(0xFFF1F3F5), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(text = "Tempo estimado: ${servico.estimatedTime ?: 0}h", color = Color(0xFF495057), fontSize = 13.sp)
-                    }
+                    if (ehObjeto) {
+                        // Se for Objeto, exibe etiqueta de Disponibilidade em vez de tempo
+                        Box(modifier = Modifier.background(Color(0xFFE0F2FE), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                            Text(text = "📦 Disponível", color = Color(0xFF0369A1), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        // Se for Serviço, mantém o Tempo Estimado e o nível de Urgência
+                        Box(modifier = Modifier.background(Color(0xFFF1F3F5), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                            Text(text = "Tempo estimado: ${servico.estimatedTime ?: 0}h", color = Color(0xFF495057), fontSize = 13.sp)
+                        }
 
-                    // Urgência calculada acima
-                    Box(modifier = Modifier.background(corUrgencia, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(text = textoUrgencia, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Box(modifier = Modifier.background(corUrgencia, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                            Text(text = textoUrgencia, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Descrição real digitada pelo morador
+                // Descrição textual do item
                 Text(
-                    text = if (servico.description.isNullOrBlank()) "Nenhuma descrição fornecida para este pedido." else servico.description,
+                    text = if (servico.description.isNullOrBlank()) "Nenhuma descrição fornecida para este item." else servico.description,
                     fontSize = 16.sp, color = Color(0xFF333333), lineHeight = 24.sp
                 )
             }
 
-            // --- BOTÕES INFERIORES ---
-            Row(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            // --- 🎯 BOTÕES INFERIORES ADAPTADOS (CORRIGIDO PARA NÃO BUGAR) ---
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Button(
                     onClick = { onBackClick() },
-                    modifier = Modifier.weight(1f).height(46.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
-                    Text(text = "Fechar", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Fechar",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
                 }
 
                 Button(
                     onClick = { mostrarAlerta = true },
-                    modifier = Modifier.weight(1f).height(46.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26A69A)),
-                    shape = RoundedCornerShape(8.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (ehObjeto) Color(0xFF26A69A) else Color(0xFF26A69A)),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp) // Dá uma folga interna para o texto respirar
                 ) {
-                    Text(text = "Oferecer Ajuda", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = if (ehObjeto) "Pegar Objeto" else "Oferecer Ajuda", // Troca estratégica de "Pegar Emprestado" para "Pegar Objeto"
+                        color = Color.White,
+                        fontSize = 14.sp, // Sutil ajuste no tamanho da fonte para encaixar perfeitamente
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1, // Trava em apenas uma linha
+                        overflow = TextOverflow.Ellipsis // Se faltar meio milímetro, coloca "..." em vez de quebrar a estrutura
+                    )
                 }
             }
         }
 
-        // --- DIÁLOGO DE ALERTA SEGURO ---
+        // --- DIÁLOGO DE CONFIRMAÇÃO DINÂMICO ---
         if (mostrarAlerta) {
+            val mensajeAlerta = if (ehObjeto) {
+                "Você deseja pegar o objeto \"${servico.title ?: "deste item"}\" emprestado?\nApós confirmar, vocês poderão combinar os detalhes da entrega pelo chat."
+            } else {
+                "Você deseja oferecer ajuda para o pedido \"${servico.title ?: "deste serviço"}\"?\nApós confirmar, vocês poderão combinar os detalhes pelo chat."
+            }
+
             AlertDialog(
                 onDismissRequest = { mostrarAlerta = false },
-                title = { Text(text = "Alerta", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black) },
+                title = { Text(text = "Atenção", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black) },
                 text = {
                     Text(
-                        text = "Você deseja oferecer ajuda para o pedido \"${servico.title ?: "deste serviço"}\"?\nApós confirmar, vocês poderão combinar os detalhes pelo chat.",
+                        text = mensajeAlerta,
                         fontSize = 15.sp,
                         color = Color(0xFF495057)
                     )
                 },
                 confirmButton = {
                     TextButton(onClick = { mostrarAlerta = false }) {
-                        Text("Confirmar", color = Color(0xFF26A69A), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(
+                            text = if (ehObjeto) "Pegar Emprestado" else "Confirmar",
+                            color = if (ehObjeto) Color(0xFF26A69A) else Color(0xFF26A69A),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
                     }
                 },
                 dismissButton = {

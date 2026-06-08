@@ -294,7 +294,10 @@ data class ResidentDetail(
     @SerializedName("score") val score: Int?,
     @SerializedName("creation_date", alternate = ["creationDate"]) val creationDate: String?,
     @SerializedName("is_active") val isActive: Boolean? = true,
-    @SerializedName("block") val block: BlockDetail?
+    @SerializedName("block") val block: BlockDetail?,
+
+    // 🎯 ADICIONADO: Campo injetado para resolver o erro "Unresolved reference: photo" do PostItem
+    @SerializedName("photo", alternate = ["photoUrl", "avatar"]) val photo: String? = null
 )
 
 data class BlockDetail(
@@ -500,8 +503,6 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<ObjectPagedResponse>
 
-    // 🎯 AJUSTADO CIRURGICAMENTE DE ACORDO COM O SWAGGER (Multipart)
-    // O backend espera o status como uma parte textual do formulário (@Part)
     @Multipart
     @PUT("api/v1/object/{id}")
     suspend fun atualizarStatusObjeto(
@@ -510,7 +511,6 @@ interface AuthApiService {
         @Part("status") status: RequestBody
     ): Response<Unit>
 
-    // 🎯 NOVA ROTA COMPATÍVEL COM O SWAGGER PARA EXCLUSÃO DE OBJETOS
     @DELETE("api/v1/object/{id}")
     suspend fun deletarObjeto(
         @Header("Authorization") token: String,

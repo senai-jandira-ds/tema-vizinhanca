@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobilevizinhaa.ui.theme.data.RetrofitClient
 import com.example.mobilevizinhaa.ui.theme.data.ServiceDetailBackend
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,8 @@ class MuralViewModel : ViewModel() {
     val uiState: StateFlow<MuralUiState> = _uiState.asStateFlow()
 
     /**
-     * CONECTADO À API: Busca os dados reais e filtra estritamente quem está EM ANDAMENTO.
+     * CONECTADO À API: Busca os dados reais de SERVIÇOS e OBJETOS de todos do condomínio,
+     * filtrando estritamente por quem está "EM_ANDAMENTO" e "DISPONIVEL".
      * @param token O token de autenticação do usuário logado enviado pela View.
      */
     fun carregarPostsReais(token: String) {
@@ -42,43 +44,89 @@ class MuralViewModel : ViewModel() {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
                 Log.d("MURAL_FILTRO", "Enviando requisição com o Header: $authHeader")
 
-                // 1. Consome o endpoint paginado trazendo a lista geral do condomínio
-                val response = RetrofitClient.authApiParaServico.listarServicosPaginados(authHeader)
+                // 🎯 BUSCA PARALELA: Dispara as duas chamadas simultaneamente
+                val chamadaServicos = async { RetrofitClient.authApiParaServico.listarServicosPaginados(authHeader) }
+                val llamadaObjetos = async { RetrofitClient.authApiParaServico.listarObjetosPaginados(authHeader) }
 
-                if (response.isSuccessful && response.body() != null) {
-                    val envelope = response.body()!!
-                    val listaGeralDoCondominio = envelope.responseData.content
+                val responseServicos = chamadaServicos.await()
+                val responseObjetos = llamadaObjetos.await()
 
-                    Log.d("MURAL_FILTRO", "Sucesso! Total bruto recebido da API: ${listaGeralDoCondominio.size}")
+                val listaUnificadaMural = mutableListOf<ServiceDetailBackend>()
 
-                    // 2. 🎯 FILTRO ATIVADO: Filtra apenas quem está em andamento (removendo o teste provisório anterior)
-                    val apenasEmAndamento = listaGeralDoCondominio.filter { item ->
-                        // .trim() remove espaços extras invisíveis que o banco possa ter salvo por engano
+                // 1. 🛠️ TRATAMENTO DOS SERVIÇOS (Filtra apenas quem está em andamento)
+                if (responseServicos.isSuccessful && responseServicos.body() != null) {
+                    val envelopeServicos = responseServicos.body()!!
+                    val listaGeralServicos = envelopeServicos.responseData.content
+
+                    Log.d("MURAL_FILTRO", "Serviços recebidos (Bruto): ${listaGeralServicos.size}")
+
+                    val servicosFiltrados = listaGeralServicos.filter { item ->
                         val statusLimpo = item.status?.trim()?.uppercase() ?: ""
                         statusLimpo == "EM_ANDAMENTO" || statusLimpo == "EM ANDAMENTO"
+                    }.map { item ->
+                        item.copy(
+                            photoBase64 = limparStringFoto(item.photoBase64),
+                            urgency = "SERVICO"
+                        )
                     }
+                    listaUnificadaMural.addAll(servicosFiltrados)
+                }
 
-                    Log.d("MURAL_FILTRO", "Filtro Aplicado! Itens exibidos no mural: ${apenasEmAndamento.size}")
+                // 2. 📦 TRATAMENTO DOS OBJETOS (Filtra apenas quem está disponível)
+                if (responseObjetos.isSuccessful && responseObjetos.body() != null) {
+                    val envelopeObjetos = responseObjetos.body()!!
+                    val container = envelopeObjetos.responseData
+                    val listaGeralObjetos = container?.content ?: emptyList()
 
-                    // 3. Alimenta o StateFlow da UI estritamente com os posts filtrados
+                    Log.d("MURAL_FILTRO", "Objetos recebidos (Bruto): ${listaGeralObjetos.size}")
+
+                    val objetosFiltrados = listaGeralObjetos.filter { obj ->
+                        val statusLimpo = obj.status?.trim()?.uppercase() ?: ""
+                        statusLimpo == "DISPONIVEL" || statusLimpo == "DISPONÍVEL"
+                    }.map { obj ->
+                        // Converte estritamente o ObjectDetailBackend mapeado no Retrofit para a estrutura visual ServiceDetailBackend
+                        ServiceDetailBackend(
+                            id = obj.id,
+                            photoBase64 = limparStringFoto(obj.photo), // Pega a propriedade correta mapeada pelo Retrofit (.photo)
+                            title = obj.title ?: "Sem título",
+                            estimatedTime = 0,
+                            urgency = "OBJETO",
+                            description = obj.description ?: "Nenhuma descrição informada.",
+                            creationDate = obj.creationDate ?: "Recentemente",
+                            status = "DISPONIVEL",
+                            resident = obj.resident, // Atribui a instância do ResidentDetail original
+                            category = obj.category
+                        )
+                    }
+                    listaUnificadaMural.addAll(objetosFiltrados)
+                }
+
+                Log.d("MURAL_FILTRO", "Total Unificado Exibido no Mural: ${listaUnificadaMural.size}")
+
+                if (responseServicos.isSuccessful || responseObjetos.isSuccessful) {
                     _uiState.value = MuralUiState(
-                        posts = apenasEmAndamento,
+                        posts = listaUnificadaMural,
                         isLoading = false
                     )
                 } else {
-                    Log.e("MURAL_FILTRO", "Servidor respondeu com erro Código: ${response.code()}")
                     _uiState.value = MuralUiState(
                         isLoading = false,
-                        errorMessage = "Erro ${response.code()}: Não foi possível carregar o mural."
+                        errorMessage = "Não foi possível carregar o mural do condomínio."
                     )
                 }
+
             } catch (e: Exception) {
-                Log.e("MURAL_FILTRO", "Falha catastrófica de conexão / Exceção capturada", e)
+                Log.e("MURAL_FILTRO", "Falha catastrófica no MuralViewModel", e)
                 _uiState.value = MuralUiState(
                     isLoading = false,
                     errorMessage = "Sem conexão com o servidor do condomínio."
                 )
             }
         }
+    }
+
+    private fun limparStringFoto(foto: String?): String {
+        val fotoFormatada = foto?.trim() ?: ""
+        return if (fotoFormatada.lowercase() == "string" || fotoFormatada.isBlank()) "" else fotoFormatada
     }
 }

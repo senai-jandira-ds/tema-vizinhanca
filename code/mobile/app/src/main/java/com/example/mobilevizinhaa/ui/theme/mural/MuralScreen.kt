@@ -43,12 +43,12 @@ fun MuralScreen(
         }
     }
 
-    // --- ESTRUTURA DE NAVEGAÇÃO CONDICIONAL CORRIGIDA ---
+    // --- ESTRUTURA DE NAVEGAÇÃO CONDICIONAL ---
     if (servicoSelecionadoParaDetalhes != null) {
         val item = servicoSelecionadoParaDetalhes!!
 
         // SOLUÇÃO DO COMPILADOR: Converte dinamicamente o ServiceDetailBackend para o ServiceDetail antigo
-        // 🎯 AJUSTADO: Passando apenas a String direto no typeCategory para bater com o novo DataModels refatorado
+        // 🎯 AJUSTADO: Passando tanto a foto do post quanto a foto do morador recebidas da API backend
         val servicoConvertido = com.example.mobilevizinhaa.ui.theme.data.ServiceDetail(
             id = item.id,
             title = item.title ?: "Sem título",
@@ -56,7 +56,7 @@ fun MuralScreen(
             estimatedTime = item.estimatedTime ?: 0,
             urgency = item.urgency ?: "MEDIUM",
             status = item.status ?: "ACTIVE",
-            photo = null,
+            photo = item.photoBase64, // Repassa a string/URL da imagem principal do post
             resident = com.example.mobilevizinhaa.ui.theme.data.ResidentDetail(
                 id = item.resident?.id ?: 0,
                 name = item.resident?.name ?: "Morador",
@@ -66,13 +66,13 @@ fun MuralScreen(
                 cpf = item.resident?.cpf,
                 score = item.resident?.score ?: 0,
                 creationDate = item.resident?.creationDate,
-                block = item.resident?.block
+                block = item.resident?.block,
+                photo = item.resident?.photo // 🎯 CRÍTICO: Repassa a foto de perfil recebida do backend para a tela de detalhes conseguir renderizar
             ),
             category = com.example.mobilevizinhaa.ui.theme.data.CategoryDetail(
                 id = item.category?.id ?: 0,
                 name = item.category?.name ?: "Geral",
                 description = item.category?.description ?: "",
-                // 🎯 CORREÇÃO CRÍTICA: Agora repassa a String direto, sem tentar criar o objeto que causava o crash
                 typeCategory = item.category?.typeCategory ?: "SERVICO"
             )
         )
@@ -97,7 +97,7 @@ fun MuralScreen(
                 ) {
                     Column(verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxHeight()) {
                         Text("Mural", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Text("Veja as últimas atualizações", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                        Text("Veja as últimas atualizações da vizinhaça", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
                     }
                 }
 
@@ -112,7 +112,7 @@ fun MuralScreen(
                     }
                 } else if (uiState.posts.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Nenhum serviço em andamento no condomínio.", color = Color.Gray, fontSize = 14.sp)
+                        Text(text = "Nenhum serviço ou objeto disponível no condomínio.", color = Color.Gray, fontSize = 14.sp)
                     }
                 } else {
                     // Lista de Postagens observando o estado reativo do seu ViewModel real
@@ -136,16 +136,28 @@ fun MuralScreen(
                 }
             }
 
-            // --- POPUP DIALOG RÁPIDO DE OFERECER AJUDA (Direto do Feed) ---
+            // --- POPUP DIALOG RÁPIDO DE AÇÃO (Direto do Feed) ---
             if (servicoParaOferecerAjuda != null) {
+                val ehObjeto = servicoParaOferecerAjuda?.urgency == "OBJETO"
+
+                // Adapta dinamicamente o texto do diálogo conforme o tipo do item
+                val mensagemDialogo = if (ehObjeto) {
+                    "Você deseja pegar o objeto \"${servicoParaOferecerAjuda?.title}\" emprestado?\nApós confirmar, vocês poderão combinar a entrega pelo chat."
+                } else {
+                    "Você deseja oferecer ajuda para o pedido \"${servicoParaOferecerAjuda?.title}\"?\nApós confirmar, vocês poderão combinar o serviço pelo chat."
+                }
+
+                val textoBotaoConfirmar = if (ehObjeto) "Pegar Emprestado" else "Confirmar"
+                val corBotaoConfirmar = if (ehObjeto) Color(0xFF42A5F5) else Color(0xFF26A69A)
+
                 AlertDialog(
                     onDismissRequest = { servicoParaOferecerAjuda = null },
                     title = {
-                        Text(text = "Alerta", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(text = "Atenção", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     },
                     text = {
                         Text(
-                            text = "Você deseja oferecer ajuda para o pedido \"${servicoParaOferecerAjuda?.title}\"?\nApós confirmar, vocês poderão combinar o serviço pelo chat.",
+                            text = mensagemDialogo,
                             fontSize = 14.sp,
                             color = Color.DarkGray
                         )
@@ -153,17 +165,18 @@ fun MuralScreen(
                     confirmButton = {
                         Button(
                             onClick = {
+                                // Pronto para acoplar a ação de chat ou reserva do seu TCC
                                 servicoParaOferecerAjuda = null
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26A69A)) // Cor verde padrão de ajuda do app
+                            colors = ButtonDefaults.buttonColors(containerColor = corBotaoConfirmar)
                         ) {
-                            Text("Confirmar")
+                            Text(textoBotaoConfirmar)
                         }
                     },
                     dismissButton = {
                         Button(
                             onClick = { servicoParaOferecerAjuda = null },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF5350)) // Cor vermelha padrão
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF5350))
                         ) {
                             Text("Cancelar")
                         }
