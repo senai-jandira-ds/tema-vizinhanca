@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class ActivityView {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "activity_id")
     private Long id;
 
     @Column(name = "id_morador")
@@ -32,6 +32,15 @@ public class ActivityView {
 
     @Column(name = "tipo")
     private String type;
+
+    @Column(name = "object_id")
+    private Long idObject;
+
+    @Column(name = "service_id")
+    private Long idService;
+
+    @Column(name = "report_id")
+    private Long idReport;
 
     @Column(name = "descricao")
     private String description;

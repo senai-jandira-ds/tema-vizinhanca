@@ -10,9 +10,11 @@ import java.util.List;
 @Setter
 public class ActivityViewResponse {
 
-    List<ActivityViewDetailResponse> activities;
+    private Integer amount_activity;
+    private List<ActivityViewDetailResponse> activities;
 
     public ActivityViewResponse(List<ActivityView> activities) {
+        this.amount_activity = activities.size();
         this.activities = activities.stream()
                 .map(ActivityViewDetailResponse::new)
                 .toList();
