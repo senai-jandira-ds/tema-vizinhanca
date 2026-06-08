@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb250YXRvQHNvbGFyZmxvcmVzLmNvbSIsImlkX2NvbmRvbWluaXVtIjoxLCJ0eXBlX3BlcmZpbCI6IkNPTkRPTcONTklPIiwiaWF0IjoxNzgwNTAwODYyLCJleHAiOjE3ODA1ODcyNjJ9.ciWWtI4bqL_Av4DCzMBdwinXPOVIdOIdDTFelJKWSH0
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJicnVuby5zYW50b3NAZW1haWwuY29tIiwiaWRfY29uZG9taW5pdW0iOjEsImlkX3Jlc2lkZW50IjoyLCJ0eXBlX3BlcmZpbCI6Ik1PUkFET1IiLCJpYXQiOjE3ODA5NDIyODgsImV4cCI6MTc4MTAyODY4OH0.l6YxvlWJNWtUZKHEbXMClOgE-0iso00z4xIu7k8rdJE
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
@@ -267,7 +267,7 @@ Content-Type: multipart/form-data; boundary=----Boundary
 ------Boundary
 Content-Disposition: form-data; name="status"
 
-RESERVADO
+INDISPONÍVEL
 ------Boundary--
 
 ### DELETE

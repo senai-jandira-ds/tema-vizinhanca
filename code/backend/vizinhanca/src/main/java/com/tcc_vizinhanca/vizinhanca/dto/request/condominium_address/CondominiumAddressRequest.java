@@ -22,7 +22,6 @@ public class CondominiumAddressRequest {
     @NotBlank(message = "Number não pode ser vazio")
     private String number;
 
-    @NotBlank(message = "Landmark não pode ser vazio")
     private String landmark;
 
     @NotBlank(message = "City não pode ser vazio")

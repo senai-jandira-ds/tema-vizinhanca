@@ -116,6 +116,8 @@ public class ObjectService {
 
     // SELECT BY ID
     public Object getSelectObjectById(@NonNull Long id) {
+        System.out.println(id);
+        System.out.println(objectRepository.findById(id));
         return objectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
     }
@@ -151,7 +153,7 @@ public class ObjectService {
             Object updatedObject,
             MultipartFile photo,
             Long categoryId) {
-
+        System.out.println(id);
         Object existingObject = getSelectObjectById(id);
 
         if (photo != null && !photo.isEmpty()) {

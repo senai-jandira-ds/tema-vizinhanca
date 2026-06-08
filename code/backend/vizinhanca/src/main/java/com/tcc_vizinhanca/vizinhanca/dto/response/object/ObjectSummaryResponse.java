@@ -36,7 +36,7 @@ public class ObjectSummaryResponse {
         this.photo = object.getPhoto();
         this.title = object.getTitle();
         this.deadline = object.getDeadline();
-        this.status = object.getStatus();
+        this.status = object.getStatus().toString();
         this.resident_name = object.getResident() != null
                 ? object.getResident().getName()
                 : "";
