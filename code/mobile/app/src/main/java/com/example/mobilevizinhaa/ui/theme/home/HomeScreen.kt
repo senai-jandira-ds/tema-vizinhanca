@@ -34,15 +34,23 @@ fun HomeScreen(
     viewModel: HomeViewModel
 ) {
     val resident by viewModel.residentData.collectAsState()
-    val posts = viewModel.posts
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
-    // Sincroniza os dados do perfil em segundo plano assim que a Home abre
+    // 🎯 ORDENAÇÃO: Pegamos os posts e ordenamos pelo ID (ou data) decrescente para que o mais recente fique no topo.
+    // Se o seu modelo tiver uma propriedade estruturada em Date/String (ex: creationDate), você pode mudar para:
+    // sortByDescending { it.creationDate }
+    val postsOrdenados = remember(viewModel.posts.size, viewModel.posts) {
+        viewModel.posts.sortedByDescending { it.id }
+    }
+
+    // Sincroniza os dados do perfil e força o recarregamento do mural assim que a Home abre
     LaunchedEffect(Unit) {
         val tokenSalvo = viewModel.obterTokenSalvo()
         if (tokenSalvo.isNotEmpty()) {
             viewModel.carregarDadosPerfil(tokenSalvo)
+            // Caso tenha uma função específica para atualizar o mural ao abrir a tela:
+            // viewModel.carregarPostagensMural(tokenSalvo)
         }
     }
 
@@ -119,9 +127,9 @@ fun HomeScreen(
                 color = Color.Black
             )
 
-            // 4. Grade de Postagens Original Sem Quebrar os Cards superiores
+            // 4. Grade de Postagens Atualizada com a lista ordenada cronologicamente
             PostGridSection(
-                posts = posts,
+                posts = postsOrdenados,
                 viewModel = viewModel,
                 onPostClick = { postId ->
                     focusManager.clearFocus()

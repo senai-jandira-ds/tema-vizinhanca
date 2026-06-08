@@ -312,6 +312,47 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * EXCLUIR POSTAGEM INTEGRADA COM O BANCO DE DADOS (DELETE)
+     * Dispara a deleção para o servidor usando a API do Retrofit com tratamento assíncrono.
+     * Caso o backend retorne sucesso, remove localmente da UI e executa o callback de retorno.
+     */
+    fun deletarPost(postId: Int, onSuccess: () -> Unit = {}) {
+        val token = obterTokenSalvo()
+        if (token.isEmpty()) {
+            Log.e("API_DELETE", "Erro: Token de autenticação não encontrado.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
+                // Dispara a chamada para o endpoint de exclusão configurado no seu RetrofitClient
+                val response = RetrofitClient.authApi.deletarPublicacao(authHeader, postId)
+
+                if (response.isSuccessful) {
+                    Log.d("API_DELETE", "✅ Sucesso: Postagem de ID $postId deletada do banco de dados.")
+
+                    // Remove do estado reativo do Compose de forma síncrona na Main Thread
+                    _posts.removeAll { it.id == postId }
+
+                    // Retorna para a tela anterior através da navegação
+                    withContext(Dispatchers.Main) {
+                        onSuccess()
+                    }
+                } else {
+                    Log.e("API_DELETE", "❌ Servidor retornou erro ao deletar: ${response.code()} - ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API_DELETE", "❌ Erro de rede ou comunicação ao deletar publicação: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    /**
      * OTIMIZAÇÃO DA IMAGEM DA GALERIA E CONVERSÃO PARA BASE64
      * Forçado a rodar estritamente sob a thread Dispatchers.IO para evitar congelamento de UI
      * e jank de frames detectados no Logcat do aparelho. Teto fixado em 500px.
@@ -376,10 +417,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 imagemUri = uri
             )
         )
-    }
-
-    fun deletarPost(postId: Int) {
-        _posts.removeAll { it.id == postId }
     }
 
     /**

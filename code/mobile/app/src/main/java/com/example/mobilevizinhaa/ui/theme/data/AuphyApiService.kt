@@ -415,6 +415,11 @@ data class ConversationRequest(
     @SerializedName("targetResidentId") val targetResidentId: Long
 )
 
+// 🎯 Novo Payload para Envio de Mensagens de Texto
+data class SendMessageRequest(
+    @SerializedName("text") val text: String
+)
+
 
 // ==========================================
 // 7. INTERFACE DA API (ROTAS DE RETROFIT INTEGRADAS)
@@ -440,11 +445,26 @@ interface AuthApiService {
         @Body request: UpdateResidentRequest
     ): Response<SingleResidentResponse>
 
+    // ------------------------------------------------------------------------
+    // ROTAS DO MURAL DE PUBLICAÇÕES
+    // ------------------------------------------------------------------------
+
     @POST("api/v1/publication")
     suspend fun criarPublicacao(
         @Header("Authorization") token: String,
         @Body request: CreatePostRequest
     ): Response<CreatePostResponse>
+
+    // 🎯 INTEGRADO: Método DELETE consumido pelo HomeViewModel para remover posts
+    @DELETE("api/v1/publication/{id}")
+    suspend fun deletarPublicacao(
+        @Header("Authorization") token: String,
+        @Path("id") idPost: Int
+    ): Response<Unit>
+
+    // ------------------------------------------------------------------------
+    // ROTAS DE SERVIÇOS DO CONDOMÍNIO
+    // ------------------------------------------------------------------------
 
     @POST("api/v1/service")
     suspend fun criarServico(
@@ -548,5 +568,12 @@ interface AuthApiService {
         @Header("Authorization") token: String,
         @Path("id") idConversa: Long
     ): Response<ApiResponseListMessage>
-}
 
+    // 🎯 NOVO: Rota para postar e enviar novas mensagens em tempo real dentro do chat
+    @POST("api/v1/conversation/{id}/messages")
+    suspend fun enviarMensagem(
+        @Header("Authorization") token: String,
+        @Path("id") idConversa: Long,
+        @Body request: SendMessageRequest
+    ): Response<MessageResponse>
+}

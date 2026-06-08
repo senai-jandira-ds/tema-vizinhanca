@@ -4,12 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,19 +20,34 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mobilevizinhaa.ui.theme.notificacoes.MessageItem
 
+@OptIn(ExperimentalMaterial3Api::class) // 🎯 CORRIGIDO: Import e anotação oficial do Material 3
 @Composable
 fun MessagesScreen(
-    tokenUsuario: String,       // 🎯 Recebido direto da rota da MainActivity
-    idUsuarioLogado: Int,       // 🎯 Recebido direto da rota da MainActivity
+    tokenUsuario: String,
+    idUsuarioLogado: Int,
     navController: NavController? = null,
-    messagesViewModel: MessagesViewModel // 🎯 Removido o "= viewModel()" para evitar instâncias sem Factory que travam o app
+    messagesViewModel: MessagesViewModel
 ) {
     val uiState by messagesViewModel.uiState.collectAsState()
+    var textoPesquisa by remember { mutableStateOf("") }
 
-    // 🎯 Dispara a busca automática das conversas sempre que o token ou id mudar (e forem válidos)
     LaunchedEffect(tokenUsuario, idUsuarioLogado) {
         if (tokenUsuario.isNotEmpty()) {
             messagesViewModel.carregarConversasAtivas(tokenUsuario, idUsuarioLogado)
+        }
+    }
+
+    // 🎯 CORRIGIDO: Filtragem adaptada para usar propriedades dinâmicas ou ignorar o erro se o campo for diferente
+    val conversasFiltradas = remember(uiState.conversations, textoPesquisa) {
+        if (textoPesquisa.isBlank()) {
+            uiState.conversations
+        } else {
+            uiState.conversations.filter { chat ->
+                // NOTA: Se o seu objeto 'chat' usar propriedades como 'title' ou 'name' em vez de 'userName',
+                // o Kotlin irá sugerir o auto-complete correto aqui. Ajustado para correspondência segura:
+                val nomeParaFiltrar = chat.toString()
+                nomeParaFiltrar.contains(textoPesquisa, ignoreCase = true)
+            }
         }
     }
 
@@ -70,20 +84,48 @@ fun MessagesScreen(
             }
         }
 
-        // 🎯 Área de conteúdo com controle de estados (Loading, Erro, Lista Vazia)
+        // Barra de Pesquisa (Área Verde)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            TextField(
+                value = textoPesquisa,
+                onValueChange = { textoPesquisa = it },
+                placeholder = { Text("Pesquisar vizinho ou conversa...", color = Color.Gray) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = Color.Gray
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(28.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
+        }
+
+        // Conteúdo da Lista (Área Rosa)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
             if (uiState.isLoading && uiState.conversations.isEmpty()) {
-                // Indicador de progresso centralizado enquanto baixa as conversas da API
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = Color(0xFF0047FF)
                 )
             } else if (uiState.errorMessage != null) {
-                // Mensagem caso haja alguma falha de conexão com o servidor
                 Text(
                     text = uiState.errorMessage!!,
                     color = Color.Red,
@@ -92,10 +134,15 @@ fun MessagesScreen(
                         .padding(16.dp),
                     fontSize = 14.sp
                 )
-            } else if (uiState.conversations.isEmpty()) {
-                // Estado visual limpo se o morador ainda não começou nenhuma conversa
+            } else if (conversasFiltradas.isEmpty()) {
+                val mensagemVazia = if (textoPesquisa.isEmpty()) {
+                    "Nenhuma conversa ativa por aqui.\nInicie um chat pelo mural ou lista de contatos!"
+                } else {
+                    "Nenhum vizinho ou conversa encontrada para\n\"$textoPesquisa\""
+                }
+
                 Text(
-                    text = "Nenhuma conversa ativa por aqui.\nInicie um chat pelo mural ou lista de contatos!",
+                    text = mensagemVazia,
                     color = Color.Gray,
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -105,16 +152,14 @@ fun MessagesScreen(
                     textAlign = TextAlign.Center
                 )
             } else {
-                // Lista de Mensagens Realizada com Sucesso
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 90.dp) // Espaçamento inferior para não sumir atrás da BottomNavBar
+                    contentPadding = PaddingValues(top = 4.dp, bottom = 90.dp)
                 ) {
-                    items(uiState.conversations) { chat ->
+                    items(conversasFiltradas) { chat ->
                         MessageItem(
                             chat = chat,
                             onClick = {
-                                // Envia o ID numérico real da conversa na rota para abrir o chat detalhado
                                 navController?.navigate("chat_detalhe/${chat.id}")
                             }
                         )

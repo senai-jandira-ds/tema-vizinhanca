@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -39,8 +40,9 @@ fun DetalhePostagemScreen(
     // 1. Busca a postagem selecionada na lista local de posts do ViewModel
     val post = viewModel.posts.find { it.id == postId }
 
-    // 2. Coleta os dados em tempo real do Morador Logado (Útil para saber se o post é dele e permitir exclusão)
+    // 2. Coleta os dados em tempo real do Morador Logado e o status de carregamento
     val resident by viewModel.residentData.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Estado para controlar a abertura do menu de opções (Excluir)
     var menuExpandido by remember { mutableStateOf(false) }
@@ -66,25 +68,29 @@ fun DetalhePostagemScreen(
                 },
                 actions = {
                     // Só exibe o menu de opções se houver um post carregado
-                    Box {
-                        IconButton(onClick = { menuExpandido = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Opções", tint = Color.Gray)
-                        }
+                    if (post != null) {
+                        Box {
+                            IconButton(onClick = { menuExpandido = true }) {
+                                Icon(Icons.Default.MoreVert, contentDescription = "Opções", tint = Color.Gray)
+                            }
 
-                        DropdownMenu(
-                            expanded = menuExpandido,
-                            onDismissRequest = { menuExpandido = false },
-                            modifier = Modifier.background(Color.White)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Excluir postagem", color = Color.Red) },
-                                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red) },
-                                onClick = {
-                                    menuExpandido = false
-                                    viewModel.deletarPost(postId)
-                                    navController.popBackStack()
-                                }
-                            )
+                            DropdownMenu(
+                                expanded = menuExpandido,
+                                onDismissRequest = { menuExpandido = false },
+                                modifier = Modifier.background(Color.White)
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Excluir postagem", color = Color.Red) },
+                                    leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red) },
+                                    onClick = {
+                                        menuExpandido = false
+                                        // 🎯 CHAMADA TOTALMENTE INTEGRADA: Passa o callback para voltar à tela anterior após o sucesso do DELETE na API
+                                        viewModel.deletarPost(postId = postId, onSuccess = {
+                                            navController.popBackStack()
+                                        })
+                                    }
+                                )
+                            }
                         }
                     }
                 },
@@ -92,83 +98,97 @@ fun DetalhePostagemScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
         ) {
-
-            // ====================================================================
-            // 1. CABEÇALHO DO USUÁRIO CORRIGIDO
-            // ====================================================================
-            // Agora pegamos dinamicamente os dados oficiais do perfil do morador logado.
-            // (Nota: Se a sua API futuramente trouxer dados de outros usuários no post,
-            // basta trocar 'resident?.name' por 'post.autorNome').
-            PostUserHeader(
-                userName = resident?.name ?: "Morador",
-                userPhotoUrl = resident?.photo // Repassa a string Base64 ou URL da foto de perfil
-            )
-
-            // ====================================================================
-            // 2. IMAGEM PRINCIPAL DA POSTAGEM
-            // ====================================================================
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .background(Color(0xFFF5F5F5))
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .verticalScroll(rememberScrollState())
             ) {
-                when {
-                    // Condição A: Se for um link HTTP da internet (Nuvem)
-                    isPostImgUrlRemota -> {
-                        AsyncImage(
-                            model = post?.imagemUrl,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    // Condição B: Se for uma string Base64 decodificada do banco
-                    bitmapPostImage != null -> {
-                        Image(
-                            bitmap = bitmapPostImage,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    // Condição C: Se for uma URI de mídia local do dispositivo
-                    post?.imagemUri != null -> {
-                        AsyncImage(
-                            model = post.imagemUri,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    // Condição D: Fallback caso o post não possua foto nenhuma
-                    else -> {
-                        Image(
-                            painter = painterResource(id = post?.imagemRes ?: R.drawable.mulher),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
+
+                // ====================================================================
+                // 1. CABEÇALHO DO USUÁRIO CORRIGIDO
+                // ====================================================================
+                PostUserHeader(
+                    userName = resident?.name ?: "Morador",
+                    userPhotoUrl = resident?.photo // Repassa a string Base64 ou URL da foto de perfil
+                )
+
+                // ====================================================================
+                // 2. IMAGEM PRINCIPAL DA POSTAGEM
+                // ====================================================================
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .background(Color(0xFFF5F5F5))
+                ) {
+                    when {
+                        // Condição A: Se for um link HTTP da internet (Nuvem)
+                        isPostImgUrlRemota -> {
+                            AsyncImage(
+                                model = post?.imagemUrl,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        // Condição B: Se for uma string Base64 decodificada do banco
+                        bitmapPostImage != null -> {
+                            Image(
+                                bitmap = bitmapPostImage,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        // Condição C: Se for uma URI de mídia local do dispositivo
+                        post?.imagemUri != null -> {
+                            AsyncImage(
+                                model = post.imagemUri,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        // Condição D: Fallback caso o post não possua foto nenhuma
+                        else -> {
+                            Image(
+                                painter = painterResource(id = post?.imagemRes ?: R.drawable.mulher),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
+
+                // ====================================================================
+                // 3. SEÇÃO DE TEXTO (TÍTULO E DESCRIÇÃO)
+                // ====================================================================
+                PostDescriptionSection(
+                    titulo = post?.titulo ?: "Publicação sem título",
+                    descricao = post?.descricao ?: "Nenhuma descrição fornecida."
+                )
+
+                Spacer(modifier = Modifier.height(40.dp))
             }
 
-            // ====================================================================
-            // 3. SEÇÃO DE TEXTO (TÍTULO E DESCRIÇÃO)
-            // ====================================================================
-            PostDescriptionSection(
-                titulo = post?.titulo ?: "Publicação sem título",
-                descricao = post?.descricao ?: "Nenhuma descrição fornecida."
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
+            // 🎯 CAMADA VISUAL DE LOADING ASSÍNCRONO: Aparece como um overlay suave bloqueando cliques repetidos se estiver deletando na API
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF3867F5))
+                }
+            }
         }
     }
 }
