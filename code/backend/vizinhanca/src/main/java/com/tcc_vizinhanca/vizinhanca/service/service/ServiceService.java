@@ -20,6 +20,7 @@ import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.specification.service.ServiceSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -122,6 +123,7 @@ public class ServiceService {
     }
 
     // INSERT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setInsertService(@NonNull Service service, Long residentId, Long condominiumId, Long categoryId) {
         Resident resident = residentService.getSelectResidentById(residentId);
         Condominium condominium = condominiumService.getSelectCondominiumById(condominiumId);
@@ -151,6 +153,7 @@ public class ServiceService {
     }
 
     // UPDATE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setUpdateService(@NonNull Long id, Service updatedService, Long categoryId) {
         Service existingService = getSelectServiceById(id);
 
@@ -184,6 +187,7 @@ public class ServiceService {
     }
 
     // DELETE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteServiceById(@NonNull Long id) {
         if (!serviceRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Serviço não encontrado!");

@@ -21,6 +21,7 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.specification.object.ObjectSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -123,6 +124,7 @@ public class ObjectService {
     }
 
     // INSERT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setInsertObject(
             @NonNull Object object,
             MultipartFile photo,
@@ -148,6 +150,7 @@ public class ObjectService {
     }
 
     // UPDATE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setUpdateObject(
             @NonNull Long id,
             Object updatedObject,
@@ -178,6 +181,7 @@ public class ObjectService {
     }
 
     // DELETE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteObjectById(@NonNull Long id) {
         Object existing = getSelectObjectById(id);
 

@@ -23,6 +23,7 @@ import com.tcc_vizinhanca.vizinhanca.specification.report.ReportSpecification;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -97,6 +98,7 @@ public class ReportService {
     }
 
     // INSERT REPORT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Report setInsertReport(@NonNull Report report, String email,
                                   Long reasonReportId, Long objectId,
                                   Long serviceId, Long publicationId) {
@@ -121,6 +123,7 @@ public class ReportService {
     }
 
     // UPDATE REPORT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Report setUpdateReport(@NonNull Report report, Long idReport) {
         Report existingReport = getSelectReportById(idReport);
 
@@ -131,6 +134,7 @@ public class ReportService {
     }
 
     // DELETE REPORT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteReport(Long idReport) {
         if (!reportRepository.existsById(idReport)) {
             throw new ResponseStatusException(
