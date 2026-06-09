@@ -112,6 +112,7 @@ public class CondominiumController {
     public ResponseEntity<ApiResponse<PageResponse<ResidentSummaryResponse>>> listResidentsByFilters(
             @RequestParam(required = false) List<Long> blockIds,
             @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String name,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest request) {
@@ -121,7 +122,7 @@ public class CondominiumController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
         Page<Resident> residents = residentService
-                .getSelectResidentsByFilters(user.idCondominium(), blockIds, isActive, pageable);
+                .getSelectResidentsByFilters(user.idCondominium(), blockIds, isActive, name, pageable);
 
         PageResponse<ResidentSummaryResponse> response =
                 new PageResponse<>(residents, ResidentSummaryResponse::new);

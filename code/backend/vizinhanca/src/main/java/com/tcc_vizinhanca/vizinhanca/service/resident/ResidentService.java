@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.table.AbstractTableModel;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -81,6 +82,7 @@ public class ResidentService {
             Long condominiumId,
             List<Long> blockIds,
             Boolean isActive,
+            String name,
             Pageable pageable) {
 
         Specification<Resident> spec = Specification
@@ -92,6 +94,10 @@ public class ResidentService {
 
         if (isActive != null) {
             spec = spec.and(ResidentSpecification.isActive(isActive));
+        }
+
+        if (name != null && !name.isBlank()) {
+            spec = spec.and(ResidentSpecification.hasName(name));
         }
 
         return residentRepository.findAll(spec, pageable);
