@@ -15,6 +15,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.object.ObjectRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
@@ -49,6 +50,9 @@ public class ObjectService {
 
     @Autowired
     private BlobStorageService blobStorageService;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Object> getSelectAllObjectsByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -150,14 +154,14 @@ public class ObjectService {
     }
 
     // UPDATE
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setUpdateObject(
             @NonNull Long id,
             Object updatedObject,
             MultipartFile photo,
             Long categoryId) {
-        System.out.println(id);
+
         Object existingObject = getSelectObjectById(id);
+        Long condominiumId = existingObject.getCondominium().getId();
 
         if (photo != null && !photo.isEmpty()) {
             if (existingObject.getPhoto() != null) {
@@ -177,7 +181,9 @@ public class ObjectService {
             existingObject.setCategory(category);
         }
 
-        return objectRepository.save(existingObject);
+        Object saved = objectRepository.save(existingObject);
+        activityViewService.evictCache(condominiumId);
+        return saved;
     }
 
     // DELETE

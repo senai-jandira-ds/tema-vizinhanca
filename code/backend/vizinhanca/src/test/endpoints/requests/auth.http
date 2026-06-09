@@ -260,7 +260,7 @@ Content-Disposition: form-data; name="category_id"
 ------Boundary--
 
 ### PUT (multipart/form-data)
-PUT http://localhost:8080/api/v1/object/1
+PUT http://localhost:8080/api/v1/object/9
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=----Boundary
 
