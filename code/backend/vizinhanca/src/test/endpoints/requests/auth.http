@@ -271,7 +271,7 @@ INDISPONÍVEL
 ------Boundary--
 
 ### DELETE
-DELETE http://localhost:8080/api/v1/object/114
+DELETE https://api-vizinhanca.onrender.com/api/v1/object/114
 Authorization: Bearer {{token}}
 
 ### ===== CATEGORY =====
