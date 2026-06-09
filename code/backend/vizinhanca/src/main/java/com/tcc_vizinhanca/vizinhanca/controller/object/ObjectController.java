@@ -41,7 +41,7 @@ public class ObjectController {
     @Autowired
     private ObjectService objectService;
 
-    // GET ALL BY CONDOMINIUM — ex: GET /api/v1/object?page=0&size=20
+    // GET ALL BY CONDOMINIUM
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ObjectDetailResponse>>> listAllObjects(
             @RequestParam(defaultValue = "0") int page,

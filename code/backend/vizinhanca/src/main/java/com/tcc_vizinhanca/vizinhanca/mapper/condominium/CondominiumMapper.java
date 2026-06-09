@@ -9,10 +9,10 @@ public class CondominiumMapper {
 
     public static Condominium toEntity(CondominiumCreateRequest dto) {
         Condominium condominium = Condominium.builder()
-                .name(dto.getNome())
+                .name(dto.getName())
                 .cnpj(dto.getCnpj())
-                .amountBlocks(dto.getQtdBlocos())
-                .amountApartments(dto.getQtdApto())
+                .amountBlocks(dto.getAmount_blocks())
+                .amountApartments(dto.getAmount_apartments())
                 .email(dto.getEmail())
                 .password(dto.getPassword())
                 .build();

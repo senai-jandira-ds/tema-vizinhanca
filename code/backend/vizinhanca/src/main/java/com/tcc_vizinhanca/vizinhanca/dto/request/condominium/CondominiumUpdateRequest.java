@@ -19,7 +19,7 @@ public class CondominiumUpdateRequest {
     private String cnpj;
 
     @JsonProperty("photo")
-    @NotBlank(message = "Foto é obrigatório")
+    @NotNull(message = "Foto é obrigatório")
     private MultipartFile foto;
 
     @JsonProperty("amount_blocks")

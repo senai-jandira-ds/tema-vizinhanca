@@ -1,3 +1,11 @@
+/***************************************************
+ * Objetivo: Specification responsável pelos predicados de filtragem
+ * da entidade Service, utilizados nas consultas dinâmicas com JPA
+ * Data: 31/05/2026
+ * Autor: Leonardo Scotti
+ * Versão: 1.0.05.26
+ * *************************************************/
+
 package com.tcc_vizinhanca.vizinhanca.specification.service;
 
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
@@ -9,6 +17,10 @@ public class ServiceSpecification {
 
     public static Specification<Service> hasCondominium(Long condominiumId) {
         return (root, query, cb) -> cb.equal(root.get("condominium").get("id"), condominiumId);
+    }
+
+    public static Specification<Service> hasResident(Long residentId) {
+        return (root, query, cb) -> cb.equal(root.get("resident").get("id"), residentId);
     }
 
     public static Specification<Service> hasStatuses(List<String> statuses) {

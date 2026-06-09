@@ -15,10 +15,12 @@ import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
+import com.tcc_vizinhanca.vizinhanca.service.notification.NotificationService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.specification.service.ServiceSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,6 +44,9 @@ public class ServiceService {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Service> getSelectAllServicesByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -89,6 +94,27 @@ public class ServiceService {
         return serviceRepository.findAll(spec, pageable);
     }
 
+    // SELECT WITH FILTERS
+    public Page<Service> getSelectResidentServicesByFilters(
+            Long residentId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            Pageable pageable) {
+
+        Specification<Service> spec = Specification
+                .where(ServiceSpecification.hasResident(residentId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ServiceSpecification.hasCategories(categoryIds));
+        }
+
+        return serviceRepository.findAll(spec, pageable);
+    }
+
     // SELECT BY ID
     public Service getSelectServiceById(@NonNull Long id) {
         return serviceRepository.findById(id)
@@ -97,25 +123,42 @@ public class ServiceService {
     }
 
     // INSERT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setInsertService(@NonNull Service service, Long residentId, Long condominiumId, Long categoryId) {
         Resident resident = residentService.getSelectResidentById(residentId);
         Condominium condominium = condominiumService.getSelectCondominiumById(condominiumId);
         Category category = categoryService.getSelectCategoryById(categoryId);
 
-        System.out.println(residentService.getSelectResidentById(residentId));
-        System.out.println(condominiumService.getSelectCondominiumById(condominiumId));
-        System.out.println(categoryService.getSelectCategoryById(categoryId));
-
         service.setResident(resident);
         service.setCondominium(condominium);
         service.setCategory(category);
 
-        return serviceRepository.save(service);
+        Service saved = serviceRepository.save(service);
+
+        // Notifica todos os moradores do condomínio sobre o novo serviço
+        List<Long> residentIds = condominium.getResidents()
+                .stream()
+                .map(r -> r.getId())
+                .filter(id -> !id.equals(residentId)) // não notifica quem criou
+                .toList();
+
+        notificationService.notifyAllResidents(
+                residentIds,
+                resident.getName() + " solicitou um serviço: " + saved.getTitle(),
+                "SERVICE",
+                saved.getId()
+        );
+
+        return saved;
     }
 
     // UPDATE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setUpdateService(@NonNull Long id, Service updatedService, Long categoryId) {
         Service existingService = getSelectServiceById(id);
+
+        boolean statusChanged = updatedService.getStatus() != null
+                && !updatedService.getStatus().equals(existingService.getStatus());
 
         if (updatedService.getPhoto() != null) existingService.setPhoto(updatedService.getPhoto());
         if (updatedService.getTitle() != null) existingService.setTitle(updatedService.getTitle());
@@ -129,10 +172,22 @@ public class ServiceService {
             existingService.setCategory(category);
         }
 
-        return serviceRepository.save(existingService);
+        Service updated = serviceRepository.save(existingService);
+
+        if (statusChanged) {
+            notificationService.notify(
+                    updated.getResident().getId(),
+                    "Seu serviço \"" + updated.getTitle() + "\" foi atualizado para: " + updated.getStatus(),
+                    "SERVICE",
+                    updated.getId()
+            );
+        }
+
+        return updated;
     }
 
     // DELETE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteServiceById(@NonNull Long id) {
         if (!serviceRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Serviço não encontrado!");

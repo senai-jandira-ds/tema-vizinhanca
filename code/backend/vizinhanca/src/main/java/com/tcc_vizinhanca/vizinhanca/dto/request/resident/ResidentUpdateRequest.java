@@ -18,7 +18,6 @@ public class ResidentUpdateRequest {
     @NotBlank(message = "Apartamento é obrigatório")
     private String apartment;
 
-    @JsonProperty("id_block")
     @NotNull(message = "ID do Bloco deve ser obrigatório")
     @Positive(message = "ID do Bloco deve ser positivo")
     private Long idBlock;

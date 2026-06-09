@@ -21,6 +21,7 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.specification.object.ObjectSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -70,7 +71,6 @@ public class ObjectService {
     }
 
     // SELECT WITH FILTERS
-    // ObjectService
     public Page<Object> getSelectObjectsByFilters(
             Long condominiumId,
             List<String> statuses,
@@ -78,8 +78,7 @@ public class ObjectService {
             List<Long> blockIds,
             Pageable pageable) {
 
-        Specification<Object> spec = Specification
-                .where(ObjectSpecification.hasCondominium(condominiumId));
+        Specification<Object> spec = Specification.where(ObjectSpecification.hasCondominium(condominiumId));
 
         if (statuses != null && !statuses.isEmpty()) {
             spec = spec.and(ObjectSpecification.hasStatuses(statuses));
@@ -96,14 +95,36 @@ public class ObjectService {
         return objectRepository.findAll(spec, pageable);
     }
 
+    // SELECT WITH FILTERS
+    public Page<Object> getSelectResidentObjectsByFilters(
+            Long residentId,
+            List<String> statuses,
+            List<Long> categoryIds,
+            Pageable pageable) {
+
+        Specification<Object> spec = Specification.where(ObjectSpecification.hasResident(residentId));
+
+        if (statuses != null && !statuses.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasStatuses(statuses));
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            spec = spec.and(ObjectSpecification.hasCategories(categoryIds));
+        }
+
+        return objectRepository.findAll(spec, pageable);
+    }
+
     // SELECT BY ID
     public Object getSelectObjectById(@NonNull Long id) {
+        System.out.println(id);
+        System.out.println(objectRepository.findById(id));
         return objectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
     }
 
     // INSERT
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setInsertObject(
             @NonNull Object object,
             MultipartFile photo,
@@ -129,12 +150,13 @@ public class ObjectService {
     }
 
     // UPDATE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setUpdateObject(
             @NonNull Long id,
             Object updatedObject,
             MultipartFile photo,
             Long categoryId) {
-
+        System.out.println(id);
         Object existingObject = getSelectObjectById(id);
 
         if (photo != null && !photo.isEmpty()) {
@@ -159,6 +181,7 @@ public class ObjectService {
     }
 
     // DELETE
+    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteObjectById(@NonNull Long id) {
         Object existing = getSelectObjectById(id);
 
