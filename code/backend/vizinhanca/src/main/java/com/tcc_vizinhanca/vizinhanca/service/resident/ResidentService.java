@@ -24,6 +24,9 @@ import com.tcc_vizinhanca.vizinhanca.specification.resident.ResidentSpecificatio
 import lombok.NonNull;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,9 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.table.AbstractTableModel;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ResidentService {
@@ -58,6 +59,9 @@ public class ResidentService {
 
     @Autowired
     private BlobStorageService blobStorageService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     // SELECT ALL
     public Page<Resident> getSelectAllResidents(Pageable pageable) {
@@ -127,6 +131,7 @@ public class ResidentService {
     }
 
     // INSERT RESIDENT
+    @CachePut(value = "residentByEmail", key = "#result.email")
     public Resident setInsertResident(@NonNull Resident resident) {
         resident.setId(null);
 
@@ -145,6 +150,7 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
+    @CachePut(value = "residentByEmail", key = "#result.email")
     @Transactional
     public Resident setUpdateResident(
             @NonNull ResidentUpdateRequest dto,
@@ -184,10 +190,14 @@ public class ResidentService {
 
     // DELETE RESIDENT
     public void setDeleteResidentById(Long idResident) {
-        if (!residentRepository.existsById(idResident)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!");
-        }
+
+        Resident resident = getSelectResidentById(idResident);
+
         residentRepository.deleteById(idResident);
+
+        Cache cache = cacheManager.getCache("residentByEmail");
+        if (cache != null) {
+            cache.evict(resident.getEmail());
+        }
     }
 }
