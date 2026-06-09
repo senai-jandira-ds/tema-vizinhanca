@@ -57,7 +57,7 @@ class CriarObjetoViewModel : ViewModel() {
                 val deadlinePart = MultipartBody.Part.createFormData("deadline", dataDeadline)
 
                 // 🎯 MODIFICADO APENAS AQUI: Força o objeto novo a nascer estritamente como INDISPONIVEL
-                val statusPart = MultipartBody.Part.createFormData("status", "INDISPONIVEL")
+                val statusPart = MultipartBody.Part.createFormData("status", "INDISPONÍVEL")
 
                 val categoryIdPart = MultipartBody.Part.createFormData("categoryId", categoryId.toString())
 

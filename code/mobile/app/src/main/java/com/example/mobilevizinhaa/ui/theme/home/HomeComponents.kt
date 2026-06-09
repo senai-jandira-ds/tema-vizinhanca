@@ -332,10 +332,9 @@ fun CustomBottomNavBar(navController: NavController? = null) {
                     isSelected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            // 🎯 CORRIGIDO: Agora a rota do mural injeta dinamicamente o ID do usuário para evitar crashes de navegação
                             val rotaDestino = when (item.second) {
                                 "pedido" -> "pedido/$tokenCodificadoSeguro/$idUsuarioInt"
-                                "mural" -> "mural/$tokenCodificadoSeguro/$idUsuarioInt" // 🎯 Correção cirúrgica inserida aqui!
+                                "mural" -> "mural/$tokenCodificadoSeguro/$idUsuarioInt"
                                 "mensagens" -> "mensagens/$tokenCodificadoSeguro/$idUsuarioInt"
                                 else -> item.second
                             }

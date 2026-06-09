@@ -13,17 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -52,6 +46,8 @@ import com.example.mobilevizinhaa.ui.theme.home.detail.DetalhePostagemScreen
 import com.example.mobilevizinhaa.ui.theme.home.createservice.CriarPedidoObjetoScreen
 import com.example.mobilevizinhaa.ui.theme.home.createobjeto.CriarObjetoScreen
 import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.PerfilScreen
+import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.SubPrivacidadeScreen
+import com.example.mobilevizinhaa.ui.theme.`configuraçoes`.ConfiguracoesViewModel
 
 // Import do tema global e dados
 import com.example.mobilevizinhaa.ui.theme.MobileVizinhaçaTheme
@@ -98,10 +94,11 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
 
-    // Esconde a BottomBar nas telas secundárias de fluxo de cadastro, login e detalhes internos
+    // Esconde a BottomBar nas telas secundárias de fluxo de cadastro, login, configurações internas e detalhes
     val esconderBottomBar = currentRoute == null ||
             currentRoute == "login" ||
             currentRoute == "publicacao" ||
+            currentRoute == "sub_privacidade" || // Oculta a barra de navegação inferior na tela de privacidade
             currentRoute.startsWith("criar_servico") ||
             currentRoute.startsWith("criar_objeto") ||
             currentRoute.startsWith("chat_detalhe") ||
@@ -182,9 +179,28 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 DetalhePostagemScreen(id, navController, homeViewModel)
             }
 
-            // --- CONFIGURAÇÕES ---
+            // --- CONFIGURAÇÕES (PERFIL) CORRIGIDO ---
             composable("configuracoes") {
-                PerfilScreen(navController = navController, viewModel = homeViewModel)
+                val configViewModel: ConfiguracoesViewModel = viewModel(
+                    factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                        context.applicationContext as Application
+                    )
+                )
+                PerfilScreen(
+                    navController = navController,
+                    viewModel = homeViewModel,
+                    configViewModel = configViewModel
+                )
+            }
+
+            // --- ROTA DA TELA DE PRIVACIDADE CORRIGIDA ---
+            composable("sub_privacidade") {
+                val configViewModel: ConfiguracoesViewModel = viewModel(
+                    factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                        context.applicationContext as Application
+                    )
+                )
+                SubPrivacidadeScreen(navController = navController, viewModel = configViewModel)
             }
 
             composable("notificacoes") { NotificationsScreen() }
@@ -217,7 +233,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
                 )
             }
 
-            // --- 🎯 CORRIGIDO: MURAL DO CONDOMÍNIO (Agora aceita e repassa o idUsuarioLogado) ---
+            // --- MURAL DO CONDOMÍNIO ---
             composable(
                 route = "mural/{tokenUsuario}/{idUsuarioLogado}",
                 arguments = listOf(
