@@ -159,7 +159,7 @@ function UsuarioModal({
     const dadosParaEnviar = {
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
-      id_block: blocoSelecionado?.id || null,
+      idBlock: blocoSelecionado?.id || null,
       cpf: dadosSemId.cpf || "",
       email: dadosSemId.email || "",
       phone: dadosSemId.telefone || "",
@@ -246,7 +246,7 @@ function UsuarioModal({
             }
             disabled={loadingBlocos}
           >
-            <option value="">Bloco</option>
+            <option value="">Selecione o Bloco</option>
             {loadingBlocos ? (
               <option disabled>Carregando...</option>
             ) : (
@@ -524,7 +524,7 @@ function BlocoModal({
           onChange={(e) =>
             handleChange('block', e.target.value)
           }
-          placeholder="Nome do bloco"
+          placeholder="Bloco"
           className={styles.inputFull}
         />
       </div>

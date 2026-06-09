@@ -1,6 +1,6 @@
 import styles from "./style.module.css";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from 'react-toastify';
 import { motion } from "framer-motion";
 import logo from "../../assets/icons/logo.png";
@@ -14,6 +14,8 @@ function LoginScreen() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const emailRef = useRef(null);
+    const passwordRef = useRef(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -83,16 +85,28 @@ function LoginScreen() {
                     ) : (
                         <>
                             <Input
+                                ref={emailRef}
                                 placeholder="Login"
                                 type="text"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        passwordRef.current?.focus();
+                                    }
+                                }}
                             />
                             <Input
+                                ref={passwordRef}
                                 placeholder="Senha"
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        handleLogin(e);
+                                    }
+                                }}
                             />
 
                             {error && <p className={styles.error}>{error}</p>}

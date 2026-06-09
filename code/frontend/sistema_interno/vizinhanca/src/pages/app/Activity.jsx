@@ -45,7 +45,6 @@ function Activity() {
     }, [dadosTabela, termoBusca, filtrosSelecionados]);
 
     const fetchActivities = async () => {
-        console.log("Buscando atividades...");
         try {
             setLoading(true);
             const data = await getActivities();
@@ -80,9 +79,6 @@ function Activity() {
     };
 
     const handleUpdateActivity = async (param1, param2) => {
-
-        console.log("HANDLE UPDATE CHAMADO");
-        console.log(param1, param2);
         
         const linha = param2?.linha || param1?.linha || param1;
 
@@ -100,19 +96,15 @@ function Activity() {
         }
 
         try {
-
+            setLoading(true);
             const formData = new FormData()
 
             if (tipo === 'servico') {
 
                 formData.append('status', 'Concluido')
-                console.log(Object.fromEntries(formData));
-
-                console.log("ANTES DO UPDATE");
 
                 await updateService(idDaEntidade, formData);
 
-                console.log("DEPOIS DO UPDATE");
             } else if (tipo === 'objeto') {
 
                 formData.append('status', 'INDISPONÍVEL')
@@ -130,15 +122,18 @@ function Activity() {
             }
 
             toast.success("Atualizado com sucesso!");
-            fetchActivities();
+            await fetchActivities();
             toast.success("Atualizando dados da tabela com sucesso!");
+            setLoading(false)
         } catch (error) {
             console.error("Erro no update:", error);
+            setLoading(false)
             toast.error("Erro ao atualizar atividade no servidor.");
         }
     };
 
     const handleDeleteActivity = async (dadoModal) => {
+        setLoading(true)
         const linha = dadoModal;
 
         if (!linha || !linha.tipoOriginal) {
@@ -164,18 +159,18 @@ function Activity() {
             }
 
             toast.success("Atividade excluída com sucesso!");
-            console.log("CHAMANDO FETCH APÓS DELETE");
-            await new Promise(resolve => setTimeout(resolve, 10000));
             await fetchActivities();
-            console.log("FETCH FINALIZADO");
+            setLoading(false)
         } catch (error) {
             console.error("Erro no delete:", error);
             toast.error("Erro ao tentar excluir a atividade.");
         }
+        setLoading(false)
     };
 
     const colunasTabela = [
         { id: 'displayId', label: 'Nº', width: 100 },
+        { id: 'idRealDaEntidade', label: 'Nº do servico/bojeto', width: 100 },
         { id: 'nome', label: 'Nome', width: 220 },
         { id: 'descricao', label: 'Descrição', width: 350 },
         { id: 'categoria', label: 'Categoria', width: 180 },

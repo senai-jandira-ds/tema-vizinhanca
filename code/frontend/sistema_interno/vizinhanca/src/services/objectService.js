@@ -24,6 +24,7 @@ export const updateObject = async (id, data) => {
             'Content-Type': 'multipart/form-data'
         }
     });
+
     return response.data;
 };
 
