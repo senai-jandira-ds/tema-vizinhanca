@@ -14,6 +14,7 @@ import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.notification.NotificationService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
@@ -47,6 +48,9 @@ public class ServiceService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Service> getSelectAllServicesByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -123,7 +127,6 @@ public class ServiceService {
     }
 
     // INSERT
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setInsertService(@NonNull Service service, Long residentId, Long condominiumId, Long categoryId) {
         Resident resident = residentService.getSelectResidentById(residentId);
         Condominium condominium = condominiumService.getSelectCondominiumById(condominiumId);
@@ -149,11 +152,11 @@ public class ServiceService {
                 saved.getId()
         );
 
+        activityViewService.evictCache(condominiumId);
         return saved;
     }
 
     // UPDATE
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Service setUpdateService(@NonNull Long id, Service updatedService, Long categoryId) {
         Service existingService = getSelectServiceById(id);
 
@@ -183,15 +186,15 @@ public class ServiceService {
             );
         }
 
+        activityViewService.evictCache(updated.getCategory().getId());
         return updated;
     }
 
     // DELETE
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteServiceById(@NonNull Long id) {
-        if (!serviceRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Serviço não encontrado!");
-        }
+        Service service = getSelectServiceById(id);
+
+        activityViewService.evictCache(service.getCondominium().getId());
         serviceRepository.deleteById(id);
     }
 }

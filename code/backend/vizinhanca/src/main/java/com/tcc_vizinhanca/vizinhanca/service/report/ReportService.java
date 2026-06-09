@@ -19,6 +19,7 @@ import com.tcc_vizinhanca.vizinhanca.repository.report.ReasonReportRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.report.ReportRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.resident.ResidentRepository;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.specification.report.ReportSpecification;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
@@ -53,6 +54,9 @@ public class ReportService {
 
     @Autowired
     private PublicationRepository publicationRepository;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     // SELECT ALL
     public Page<Report> getSelectAllReports(Pageable pageable) {
@@ -98,7 +102,6 @@ public class ReportService {
     }
 
     // INSERT REPORT
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Report setInsertReport(@NonNull Report report, String email,
                                   Long reasonReportId, Long objectId,
                                   Long serviceId, Long publicationId) {
@@ -119,27 +122,32 @@ public class ReportService {
         if (serviceId != null) report.setService(serviceRepository.getReferenceById(serviceId));
         if (publicationId != null) report.setPublication(publicationRepository.getReferenceById(publicationId));
 
-        return reportRepository.save(report);
+        Report saved = reportRepository.save(report);
+        activityViewService.evictCache(saved.getCondominium().getId());
+        return saved;
     }
 
     // UPDATE REPORT
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Report setUpdateReport(@NonNull Report report, Long idReport) {
         Report existingReport = getSelectReportById(idReport);
+        Long condominiumId = existingReport.getCondominium().getId();
 
         BeanUtils.copyProperties(report, existingReport,
                 "id", "resident", "reasonReport", "object", "service", "publication");
 
-        return reportRepository.save(existingReport);
+        Report updated = reportRepository.save(existingReport);
+        activityViewService.evictCache(updated.getCondominium().getId());
+        return updated;
     }
 
     // DELETE REPORT
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteReport(Long idReport) {
-        if (!reportRepository.existsById(idReport)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Denúncia não encontrada no banco de dados!");
-        }
+        Report report = reportRepository.findById(idReport)
+                .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Denúncia não encontrada no banco de dados!"));
+        Long condominiumId = report.getCondominium().getId();
+
+        activityViewService.evictCache(condominiumId);
         reportRepository.deleteById(idReport);
     }
 }
