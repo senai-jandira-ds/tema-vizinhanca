@@ -128,7 +128,6 @@ public class ObjectService {
     }
 
     // INSERT
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public Object setInsertObject(
             @NonNull Object object,
             MultipartFile photo,
@@ -150,6 +149,7 @@ public class ObjectService {
         object.setCondominium(condominium);
         object.setCategory(category);
 
+        activityViewService.evictCache(object.getCondominium().getId());
         return objectRepository.save(object);
     }
 
