@@ -187,7 +187,6 @@ public class ObjectService {
     }
 
     // DELETE
-    @CacheEvict(value = "activities", key = "#idCondominium")
     public void setDeleteObjectById(@NonNull Long id) {
         Object existing = getSelectObjectById(id);
 
@@ -199,6 +198,7 @@ public class ObjectService {
             }
         }
 
+        activityViewService.evictCache(existing.getCondominium().getId());
         objectRepository.deleteById(id);
     }
 }
