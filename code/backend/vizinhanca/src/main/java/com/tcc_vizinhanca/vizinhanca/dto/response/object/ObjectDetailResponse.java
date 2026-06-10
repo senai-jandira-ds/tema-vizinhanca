@@ -25,7 +25,7 @@ public class ObjectDetailResponse {
     private Long id;
     private String photo;
     private String title;
-    private LocalDate deadline;
+    private String deadline;
     private String description;
     private LocalDateTime creation_date;
     private String status;

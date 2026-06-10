@@ -21,7 +21,7 @@ public class ObjectCreateRequest {
     private String title;
 
     @NotNull(message = "Prazo de disponibilidade é obrigatório")
-    private LocalDate deadline;
+    private String  deadline;
 
     @NotBlank(message = "Descrição é obrigatória")
     private String description;
