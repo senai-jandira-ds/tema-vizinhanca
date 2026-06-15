@@ -20,7 +20,8 @@ export const formatActivityStatus = (status) => {
         FINALIZADO: "Finalizado",
         CANCELADO: "Cancelado",
         CONCLUIDO: "Concluído",
-        EMPRESTADO: "Emprestado"
+        EMPRESTADO: "Emprestado",
+        ATIVO: "Ativo",
     };
 
     return statusMap[status] || status;

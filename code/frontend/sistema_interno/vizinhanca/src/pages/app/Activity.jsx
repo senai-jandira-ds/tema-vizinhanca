@@ -97,7 +97,7 @@ function Activity() {
         try {
             setLoading(true);
             const formData = new FormData()
-
+            console.log(tipo)
             if (tipo === 'servico') {
 
                 formData.append('status', 'Concluido')
@@ -110,9 +110,9 @@ function Activity() {
 
                 await updateObject(idDaEntidade, formData);
 
-            } else if (tipo === 'report') {
+            } else if (tipo === 'report' || tipo === 'Denúncia' || tipo === 'denuncia' ) {
 
-                formData.append('status', 'FINISHED')
+                formData.append('status', 'CONCLUÍDO')
 
                 await updateReport(idDaEntidade, formData);
             } else {
