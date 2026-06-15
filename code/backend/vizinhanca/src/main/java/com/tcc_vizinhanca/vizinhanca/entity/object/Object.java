@@ -43,7 +43,7 @@ public class Object {
     private String title;
 
     @Column(name = "tempo_disponivel", nullable = false)
-    private LocalDate deadline;
+    private String deadline;
 
     @Column(name = "descricao", nullable = false, columnDefinition = "TEXT")
     private String description;

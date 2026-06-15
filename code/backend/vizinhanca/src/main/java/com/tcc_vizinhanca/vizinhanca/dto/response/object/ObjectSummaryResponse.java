@@ -24,7 +24,7 @@ public class ObjectSummaryResponse {
     private Long id;
     private String photo;
     private String title;
-    private LocalDate deadline;
+    private String  deadline;
     private String status;
     private String resident_name;
     private String resident_apartment;

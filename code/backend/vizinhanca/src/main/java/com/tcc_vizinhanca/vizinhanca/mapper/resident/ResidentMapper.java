@@ -18,6 +18,7 @@ public class ResidentMapper {
                 .email(dto.getEmail())
                 .phone(dto.getPhone())
                 .score(dto.getScore())
+                .isActive(true)
                 .condominium(condominium)
                 .build();
     }
@@ -28,6 +29,7 @@ public class ResidentMapper {
         if (dto.getCpf() != null) entity.setCpf(dto.getCpf());
         if (dto.getEmail() != null) entity.setEmail(dto.getEmail());
         if (dto.getScore() != null) entity.setScore(dto.getScore());
+        if (dto.getIs_active() != null) entity.setIsActive(dto.getIs_active());
         if (block != null) entity.setBlock(block);
 
         return entity;
