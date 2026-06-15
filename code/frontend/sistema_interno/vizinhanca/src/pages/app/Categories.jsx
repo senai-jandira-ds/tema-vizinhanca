@@ -27,7 +27,7 @@ function Categories() {
 
       if (
         !Array.isArray(
-          tableData.response.categories
+          tableData.response
         )
       ) {
         setDadosTabela([]);
@@ -35,7 +35,7 @@ function Categories() {
       }
 
       const data =
-        tableData.response.categories;
+        tableData.response;
 
       const mappedData = data.map(
         (category, index) => ({
@@ -49,7 +49,7 @@ function Categories() {
             category.description || "",
 
           tipo:
-            category.type_category.name || "",
+            category.type_category || "",
 
           tipo_categoria_id:
             category.type_category.id || ""

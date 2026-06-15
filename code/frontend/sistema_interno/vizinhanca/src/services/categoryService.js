@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const getCategories = async () => {
-    const response = await api.get("/category/me");
+    const response = await api.get("/condominium/category/me");
     return response.data;
 };
 
