@@ -56,7 +56,6 @@ function Activity() {
             const mappedData = data.response.activities.map((activity, index) => ({
                 displayId: activity.id?.toString() || (index + 1).toString(),
 
-                // Mapeamento EXATO e seguro. Não usamos mais o displayId como fallback aqui.
                 // Se a API não mandar um desses campos, o valor será null.
                 idRealDaEntidade: activity.entity_id || activity.service_id || activity.object_id || activity.report_id || null,
 
@@ -117,6 +116,7 @@ function Activity() {
 
                 await updateReport(idDaEntidade, formData);
             } else {
+                setLoading(false)
                 toast.warning("Tipo de atividade não suportado.");
                 return;
             }
@@ -180,8 +180,8 @@ function Activity() {
             width: 160,
             getCellClass: (status) => {
                 const statusLower = status?.toLowerCase();
-                if (['aberto', 'disponível', 'disponivel'].includes(statusLower)) return styles['status-verde'];
-                if (['concluido', 'concluído', 'finalizado'].includes(statusLower)) return styles['status-azul'];
+                if (['aberto', 'disponível', 'disponivel', "ativo"].includes(statusLower)) return styles['status-verde'];
+                if (['concluido', 'concluído', 'finalizado', "emprestado"].includes(statusLower)) return styles['status-azul'];
                 if (['pendente', 'indisponível', 'indisponivel', 'em andamento'].includes(statusLower)) return styles['status-amarelo'];
                 return '';
             }
