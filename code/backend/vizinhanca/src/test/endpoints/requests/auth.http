@@ -1,0 +1,347 @@
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb25kYUBnbWFpbC5jb20iLCJpZF9jb25kb21pbml1bSI6MSwidHlwZV9wZXJmaWwiOiJDT05ET03DjU5JTyIsImlhdCI6MTc4MTExOTcyNywiZXhwIjoxNzgxMjA2MTI3fQ.rOf4BLe5_g_Hh1OfkrUdR4qkqf3ion-_hypcn9pi0yw
+### LoginCondominium
+# @name loginRequest
+POST http://localhost:8080/api/v1/auth/login/condominium
+Content-Type: application/json
+
+{
+  "email": "conda@gmail.com",
+  "password": "Vizinhanca@2026"
+}
+
+### LoginResident
+# @name loginRequest
+POST http://localhost:8080/api/v1/auth/login/resident
+Content-Type: application/json
+
+{
+"email": "bruno.santos@email.com",
+"password": "Morador@2026"
+}
+
+
+### ME - CONDOMINIUM
+# @name meCondominium
+GET http://localhost:8080/api/v1/auth/me/condominium
+Authorization: Bearer {{token}}
+
+### ME - RESIDENT
+# @name meResident
+GET http://localhost:8080/api/v1/auth/me/resident
+Authorization: Bearer {{token}}
+
+
+
+### ===== CONDOMINIUM =====
+# @name listCondominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium
+Authorization: Bearer {{token}}
+
+### Search Resident by condominium
+# @name searchResidentsByCondominium
+GET http://localhost:8080/api/v1/condominium/resident/me
+Authorization: Bearer {{token}}
+
+### Search Resident by Filters
+# @name searchResidentsByFilters
+GET http://localhost:8080/api/v1/condominium/resident/me/filter?blockIds=1&blockIds=2&isActive=true
+Authorization: Bearer {{token}}
+
+### Search activities by condominium
+# @name searchActivitiesByCondominium
+GET https://api-vizinhanca.onrender.com/api/v1/condominium/activity/me
+Authorization: Bearer {{token}}
+
+### Search services by condominium
+# @name searchServicesByCOndominium
+GET http://localhost:8080/api/v1/condominium/service/me
+Authorization: Bearer {{token}}
+
+### Search objects by condominium
+# @name searchObjectsByCOndominium
+GET http://localhost:8080/api/v1/condominium/object/me
+Authorization: Bearer {{token}}
+
+### Search blocks by condominium
+# @name searchBlocksByCondominium
+GET http://localhost:8080/api/v1/condominium/block/me
+Authorization: Bearer {{token}}
+
+### Search categories by condominium
+# @name searchCategoriesByCondominium
+GET http://localhost:8080/api/v1/condominium/category/me
+Authorization: Bearer {{token}}
+
+### Search by id
+# @name searchCondominium
+GET http://localhost:8080/api/v1/condominium/14
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertCondominium
+POST https://api-vizinhanca.onrender.com/api/v1/condominium
+Content-Type: application/json
+
+{
+  "name": "TESTE CONDOMÍNIO",
+  "cnpj": "12345678910122",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "teste8@teste.com",
+  "password": "testeapi123",
+  "address": {
+    "cep": "01310100",
+    "street": "Avenida Paulista",
+    "neighborhood": "Bela Vista",
+    "number": "1000",
+    "landmark": "Próximo ao MASP",
+    "city": "São Paulo",
+    "state": "SP"
+  }
+}
+
+### Update
+# @name updateCondominium
+PUT https://api-vizinhanca.onrender.com/api/v1/condominium/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Bela Vista",
+  "cnpj": "12345678910124",
+  "amount_blocks": 4,
+  "amount_apartments": 160,
+  "email": "contato@scotti.com.br"
+}
+
+### Delete
+# @name deleteCondominium
+DELETE https://api-vizinhanca.onrender.com/api/v1/condominium/11
+Authorization: Bearer {{token}}
+
+
+### ===== RESIDENT =====
+# @name listResident
+GET https://api-vizinhanca.onrender.com/api/v1/resident
+Authorization: Bearer {{token}}
+
+### Search by id
+# @name searchResident
+GET https://api-vizinhanca.onrender.com/api/v1/resident/6
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertResident
+POST https://api-vizinhanca.onrender.com/api/v1/resident
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "photo": "https://i.pravatar.cc/300",
+  "name": "João da Silva",
+  "apartment": "101",
+  "id_block": 1,
+  "cpf": "12345678901",
+  "email": "@email.com",
+  "phone": "11999999999",
+  "score": 0,
+  "id_condominium": 14
+}
+
+### Update
+# @name updateResident
+PUT http://localhost:8080/api/v1/resident/1
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="name"
+
+Ana Ribeiro
+--boundary
+Content-Disposition: form-data; name="apartment"
+
+101
+--boundary
+Content-Disposition: form-data; name="idBlock"
+
+1
+--boundary
+Content-Disposition: form-data; name="cpf"
+
+11111111101
+--boundary
+Content-Disposition: form-data; name="email"
+
+ana.silva@email.com
+--boundary
+Content-Disposition: form-data; name="phone"
+
+11911110001
+--boundary
+Content-Disposition: form-data; name="score"
+
+0
+--boundary
+Content-Disposition: form-data; name="is_active"
+
+true
+--boundary--
+
+### Delete
+# @name deleteResident
+DELETE https://api-vizinhanca.onrender.com/api/v1/resident/62
+Authorization: Bearer {{token}}
+
+
+### ===== PUBLICATION =====
+# @name listPublication
+GET http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+
+### Insert
+# @name insertPublication
+POST http://localhost:8080/api/v1/publication
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### === DENUNCIA ===
+# @name report
+GET https://api-vizinhanca.onrender.com/api/v1/report`
+Authorization: Bearer {{token}}
+
+### ===== OBJECT =====
+
+### GET ALL (paginado, filtrado pelo condomínio do token)
+GET http://localhost:8080/api/v1/object?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY STATUS
+GET http://localhost:8080/api/v1/object/status/DISPONIVEL?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY CATEGORY
+GET http://localhost:8080/api/v1/object/category/1?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY RESIDENT
+GET http://localhost:8080/api/v1/object/resident/1?page=0&size=20
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/object/1
+Authorization: Bearer {{token}}
+
+### POST (multipart/form-data)
+POST http://localhost:8080/api/v1/object
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="photo"; filename="cadeira.jpg"
+Content-Type: image/jpeg
+
+< ./cadeira.jpg
+------Boundary
+Content-Disposition: form-data; name="title"
+
+Cadeira Gamer
+------Boundary
+Content-Disposition: form-data; name="deadline"
+
+2026-08-01
+------Boundary
+Content-Disposition: form-data; name="description"
+
+Cadeira gamer em bom estado, retirar no apartamento 101.
+------Boundary
+Content-Disposition: form-data; name="status"
+
+DISPONIVEL
+------Boundary
+Content-Disposition: form-data; name="category_id"
+
+1
+------Boundary--
+
+### PUT (multipart/form-data)
+PUT http://localhost:8080/api/v1/object/9
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="status"
+
+INDISPONÍVEL
+------Boundary--
+
+### DELETE
+DELETE https://api-vizinhanca.onrender.com/api/v1/object/114
+Authorization: Bearer {{token}}
+
+### ===== CATEGORY =====
+
+### GET ALL
+GET http://localhost:8080/api/v1/category
+Authorization: Bearer {{token}}
+
+### GET BY TYPE
+GET http://localhost:8080/api/v1/category/type/1/categories
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+
+### POST
+POST http://localhost:8080/api/v1/category
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Eletrônicos",
+  "description": "Objetos e serviços da área de eletrônicos",
+  "type_category_id": 1
+}
+
+### PUT
+PUT http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Eletrônicos e Informática",
+  "description": "Objetos e serviços da área de eletrônicos e informática",
+  "type_category_id": 1
+}
+
+### DELETE
+DELETE http://localhost:8080/api/v1/category/1
+Authorization: Bearer {{token}}
+
+
+### ===== TYPE CATEGORY =====
+
+### GET ALL
+GET http://localhost:8080/api/v1/category/type
+Authorization: Bearer {{token}}
+
+### GET BY ID
+GET http://localhost:8080/api/v1/category/type/1
+Authorization: Bearer {{token}}
+
+
+### Post
+POST http://localhost:8080/api/v1/service
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "photo": "string",
+  "title": "string",
+  "urgency": "string",
+  "description": "string",
+  "status": "PENDENTE",
+  "estimated_time": 20,
+  "category_id": 1
+}

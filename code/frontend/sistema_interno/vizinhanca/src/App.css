@@ -1,0 +1,62 @@
+body {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Estilização do Card Geral */
+.Toastify__toast {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  border-radius: 14px !important; /* Bordas arredondadas casando com o layout */
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.08) !important; /* Sombra suave de elevação */
+  padding: 16px 20px !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* --- OPÇÃO: TEMA CLEAN (Toast Branco com detalhes nas cores do sistema) --- */
+/* Esta opção combina perfeitamente com a estética de 'cards brancos' do app */
+.Toastify__toast--theme-light {
+  background-color: var(--toast-bg-card) !important;
+  color: var(--toast-texto-escuro) !important;
+}
+
+/* Ícones e Barras de progresso para o Tema Light */
+.Toastify__toast--theme-light.Toastify__toast--success .Toastify__toast-icon {
+  color: var(--toast-verde-sucesso) !important;
+}
+.Toastify__toast--theme-light.Toastify__toast--success .Toastify__progress-bar {
+  background: var(--toast-verde-sucesso) !important;
+}
+
+.Toastify__toast--theme-light.Toastify__toast--error .Toastify__toast-icon {
+  color: var(--toast-vermelho-erro) !important;
+}
+.Toastify__toast--theme-light.Toastify__toast--error .Toastify__progress-bar {
+  background: var(--toast-vermelho-erro) !important;
+}
+
+.Toastify__toast--theme-light.Toastify__toast--info .Toastify__toast-icon {
+  color: var(--toast-azul-primario) !important;
+}
+.Toastify__toast--theme-light.Toastify__toast--info .Toastify__progress-bar {
+  background: var(--toast-azul-primario) !important;
+}
+
+
+/* --- OPÇÃO: TEMA COLORIDO (Se você usar theme="colored" no ToastContainer) --- */
+/* Força as cores exatas da sua interface nos blocos sólidos */
+.Toastify__toast--theme-colored.Toastify__toast--success {
+  background-color: var(--toast-verde-sucesso) !important;
+}
+.Toastify__toast--theme-colored.Toastify__toast--error {
+  background-color: var(--toast-vermelho-erro) !important;
+}
+.Toastify__toast--theme-colored.Toastify__toast--info {
+  background-color: var(--toast-azul-primario) !important;
+}
+
+/* Ajuste fino do botão de fechar (X) */
+.Toastify__close-button {
+  align-self: center;
+}

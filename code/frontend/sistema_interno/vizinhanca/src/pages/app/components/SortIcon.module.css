@@ -1,0 +1,36 @@
+.sortIcon {
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+
+.arrowUp {
+  transition: transform 0.3s ease;
+  stroke: #00000060;
+}
+
+.arrowDown {
+  transition: transform 0.3s ease;
+  stroke: #00000060;
+}
+
+.sortIcon:not(.asc):not(.desc) {
+  transform: rotate(180deg);
+}
+
+.sortIcon.asc {
+  transform: rotate(180deg);
+}
+
+.sortIcon.asc .arrowUp {
+  transform: translateY(-3px);
+  stroke: #008cd2;
+}
+
+.sortIcon.desc {
+  transform: rotate(180deg);
+}
+
+.sortIcon.desc .arrowDown {
+  transform: translateY(3px);
+  stroke: #008cd2;
+}

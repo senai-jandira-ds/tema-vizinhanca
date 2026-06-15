@@ -1,0 +1,727 @@
+import React, { useState, useEffect } from 'react';
+import styles from './Modal.module.css';
+import { getCondominiumData } from '../../../services/authService';
+import { getBlocks } from '../../../services/blockService';
+
+export default function Modal({
+  isOpen,
+  onClose,
+  data,
+  type = 'usuario',
+  onSubmit,
+  onDelete
+}) {
+  if (!isOpen) return null;
+
+  const renderContent = () => {
+    switch (type) {
+      case 'usuario':
+        return (
+          <UsuarioModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
+      case 'categoria':
+        return (
+          <CategoriaModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
+      case 'bloco':
+        return (
+          <BlocoModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
+      case 'servico':
+        return (
+          <ServicoModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
+      case 'denuncia':
+        return (
+          <DenunciaModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+
+      default:
+        return (
+          <UsuarioModal
+            data={data}
+            onClose={onClose}
+            onSubmit={onSubmit}
+            onDelete={onDelete}
+          />
+        );
+    }
+  };
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div
+        className={styles.modalContainer}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {renderContent()}
+      </div>
+    </div>
+  );
+}
+
+function UsuarioModal({
+  data,
+  onClose,
+  onSubmit,
+  onDelete
+}) {
+
+  const isEdicao =
+    data?.linha !== null &&
+    data?.linha !== undefined;
+
+  const condominioData = getCondominiumData();
+
+  const [blocos, setBlocos] = useState([]);
+  const [loadingBlocos, setLoadingBlocos] = useState(true);
+
+  // Buscar blocos dinamicamente
+  useEffect(() => {
+    const fetchBlocos = async () => {
+      try {
+        setLoadingBlocos(true);
+        const response = await getBlocks();
+        const blocksData = response?.response?.blocks || [];
+        setBlocos(blocksData);
+      } catch (error) {
+        setBlocos([]);
+      } finally {
+        setLoadingBlocos(false);
+      }
+    };
+
+    fetchBlocos();
+  }, []);
+
+  const [formData, setFormData] = useState({
+    nome: data?.linha?.nome || "",
+    apto: data?.linha?.apto || "",
+    id_bloco: data?.linha?.blocoId || "",
+    bloco: data?.linha?.bloco || "",
+    cpf:
+      (data?.linha?.cpf &&
+        data?.linha.cpf.replace(/\D/g, '')) || "",
+    email: data?.linha?.email || "",
+    telefone: data?.linha?.telefone || "",
+    is_active: data?.linha?.status === "Ativo" ? Boolean(true) : Boolean(false),
+    photo: data?.linha?.photo || "",
+    score: data?.linha?.score || "",
+    condominium_id:
+      condominioData?.id ||
+      data?.linha?.condominium_id ||
+      null,
+    id: data?.linha?.id || null
+  });
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = () => {
+    const { id, ...dadosSemId } = formData;
+
+    // Enviar o ID do bloco em vez do nome
+    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.id_bloco));
+
+    const dadosParaEnviar = {
+      name: dadosSemId.nome || "",
+      apartment: dadosSemId.apto || "",
+      idBlock: blocoSelecionado?.id || null,
+      cpf: dadosSemId.cpf || "",
+      email: dadosSemId.email || "",
+      phone: dadosSemId.telefone || "",
+      score: dadosSemId.score || 0,
+      is_active: dadosSemId.is_active || "true",
+      id_condominium: formData.condominium_id
+    };
+
+    if (isEdicao) {
+      onSubmit && onSubmit(id, dadosParaEnviar);
+    } else {
+      onSubmit && onSubmit(null, dadosParaEnviar);
+    }
+
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (!isEdicao || !formData.id) return;
+
+    onDelete && onDelete(formData.id);
+
+    onClose();
+  };
+
+  return (
+    <div className={styles.userModal}>
+      <div className={styles.logoContainer}>
+        {isEdicao && data?.linha?.photo ? (
+          <img
+            src={data.linha.photo}
+            alt={formData.nome || "Foto do usuário"}
+            className={styles.userPhoto}
+          />
+        ) : (
+          <svg
+            viewBox="0 0 537 529"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M202.585 1.07198..."
+              fill="#2EA9F5"
+            />
+          </svg>
+        )}
+      </div>
+
+      <h1>
+        {isEdicao
+          ? 'Detalhes do morador'
+          : 'Cadastro de morador'}
+      </h1>
+
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={formData.nome}
+          onChange={(e) =>
+            handleChange('nome', e.target.value)
+          }
+          placeholder="Nome"
+          className={styles.inputFull}
+        />
+
+        <div className={styles.row}>
+          <input
+            type="text"
+            value={formData.apto}
+            onChange={(e) =>
+              handleChange('apto', e.target.value)
+            }
+            placeholder="Apto"
+            className={styles.inputHalf}
+          />
+
+          <select
+            className={styles.selectHalf}
+            value={formData.id_bloco}
+            onChange={(e) =>
+              handleChange('id_bloco', e.target.value)
+            }
+            disabled={loadingBlocos}
+          >
+            <option value="">Selecione o Bloco</option>
+            {loadingBlocos ? (
+              <option disabled>Carregando...</option>
+            ) : (
+              blocos.map((bloco) => (
+                <option key={bloco.id} value={bloco.id}>
+                  {bloco.block}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        <input
+          type="text"
+          value={formData.cpf}
+          onChange={(e) =>
+            handleChange('cpf', e.target.value)
+          }
+          placeholder="CPF"
+          className={styles.inputFull}
+        />
+
+        <input
+          type="email"
+          value={formData.email}
+          onChange={(e) =>
+            handleChange('email', e.target.value)
+          }
+          placeholder="Email"
+          className={styles.inputFull}
+        />
+
+        <div className={styles.row}>
+          <input
+            type="text"
+            value={formData.telefone}
+            onChange={(e) =>
+              handleChange('telefone', e.target.value)
+            }
+            placeholder="Telefone"
+            className={styles.inputHalf}
+          />
+
+          <select
+            className={styles.selectHalf}
+            value={formData.is_active}
+            onChange={(e) =>
+              handleChange('is_active', e.target.value)
+            }
+          >
+            <option value="">Status</option>
+            <option value={Boolean(true)}>Ativo</option>
+            <option value={Boolean(false)}>Inativo</option>
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.userButtons}>
+        {isEdicao && (
+          <button
+            className={styles.btnBlue}
+            onClick={handleDelete}
+          >
+            Deletar
+          </button>
+        )}
+
+        <button
+          className={styles.btnRed}
+          onClick={onClose}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className={styles.btnGreen}
+          onClick={handleSubmit}
+        >
+          Finalizar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CategoriaModal({
+  data,
+  onClose,
+  onSubmit,
+  onDelete
+}) {
+  const isEdicao =
+    data?.linha !== null &&
+    data?.linha !== undefined;
+
+  const [formData, setFormData] = useState({
+    name: data?.linha?.nome || "",
+    description: data?.linha?.descricao || "",
+    type_category_id:
+      data?.linha?.tipo_categoria_id || "",
+    status: data?.linha?.status || "Disponível",
+    id: data?.linha?.id || null
+  });
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = () => {
+    const dadosParaEnviar = {
+      name: formData.name,
+      description: formData.description,
+      type_category_id: Number(
+        formData.type_category_id
+      ),
+    };
+
+    if (isEdicao) {
+      onSubmit &&
+        onSubmit(formData.id, dadosParaEnviar);
+    } else {
+      onSubmit &&
+        onSubmit(null, dadosParaEnviar);
+    }
+
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (!isEdicao || !formData.id) return;
+
+    onDelete && onDelete(formData.id);
+
+    onClose();
+  };
+
+  return (
+    <div className={styles.userModal}>
+      <h1>
+        {isEdicao
+          ? 'Detalhes da categoria'
+          : 'Cadastro de categoria'}
+      </h1>
+
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) =>
+            handleChange('name', e.target.value)
+          }
+          placeholder="Nome"
+          className={styles.inputFull}
+        />
+
+        <input
+          type="text"
+          value={formData.description}
+          onChange={(e) =>
+            handleChange('description', e.target.value)
+          }
+          placeholder="Detalhe"
+          className={styles.inputFull}
+        />
+
+        <select
+          className={styles.inputFull}
+          value={formData.type_category_id}
+          onChange={(e) =>
+            handleChange(
+              'tipo_categoria_id',
+              Number(e.target.value)
+            )
+          }
+        >
+          <option value={formData.type_category_id = 1}>
+            Objeto
+          </option>
+
+          <option value={formData.type_category_id = 2}>
+            Serviço
+          </option>
+        </select>
+      </div>
+
+      <div className={styles.userButtons}>
+        {isEdicao && (
+          <button
+            className={styles.btnBlue}
+            onClick={handleDelete}
+          >
+            Deletar
+          </button>
+        )}
+
+        <button
+          className={styles.btnRed}
+          onClick={onClose}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className={styles.btnGreen}
+          onClick={handleSubmit}
+        >
+          Finalizar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BlocoModal({
+  data,
+  onClose,
+  onSubmit,
+  onDelete
+}) {
+  const isEdicao =
+    data?.linha !== null &&
+    data?.linha !== undefined;
+
+  const [formData, setFormData] = useState({
+    block: data?.linha?.nome || "",
+    id: data?.linha?.id || null
+  });
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = () => {
+    const dadosParaEnviar = {
+      block: formData.block,
+    };
+
+    if (isEdicao) {
+      onSubmit &&
+        onSubmit(formData.id, dadosParaEnviar);
+    } else {
+      onSubmit &&
+        onSubmit(null, dadosParaEnviar);
+    }
+
+    onClose();
+  };
+
+  const handleDelete = () => {
+    if (!isEdicao || !formData.id) return;
+
+    onDelete && onDelete(formData.id);
+
+    onClose();
+  };
+
+  return (
+    <div className={styles.userModal}>
+      <h1>
+        {isEdicao
+          ? 'Detalhes do bloco'
+          : 'Cadastro de bloco'}
+      </h1>
+
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={formData.block}
+          onChange={(e) =>
+            handleChange('block', e.target.value)
+          }
+          placeholder="Bloco"
+          className={styles.inputFull}
+        />
+      </div>
+
+      <div className={styles.userButtons}>
+        {isEdicao && (
+          <button
+            className={styles.btnBlue}
+            onClick={handleDelete}
+          >
+            Deletar
+          </button>
+        )}
+
+        <button
+          className={styles.btnRed}
+          onClick={onClose}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className={styles.btnGreen}
+          onClick={handleSubmit}
+        >
+          Finalizar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ServicoModal({ data, onClose, onSubmit, onDelete }) {
+  return (
+    <SplitLayoutModal
+      data={data}
+      onClose={onClose}
+      isServico={true}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+    />
+  );
+}
+
+function DenunciaModal({ data, onClose, onSubmit, onDelete }) {
+  console.log(data)
+  return (
+    <SplitLayoutModal
+      data={data}
+      onClose={onClose}
+      isServico={false}
+      onSubmit={onSubmit}
+      onDelete={onDelete}
+    />
+  );
+}
+
+function SplitLayoutModal({
+  data,
+  onClose,
+  isServico,
+  onSubmit,
+  onDelete
+}) {
+  const imagemRelacionada =
+    data?.linha?.photo ||
+    data?.linha?.imagem ||
+    "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
+
+  const handleFinalizar = () => {
+    if (!data?.linha) return;
+
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Atualizar status para Finalizado/Concluído
+    const dadosAtualizacao = {
+      status: isServico ? "CONCLUIDO" : "FINISHED"
+    };
+
+    onSubmit && onSubmit(entityId, { ...dadosAtualizacao, linha: data.linha });
+    onClose();
+  };
+
+  const handleExcluir = () => {
+    if (!data?.linha) return;
+
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Para deletar, passar a linha completa para identificar o tipo
+    if (typeof onDelete === 'function') {
+      if (data.linha) {
+        onDelete(data.linha);
+      } else {
+        onDelete(entityId);
+      }
+    }
+    onClose();
+  };
+
+  return (
+    <div className={styles.splitModal}>
+      <div className={styles.imageSide}>
+        <img
+          src={imagemRelacionada}
+          alt="Imagem de evidência"
+        />
+      </div>
+
+      <div className={styles.contentSide}>
+        <div className={styles.contentScroll}>
+          <h1>Detalhes</h1>
+
+          <div className={styles.textSection}>
+            <label>Descrição</label>
+
+            <p>
+              {data?.linha?.descricao ||
+                "Erro, nenhuma informação foi encontrada em nosso sistema"}
+            </p>
+          </div>
+
+          <div className={styles.readOnlyFields}>
+            <div className={styles.fieldGroup}>
+              <label>Tipo</label>
+
+              <div className={styles.fakeInput}>
+                {data?.linha?.categoria ||
+                  (isServico
+                    ? "Serviço"
+                    : "Denúncia")}
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label>Status</label>
+
+              <div className={styles.fakeInput}>
+                {data?.linha?.status ||
+                  "Pendente"}
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label>Endereço</label>
+
+              <div className={styles.fakeInput}>
+                {data?.linha?.endereco ||
+                  "Área Comum"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.splitButtons}>
+          <button
+            className={styles.btnIconBlue}
+            title="Excluir"
+            onClick={handleExcluir}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18"></path>
+
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+          </button>
+
+          <div className={styles.actionButtons}>
+            <button
+              className={styles.btnBlue}
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+
+            <button
+              className={styles.btnGreen}
+              onClick={handleFinalizar}
+            >
+              Finalizar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

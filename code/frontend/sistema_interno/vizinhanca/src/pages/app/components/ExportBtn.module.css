@@ -1,0 +1,36 @@
+.exportButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2600FF;
+    width: 10%;
+    padding: 10px 20px;
+
+    border-radius: 20px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 500;
+    gap: 10%;
+    transition: 0.3s ease;
+}
+
+.exportButton:hover {
+    background-color: #1d00cc;
+
+    transform: translateY(-2.2px) scale(1);
+
+    box-shadow:
+        0 10px 30px rgba(38, 0, 255, 0.10),
+        0 4px 8px rgba(38, 0, 255, 0.15);
+}
+
+.exportButton:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+    .exportButton {
+        width: 100%;
+        padding: 2px;
+    }
+}

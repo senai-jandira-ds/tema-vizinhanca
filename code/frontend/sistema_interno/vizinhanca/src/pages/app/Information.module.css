@@ -1,0 +1,232 @@
+.condominiumInfo {
+    display: flex;
+    width: 100%;
+    gap: 5%;
+    padding-bottom: 1%;
+    padding-right: 1%;
+}
+
+.condominiumInfoForm {
+    display: flex;
+    flex-direction: column;
+
+    width: 35%;
+
+    gap: 1rem;
+}
+
+.condominiumInfoForm span {
+    font-size: 1.3rem;
+}
+
+.condominiumImage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: auto;
+
+    width: 45vh;
+    height: 45vh;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background-color: #f9fafb;
+
+    position: relative;
+    cursor: pointer;
+
+    border: 3px dashed #10B765;
+
+    transition: all 0.3s;
+}
+
+.condominiumImage:hover {
+    background-color: #10B765;
+    border-style: solid;
+}
+
+.condominiumImage img {
+    width: calc(100% - 6px);
+    height: calc(100% - 6px);
+
+    object-fit: cover;
+
+    transition: filter 0.3s;
+
+    border-radius: 50%;
+}
+
+.condominiumImage:hover .clickableImage {
+    filter: brightness(0.4);
+}
+
+.imageOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    z-index: 10;
+}
+
+.condominiumImage:hover .imageOverlay {
+    opacity: 1;
+}
+
+.saveContainer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.saveButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    width: fit-content;
+    padding: 12px 22px;
+
+    border-radius: 12px;
+
+    background: #10B765;
+    color: white;
+
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.saveButton:hover {
+}
+
+.saveButton:active {
+    transform: scale(0.98);
+}
+
+.saveButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fileInput {
+    display: none;
+}
+
+.photoUploadContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.photoUploadLabel {
+    padding: 12px 16px;
+    border: 2px dashed #10B765;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    color: #374151;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.photoUploadLabel:hover {
+    background-color: #10B765;
+    color: white;
+    border-style: solid;
+}
+
+.removePhotoButton {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.removePhotoButton:hover {
+    background-color: #dc2626;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e5e7eb;
+    border-top-color: #3b18ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.noImagePlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 1440px) {
+    .condominiumInfoForm {
+        width: 45%;
+    }
+
+    .condominiumInfoForm span {
+        font-size: 1.1rem;
+    }
+
+    .condominiumImage {
+        width: 35vh;
+        height: 35vh;
+    }
+}
+
+@media (max-width: 1024px) {
+    .condominiumInfo {
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .condominiumInfoForm {
+        width: 100%;
+    }
+
+    .condominiumImage {
+        margin-left: 0;
+    }
+}

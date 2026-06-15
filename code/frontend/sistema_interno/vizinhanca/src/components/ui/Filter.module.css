@@ -1,0 +1,99 @@
+.wrapper {
+    position: relative;
+    z-index: 100;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+    border: 1px solid #00000018;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #00000060;
+    font-weight: 500;
+    background: white;
+    gap: 10%;
+
+    -webkit-user-select: none; 
+    -moz-user-select: none;    
+    -ms-user-select: none;    
+    user-select: none;        
+    -webkit-user-drag: none;
+}
+
+.card {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 280px;
+    background: white;
+    border: 1px solid #00000018;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from {
+
+        transform: translateY(-1    0px);
+    }
+    to {
+
+        transform: translateY(0);
+    }
+}
+
+.section {
+    margin-bottom: 10px;
+}
+
+.header {
+    background: #0000000D;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #00000060;
+    font-weight: 500;
+}
+
+.content {
+    padding: 10px;
+    margin-top: 5px;
+    background: #0000000D;
+    border-radius: 12px;
+}
+
+.option {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    color: #00000060;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.option:hover {
+    background: #0000001A;
+}
+
+.option input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.icon {
+    transition: transform 0.3s ease;
+}
+
+.open {
+    transform: rotate(180deg);
+}

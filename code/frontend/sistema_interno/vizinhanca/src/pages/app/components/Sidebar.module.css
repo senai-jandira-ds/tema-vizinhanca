@@ -1,0 +1,159 @@
+ul,
+li {
+    text-decoration: none;
+    list-style: none;
+}
+
+aside {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: clamp(2.75rem, 20vw, 4rem);
+    color: black;
+    padding-block: 1%;
+    transition: 0.5s;
+    overflow: hidden;
+}
+aside:hover {
+    width: clamp(500px, 30vw, 380px);
+}
+.label {
+    opacity: 0;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    transform: translateX(-10px);
+}
+
+aside:hover .label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+nav {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    width: 300px;
+    transition: 0.3s;
+    margin-bottom: 100%;
+}
+
+ul {
+    display: flex;
+    gap: 3%;
+    width: 100%;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-bottom: 12%;
+}
+
+li a {
+    gap: 6.2%;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: 0.4s;
+    border-radius: 45px;
+    padding: 5%;
+    font-size: 1.2rem;
+}
+li a:hover{
+    color: white;
+    background-color: #2600FF;
+}
+.icon {
+    width: 12%;
+}
+li:last-child{
+    padding: 2%;
+}
+li:last-child{
+    margin-top: auto;
+    padding: 2%;
+}
+li:last-child a{
+    padding: 15px;
+    gap: 10%;
+    font-size: 1.2rem;
+}
+li:last-child a .icon {
+    width: 6%;
+}
+
+@media (max-width: 768px) {
+
+    aside {
+        width: 100%;
+        height: auto;
+
+        flex-direction: row;
+        justify-content: center;
+
+        overflow: visible;
+        transition: none;
+    }
+
+    aside:hover {
+        width: 100%;
+    }
+
+    nav {
+        position: static;
+
+        width: 100%;
+        height: auto;
+        margin-bottom: 0;
+    }
+
+    ul {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+
+        margin-bottom: 0;
+        gap: 0;
+    }
+
+    li {
+        display: flex;
+        justify-content: center;
+    }
+
+    li:first-child{
+        display: none;
+    }
+
+    li:last-child{
+        display: none;
+    }
+
+    li a {
+        justify-content: center;
+        padding: 12px;
+        border-radius: 50%;
+    }
+
+    .label {
+        display: none;
+    }
+
+    .icon {
+        width: 2rem;
+    }
+
+    li:last-child {
+        margin-top: 0;
+        padding: 0;
+    }
+
+    li:last-child a {
+        padding: 12px;
+    }
+
+    li:last-child a .icon {
+        width: 24px;
+    }
+}

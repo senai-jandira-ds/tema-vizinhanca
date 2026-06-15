@@ -1,0 +1,106 @@
+.header{
+    display: flex;
+    gap: 1.7rem;
+    flex-direction: column;
+    height: fit-content;
+    width: 100%;
+}
+
+.header h1{
+    font-size: 2.6rem;
+    padding-left: 0;
+}
+
+.nav{
+    display: flex;
+    color: white;
+    align-items: center;
+    gap: 1.2rem;
+    width: 9000px;
+    height: 3.5rem;
+    background-color: #2600FF;
+    margin-inline: -10rem;
+    padding-left: 10rem;
+}
+
+.nav a{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5%;
+    padding: 5px;
+    transition: 0.2s;
+    border-radius: 20px;
+}
+.nav a:hover{
+
+    color: black;
+    background-color: white;
+}
+
+.nav a:last-child{
+    width: 5rem;
+}
+
+.main{
+    display: flex;
+    flex-grow: 1;   
+    height: 100%;
+    flex-direction: column;
+    gap: 5%;
+    overflow: auto;
+}
+
+.main h2{
+    height: 10;
+    font-size: 2.2rem;
+    padding-top: 0.5%;
+}
+
+.condominiumInfo{
+    display: flex;
+    height: fit-content;
+    width: 100%;
+    padding-bottom: 1%;
+    padding-right: 1%;
+}
+.condominiumInfoForm{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 30%;
+    gap: 3%;
+}
+.condominiumImage{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 50vh;
+    height: 50vh;
+    overflow: hidden;
+    background-color: gray;
+    border-radius: 50%;
+}
+.condominiumImage img{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.condominiumInfoForm>span{
+    font-size: 1.5rem;
+}
+@media (max-width: 1440px) {
+    .header h1{
+        height: 15%;
+        padding: 0.5%;
+        font-size: 2.2rem;
+    }
+    .main h2{
+        padding-top: 1%;
+        font-size: 1.8rem;
+    }
+}
