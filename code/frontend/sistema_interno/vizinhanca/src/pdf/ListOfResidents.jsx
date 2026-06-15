@@ -33,6 +33,16 @@ export default function MoradoresPdf({ data }) {
       label: 'Status',
       width: '20%',
     },
+    {
+      key: 'apto',
+      label: 'Apartamento',
+      width: '25%',
+    },
+        {
+      key: 'bloco',
+      label: 'Bloco',
+      width: '15%',
+    },
   ];
 
   return (

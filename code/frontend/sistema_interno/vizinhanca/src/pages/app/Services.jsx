@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import Searchbar from "../../components/ui/SearchBar";
 import FilterOptions from "../../components/ui/Filter";
 import Table from "./components/Table";
-import { getActivities, formatActivityDate, formatActivityStatus, updateActivity, deleteActivity } from "../../services/activityService";
+import { getServices } from "../../services/serviceService";
+import { getObjects } from "../../services/objectService";
+import { formatActivityDate, formatActivityStatus } from "../../services/activityService";
+import { updateService as updateServiceService, deleteService } from "../../services/serviceService";
+import { updateObject as updateObjectService, deleteObject } from "../../services/objectService";
 import { toast } from 'react-toastify';
 import styles from "./Services.module.css";
 
@@ -29,7 +33,7 @@ function Services() {
                 if (secao === 'Status') {
                     filtrados = filtrados.filter(dado => opcoes.includes(dado.status));
                 } else if (secao === 'Tipo') {
-                    filtrados = filtrados.filter(dado => opcoes.includes(dado.categoria));
+                    filtrados = filtrados.filter(dado => opcoes.includes(dado.tipo));
                 }
             }
         });
@@ -40,29 +44,66 @@ function Services() {
     const fetchServices = async () => {
         try {
             setLoading(true);
-            const data = await getActivities();
 
-            const services = data.response?.activities
+            // Buscar serviços e objetos
+            const [servicesData, objectsData] = await Promise.all([
+                getServices(),
+                getObjects()
+            ]);
 
-            if (!Array.isArray(services)) {
-                setDadosTabela([]);
-                return;
-            }
+            const services = servicesData?.response?.content || [];
+            const objects = objectsData?.response?.content || [];
 
-            const mappedData = services
-                .map((activity) => ({
-                    id: activity.resident_id?.toString() || '',
-                    nome: activity.resident_name || '',
-                    descricao: activity.description || '',
-                    categoria: 'Serviço',
-                    status: formatActivityStatus(activity.status),
-                    data: formatActivityDate(activity.creation_date)
-                }));
+            console.log(services)
+            console.log(objects)
 
-            setDadosTabela(mappedData);
+            // Mapear serviços
+            const servicesMapped = services.map((service) => ({
+                id: service.id?.toString() || '',
+                id_resident: service.resident?.id?.toString() || '',
+                nome: service.resident?.name || '',
+                descricao: service.description || '',
+                categoria: service.category?.name || '',
+                status: formatActivityStatus(service.status),
+                data: formatActivityDate(service.creation_date),
+                photo: service.photo || '',
+                // Dados para operações
+                tipoEntidade: 'SERVICE',
+                tipo: 'Serviço',
+                entityId: service.id,
+                urgency: service.urgency,
+                estimatedTime: service.estimated_time,
+                title: service.title
+            }));
+
+            // Mapear objetos
+            const objectsMapped = objects.map((obj) => ({
+                id: obj.id?.toString() || '',
+                displayId: obj.resident?.id?.toString() || '',
+                nome: obj.resident_name || '',
+                descricao: obj.category.description || obj.description || '',
+                categoria: obj.category?.name || '',
+                status: formatActivityStatus(obj.status),
+                data: obj.deadline,
+                photo: obj.photo || '',
+                // Dados para operações
+                tipoEntidade: 'OBJECT',
+                tipo: 'Objeto',
+                entityId: obj.id,
+                deadline: obj.deadline,
+                title: obj.title
+            }));
+
+            // Combinar serviços e objetos
+            const allData = [...servicesMapped, ...objectsMapped];
+            setDadosTabela(allData);
+            setDadosFiltrados(allData);
+
         } catch (error) {
+            console.error('Erro ao buscar serviços:', error);
             toast.error('Erro ao buscar serviços');
             setDadosTabela([]);
+            setDadosFiltrados([]);
         } finally {
             setLoading(false);
         }
@@ -79,12 +120,11 @@ function Services() {
             width: 150,
             getCellClass: (status) => {
                 if (status === 'Aberto' || status === 'Disponível') return styles['status-verde'];
-                if (status === 'Concluido' || status === 'Finalizado') return styles['status-azul'];
-                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento')return styles['status-amarelo'];
+                if (status === 'Concluído' || status === 'Finalizado') return styles['status-azul'];
+                if (status === 'Pendente' || status === 'Indisponível' || status === 'Em andamento' || status === 'Emprestado') return styles['status-amarelo'];
                 return '';
             }
-        },
-        { id: 'data', label: 'Data', width: 150 }
+        }
     ];
 
     const handleCellClick = (valor, colunaId, linha) => {
@@ -93,21 +133,47 @@ function Services() {
 
     const handleSubmitService = async (id, dados) => {
         try {
-            await updateActivity(id, dados);
-            toast.success("Serviço finalizado com sucesso!");
+            const linha = dados.linha;
+            const formData = new FormData();
+            if (linha.tipoEntidade === 'SERVICE') {
+                
+
+                formData.append("status", "CONCLUIDO");
+                console.log([...formData.entries()]);
+
+                await updateServiceService(id, formData);
+
+                toast.success("Serviço concluído com sucesso!");
+            } else if (linha.tipoEntidade === 'OBJECT') {
+
+                formData.append("status", "EMPRESTADO");
+                console.log([...formData.entries()]);
+                await updateObjectService(id, formData);
+
+                toast.success("Objeto finalizado com sucesso!");
+            }
+
             fetchServices();
         } catch (error) {
-            toast.error(error.response?.data?.message || "Erro ao finalizar serviço");
+            console.error('Erro ao finalizar:', error);
+            toast.error(error.response?.data?.message || "Erro ao finalizar");
         }
     };
 
-    const handleDeleteService = async (id) => {
+    const handleDeleteService = async (linha) => {
         try {
-            await deleteActivity(id);
-            toast.success("Serviço excluído com sucesso!");
+            if (linha.tipoEntidade === 'SERVICE') {
+                await deleteService(linha.entityId);
+                toast.success("Serviço excluído com sucesso!");
+            } else if (linha.tipoEntidade === 'OBJECT') {
+                await deleteObject(linha.entityId);
+                toast.success("Objeto excluído com sucesso!");
+            }
+
             fetchServices();
         } catch (error) {
-            toast.error(error.response?.data?.message || "Erro ao excluir serviço");
+            console.error('Erro ao excluir:', error);
+            toast.error(error.response?.data?.message || "Erro ao excluir");
         }
     };
 
@@ -122,14 +188,14 @@ function Services() {
     return (
         <>
             <header className={styles.header}>
-                <h1>Serviços</h1>
+                <h1>Serviços e Objetos</h1>
             </header>
 
             <main className={styles.main}>
                 <div className={styles.filterOptions}>
                     <FilterOptions
                         filterConfig={{
-                            Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+                            Status: ["Pendente", "Em andamento", "Concluído", "Cancelado"],
                             Tipo: ["Serviço", "Objeto"]
                         }}
                         onFilterChange={setFiltrosSelecionados}

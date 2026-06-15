@@ -1,11 +1,11 @@
-@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJicnVuby5zYW50b3NAZW1haWwuY29tIiwiaWRfY29uZG9taW5pdW0iOjEsImlkX3Jlc2lkZW50IjoyLCJ0eXBlX3BlcmZpbCI6Ik1PUkFET1IiLCJpYXQiOjE3Nzk5OTU2MDUsImV4cCI6MTc4MDA4MjAwNX0.s2u34zO-QmAWwuM8FOXhzOX3lVdTxNUEnfymJ3jJPsw
+@token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjb25kYUBnbWFpbC5jb20iLCJpZF9jb25kb21pbml1bSI6MSwidHlwZV9wZXJmaWwiOiJDT05ET03DjU5JTyIsImlhdCI6MTc4MTExOTcyNywiZXhwIjoxNzgxMjA2MTI3fQ.rOf4BLe5_g_Hh1OfkrUdR4qkqf3ion-_hypcn9pi0yw
 ### LoginCondominium
 # @name loginRequest
 POST http://localhost:8080/api/v1/auth/login/condominium
 Content-Type: application/json
 
 {
-  "email": "contato@solarflores.com",
+  "email": "conda@gmail.com",
   "password": "Vizinhanca@2026"
 }
 
@@ -55,6 +55,11 @@ Authorization: Bearer {{token}}
 ### Search services by condominium
 # @name searchServicesByCOndominium
 GET http://localhost:8080/api/v1/condominium/service/me
+Authorization: Bearer {{token}}
+
+### Search objects by condominium
+# @name searchObjectsByCOndominium
+GET http://localhost:8080/api/v1/condominium/object/me
 Authorization: Bearer {{token}}
 
 ### Search blocks by condominium
@@ -147,19 +152,41 @@ Content-Type: application/json
 # @name updateResident
 PUT http://localhost:8080/api/v1/resident/1
 Authorization: Bearer {{token}}
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=boundary
 
-{
-  "foto": "",
-  "nome": "Giovana - TESTE",
-  "apto": "22",
-  "bloco": "B",
-  "cpf": "67890123456",
-  "email": "ricardo.santos@yahoo.com",
-  "telefone": "11904851846",
-  "pontuacao": 0,
-  "condominium_id": 8
-}
+--boundary
+Content-Disposition: form-data; name="name"
+
+Ana Ribeiro
+--boundary
+Content-Disposition: form-data; name="apartment"
+
+101
+--boundary
+Content-Disposition: form-data; name="idBlock"
+
+1
+--boundary
+Content-Disposition: form-data; name="cpf"
+
+11111111101
+--boundary
+Content-Disposition: form-data; name="email"
+
+ana.silva@email.com
+--boundary
+Content-Disposition: form-data; name="phone"
+
+11911110001
+--boundary
+Content-Disposition: form-data; name="score"
+
+0
+--boundary
+Content-Disposition: form-data; name="is_active"
+
+true
+--boundary--
 
 ### Delete
 # @name deleteResident
@@ -238,18 +265,18 @@ Content-Disposition: form-data; name="category_id"
 ------Boundary--
 
 ### PUT (multipart/form-data)
-PUT http://localhost:8080/api/v1/object/1
+PUT http://localhost:8080/api/v1/object/9
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=----Boundary
 
 ------Boundary
 Content-Disposition: form-data; name="status"
 
-RESERVADO
+INDISPONÍVEL
 ------Boundary--
 
 ### DELETE
-DELETE http://localhost:8080/api/v1/object/1
+DELETE https://api-vizinhanca.onrender.com/api/v1/object/114
 Authorization: Bearer {{token}}
 
 ### ===== CATEGORY =====

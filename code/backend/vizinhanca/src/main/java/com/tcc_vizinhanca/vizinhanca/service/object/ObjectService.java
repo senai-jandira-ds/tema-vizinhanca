@@ -15,12 +15,14 @@ import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.repository.object.ObjectRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.specification.object.ObjectSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -48,6 +50,9 @@ public class ObjectService {
 
     @Autowired
     private BlobStorageService blobStorageService;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Object> getSelectAllObjectsByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -116,6 +121,8 @@ public class ObjectService {
 
     // SELECT BY ID
     public Object getSelectObjectById(@NonNull Long id) {
+        System.out.println(id);
+        System.out.println(objectRepository.findById(id));
         return objectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objeto não encontrado!"));
     }
@@ -142,6 +149,7 @@ public class ObjectService {
         object.setCondominium(condominium);
         object.setCategory(category);
 
+        activityViewService.evictCache(object.getCondominium().getId());
         return objectRepository.save(object);
     }
 
@@ -153,6 +161,7 @@ public class ObjectService {
             Long categoryId) {
 
         Object existingObject = getSelectObjectById(id);
+        Long condominiumId = existingObject.getCondominium().getId();
 
         if (photo != null && !photo.isEmpty()) {
             if (existingObject.getPhoto() != null) {
@@ -172,7 +181,9 @@ public class ObjectService {
             existingObject.setCategory(category);
         }
 
-        return objectRepository.save(existingObject);
+        Object saved = objectRepository.save(existingObject);
+        activityViewService.evictCache(condominiumId);
+        return saved;
     }
 
     // DELETE
@@ -187,6 +198,7 @@ public class ObjectService {
             }
         }
 
+        activityViewService.evictCache(existing.getCondominium().getId());
         objectRepository.deleteById(id);
     }
 }

@@ -19,4 +19,8 @@ public class ResidentSpecification {
         return (root, query, cb) -> cb.equal(root.get("isActive"), isActive);
     }
 
+    public static Specification<Resident> hasName(String name) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    }
+
 }

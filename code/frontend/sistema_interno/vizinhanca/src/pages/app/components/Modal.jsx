@@ -95,6 +95,7 @@ function UsuarioModal({
   onSubmit,
   onDelete
 }) {
+
   const isEdicao =
     data?.linha !== null &&
     data?.linha !== undefined;
@@ -125,14 +126,16 @@ function UsuarioModal({
   const [formData, setFormData] = useState({
     nome: data?.linha?.nome || "",
     apto: data?.linha?.apto || "",
-    blocoId: data?.linha?.blocoId || "",
+    id_bloco: data?.linha?.blocoId || "",
     bloco: data?.linha?.bloco || "",
     cpf:
       (data?.linha?.cpf &&
         data?.linha.cpf.replace(/\D/g, '')) || "",
     email: data?.linha?.email || "",
     telefone: data?.linha?.telefone || "",
-    status: data?.linha?.status || "",
+    is_active: data?.linha?.status === "Ativo" ? Boolean(true) : Boolean(false),
+    photo: data?.linha?.photo || "",
+    score: data?.linha?.score || "",
     condominium_id:
       condominioData?.id ||
       data?.linha?.condominium_id ||
@@ -151,16 +154,17 @@ function UsuarioModal({
     const { id, ...dadosSemId } = formData;
 
     // Enviar o ID do bloco em vez do nome
-    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.blocoId));
+    const blocoSelecionado = blocos.find(b => b.id === Number(dadosSemId.id_bloco));
 
     const dadosParaEnviar = {
       name: dadosSemId.nome || "",
       apartment: dadosSemId.apto || "",
-      block_id: blocoSelecionado?.id || null,
+      idBlock: blocoSelecionado?.id || null,
       cpf: dadosSemId.cpf || "",
       email: dadosSemId.email || "",
       phone: dadosSemId.telefone || "",
-      status: dadosSemId.status || "Ativo",
+      score: dadosSemId.score || 0,
+      is_active: dadosSemId.is_active || "true",
       id_condominium: formData.condominium_id
     };
 
@@ -236,13 +240,13 @@ function UsuarioModal({
 
           <select
             className={styles.selectHalf}
-            value={formData.blocoId}
+            value={formData.id_bloco}
             onChange={(e) =>
-              handleChange('blocoId', e.target.value)
+              handleChange('id_bloco', e.target.value)
             }
             disabled={loadingBlocos}
           >
-            <option value="">Bloco</option>
+            <option value="">Selecione o Bloco</option>
             {loadingBlocos ? (
               <option disabled>Carregando...</option>
             ) : (
@@ -288,14 +292,14 @@ function UsuarioModal({
 
           <select
             className={styles.selectHalf}
-            value={formData.status}
+            value={formData.is_active}
             onChange={(e) =>
-              handleChange('status', e.target.value)
+              handleChange('is_active', e.target.value)
             }
           >
             <option value="">Status</option>
-            <option value="Ativo">Ativo</option>
-            <option value="Inativo">Inativo</option>
+            <option value={Boolean(true)}>Ativo</option>
+            <option value={Boolean(false)}>Inativo</option>
           </select>
         </div>
       </div>
@@ -363,8 +367,6 @@ function CategoriaModal({
       ),
     };
 
-
-    console.log(dadosParaEnviar)
     if (isEdicao) {
       onSubmit &&
         onSubmit(formData.id, dadosParaEnviar);
@@ -522,7 +524,7 @@ function BlocoModal({
           onChange={(e) =>
             handleChange('block', e.target.value)
           }
-          placeholder="Nome do bloco"
+          placeholder="Bloco"
           className={styles.inputFull}
         />
       </div>
@@ -568,6 +570,7 @@ function ServicoModal({ data, onClose, onSubmit, onDelete }) {
 }
 
 function DenunciaModal({ data, onClose, onSubmit, onDelete }) {
+  console.log(data)
   return (
     <SplitLayoutModal
       data={data}
@@ -587,25 +590,39 @@ function SplitLayoutModal({
   onDelete
 }) {
   const imagemRelacionada =
+    data?.linha?.photo ||
     data?.linha?.imagem ||
     "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=800&auto=format&fit=crop";
 
   const handleFinalizar = () => {
-    if (!data?.linha?.id) return;
+    if (!data?.linha) return;
 
-    // Atualizar status para Finalizado
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Atualizar status para Finalizado/Concluído
     const dadosAtualizacao = {
-      status: "FINISHED"
+      status: isServico ? "CONCLUIDO" : "FINISHED"
     };
 
-    onSubmit && onSubmit(data.linha.id, dadosAtualizacao);
+    onSubmit && onSubmit(entityId, { ...dadosAtualizacao, linha: data.linha });
     onClose();
   };
 
   const handleExcluir = () => {
-    if (!data?.linha?.id) return;
+    if (!data?.linha) return;
 
-    onDelete && onDelete(data.linha.id);
+    // Obter o ID correto baseado no tipo de entidade
+    const entityId = data.linha.entityId || data.linha.serviceId || data.linha.objectId || data.linha.reportId || data.linha.id;
+
+    // Para deletar, passar a linha completa para identificar o tipo
+    if (typeof onDelete === 'function') {
+      if (data.linha) {
+        onDelete(data.linha);
+      } else {
+        onDelete(entityId);
+      }
+    }
     onClose();
   };
 

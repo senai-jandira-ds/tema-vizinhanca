@@ -24,7 +24,7 @@ public class ObjectSummaryResponse {
     private Long id;
     private String photo;
     private String title;
-    private LocalDate deadline;
+    private String  deadline;
     private String status;
     private String resident_name;
     private String resident_apartment;
@@ -36,7 +36,7 @@ public class ObjectSummaryResponse {
         this.photo = object.getPhoto();
         this.title = object.getTitle();
         this.deadline = object.getDeadline();
-        this.status = object.getStatus();
+        this.status = object.getStatus().toString();
         this.resident_name = object.getResident() != null
                 ? object.getResident().getName()
                 : "";

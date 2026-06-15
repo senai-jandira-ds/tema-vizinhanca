@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api-vizinhanca.onrender.com',
+        target: 'https://api-vizinhanca-tcc.azurewebsites.net',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path

@@ -67,10 +67,7 @@ function Sidebar() {
                     </li>
 
                     <li className={styles.lastItem}>
-                        <Link to="/ajuda">
-                            <Help className={styles.icon} />
-                            <span className={styles.label}>Ajuda</span>
-                        </Link>
+
                     </li>
                 </ul>
             </nav>

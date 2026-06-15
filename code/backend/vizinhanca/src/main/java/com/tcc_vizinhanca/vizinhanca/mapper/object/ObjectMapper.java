@@ -12,6 +12,10 @@ package com.tcc_vizinhanca.vizinhanca.mapper.object;
 import com.tcc_vizinhanca.vizinhanca.dto.request.object.ObjectCreateRequest;
 import com.tcc_vizinhanca.vizinhanca.dto.request.object.ObjectUpdateRequest;
 import com.tcc_vizinhanca.vizinhanca.entity.object.Object;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusObject;
+import org.springframework.cglib.core.Local;
+
+import java.time.LocalDate;
 
 public class ObjectMapper {
 
@@ -20,15 +24,15 @@ public class ObjectMapper {
         object.setTitle(dto.getTitle());
         object.setDeadline(dto.getDeadline());
         object.setDescription(dto.getDescription());
-        object.setStatus(dto.getStatus());
+        object.setStatus(StatusObject.valueOf(dto.getStatus()));
         return object;
     }
 
     public static Object updateEntity(ObjectUpdateRequest dto, Object entity) {
         if (dto.getTitle() != null) entity.setTitle(dto.getTitle());
-        if (dto.getDeadline() != null) entity.setDeadline(dto.getDeadline());
+        if (dto.getDeadline() != null) LocalDate.parse(dto.getDeadline());
         if (dto.getDescription() != null) entity.setDescription(dto.getDescription());
-        if (dto.getStatus() != null) entity.setStatus(dto.getStatus());
+        if (dto.getStatus() != null) entity.setStatus(StatusObject.valueOf(dto.getStatus()));
         return entity;
     }
 }

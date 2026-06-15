@@ -14,12 +14,14 @@ import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.service.Service;
 import com.tcc_vizinhanca.vizinhanca.repository.service.ServiceRepository;
 import com.tcc_vizinhanca.vizinhanca.service.category.CategoryService;
+import com.tcc_vizinhanca.vizinhanca.service.condominium.ActivityViewService;
 import com.tcc_vizinhanca.vizinhanca.service.condominium.CondominiumService;
 import com.tcc_vizinhanca.vizinhanca.service.notification.NotificationService;
 import com.tcc_vizinhanca.vizinhanca.service.resident.ResidentService;
 import com.tcc_vizinhanca.vizinhanca.specification.service.ServiceSpecification;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -46,6 +48,9 @@ public class ServiceService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ActivityViewService activityViewService;
 
     // SELECT ALL BY CONDOMINIUM
     public Page<Service> getSelectAllServicesByCondominiumId(Long condominiumId, Pageable pageable) {
@@ -147,6 +152,7 @@ public class ServiceService {
                 saved.getId()
         );
 
+        activityViewService.evictCache(condominiumId);
         return saved;
     }
 
@@ -180,14 +186,15 @@ public class ServiceService {
             );
         }
 
+        activityViewService.evictCache(updated.getCategory().getId());
         return updated;
     }
 
     // DELETE
     public void setDeleteServiceById(@NonNull Long id) {
-        if (!serviceRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Serviço não encontrado!");
-        }
+        Service service = getSelectServiceById(id);
+
+        activityViewService.evictCache(service.getCondominium().getId());
         serviceRepository.deleteById(id);
     }
 }

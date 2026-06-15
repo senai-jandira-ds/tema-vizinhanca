@@ -25,7 +25,7 @@ public class ObjectDetailResponse {
     private Long id;
     private String photo;
     private String title;
-    private LocalDate deadline;
+    private String deadline;
     private String description;
     private LocalDateTime creation_date;
     private String status;
@@ -39,7 +39,7 @@ public class ObjectDetailResponse {
         this.deadline = object.getDeadline();
         this.description = object.getDescription();
         this.creation_date = object.getCreationDate();
-        this.status = object.getStatus();
+        this.status = object.getStatus().toString();
         this.resident = object.getResident() != null
                 ? new ResidentSummaryResponse(object.getResident())
                 : new ResidentSummaryResponse();

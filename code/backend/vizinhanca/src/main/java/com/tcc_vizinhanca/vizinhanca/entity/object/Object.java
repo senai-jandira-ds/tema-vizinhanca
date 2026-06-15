@@ -13,6 +13,7 @@ package com.tcc_vizinhanca.vizinhanca.entity.object;
 import com.tcc_vizinhanca.vizinhanca.entity.resident.Resident;
 import com.tcc_vizinhanca.vizinhanca.entity.category.Category;
 import com.tcc_vizinhanca.vizinhanca.entity.condominium.Condominium;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusObject;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class Object {
     private String title;
 
     @Column(name = "tempo_disponivel", nullable = false)
-    private LocalDate deadline;
+    private String deadline;
 
     @Column(name = "descricao", nullable = false, columnDefinition = "TEXT")
     private String description;
@@ -51,7 +52,8 @@ public class Object {
     private LocalDateTime creationDate;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StatusObject status;
 
     @ManyToOne
     @JoinColumn(name = "id_morador")

@@ -22,7 +22,11 @@ import com.tcc_vizinhanca.vizinhanca.service.storage.BlobStorageService;
 import com.tcc_vizinhanca.vizinhanca.service.util.PasswordGeneratorUtils;
 import com.tcc_vizinhanca.vizinhanca.specification.resident.ResidentSpecification;
 import lombok.NonNull;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,7 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ResidentService {
@@ -56,6 +59,9 @@ public class ResidentService {
 
     @Autowired
     private BlobStorageService blobStorageService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     // SELECT ALL
     public Page<Resident> getSelectAllResidents(Pageable pageable) {
@@ -80,6 +86,7 @@ public class ResidentService {
             Long condominiumId,
             List<Long> blockIds,
             Boolean isActive,
+            String name,
             Pageable pageable) {
 
         Specification<Resident> spec = Specification
@@ -91,6 +98,10 @@ public class ResidentService {
 
         if (isActive != null) {
             spec = spec.and(ResidentSpecification.isActive(isActive));
+        }
+
+        if (name != null && !name.isBlank()) {
+            spec = spec.and(ResidentSpecification.hasName(name));
         }
 
         return residentRepository.findAll(spec, pageable);
@@ -120,6 +131,7 @@ public class ResidentService {
     }
 
     // INSERT RESIDENT
+    @CachePut(value = "residentByEmail", key = "#result.email")
     public Resident setInsertResident(@NonNull Resident resident) {
         resident.setId(null);
 
@@ -138,6 +150,8 @@ public class ResidentService {
     }
 
     // UPDATE RESIDENT
+    @CachePut(value = "residentByEmail", key = "#result.email")
+    @Transactional
     public Resident setUpdateResident(
             @NonNull ResidentUpdateRequest dto,
             MultipartFile photo,
@@ -165,15 +179,25 @@ public class ResidentService {
 
         ResidentMapper.updateEntity(dto, existingResident, block);
 
-        return residentRepository.save(existingResident);
+        Resident saved = residentRepository.save(existingResident);
+
+        Hibernate.initialize(saved.getPublications());
+        Hibernate.initialize(saved.getServices());
+        Hibernate.initialize(saved.getCondominium());
+
+        return saved;
     }
 
     // DELETE RESIDENT
     public void setDeleteResidentById(Long idResident) {
-        if (!residentRepository.existsById(idResident)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!");
-        }
+
+        Resident resident = getSelectResidentById(idResident);
+
         residentRepository.deleteById(idResident);
+
+        Cache cache = cacheManager.getCache("residentByEmail");
+        if (cache != null) {
+            cache.evict(resident.getEmail());
+        }
     }
 }

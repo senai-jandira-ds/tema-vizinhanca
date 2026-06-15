@@ -32,6 +32,34 @@ function SignScreen() {
     const [animate, setAnimate] = useState(false);
     const [direction, setDirection] = useState("right");
 
+    const buscarCep = async (cepDigitado) => {
+        try {
+            const cepLimpo = cepDigitado.replace(/\D/g, "");
+
+            if (cepLimpo.length !== 8) return;
+
+            const response = await fetch(
+                `https://viacep.com.br/ws/${cepLimpo}/json/`
+            );
+
+            const data = await response.json();
+
+            if (data.erro) {
+                toast.error("CEP não encontrado");
+                return;
+            }
+
+            setStreet(data.logradouro || "");
+            setNeighborhood(data.bairro || "");
+            setCity(data.localidade || "");
+            setState(data.uf || "");
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao consultar CEP");
+        }
+    };
+
     function handleNext() {
         setDirection("right");
         setAnimate(true);
@@ -93,6 +121,25 @@ function SignScreen() {
         }
     }
 
+    const formatCep = (value) => {
+        const cep = value.replace(/\D/g, "");
+
+        return cep
+            .replace(/^(\d{5})(\d)/, "$1-$2")
+            .slice(0, 9);
+    };
+
+    const formatCnpj = (value) => {
+        const cnpj = value.replace(/\D/g, "");
+
+        return cnpj
+            .replace(/^(\d{2})(\d)/, "$1.$2")
+            .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+            .replace(/\.(\d{3})(\d)/, ".$1/$2")
+            .replace(/(\d{4})(\d)/, "$1-$2")
+            .slice(0, 18);
+    };
+
     return (
         <div className={styles.screenContent}>
             <div className={styles.leftContent}>
@@ -102,7 +149,7 @@ function SignScreen() {
                 >
                     Voltar
                 </a>
-    
+
                 <motion.div
                     className={styles.leftMain}
                     initial={{ opacity: 0, x: 60 }}
@@ -113,23 +160,22 @@ function SignScreen() {
                     <div
                         className={`
                             ${styles.stepContent}
-                            ${
-                                animate
-                                    ? direction === "right"
-                                        ? styles.slideOutLeft
-                                        : styles.slideOutRight
-                                    : direction === "right"
-                                        ? styles.slideInRight
-                                        : styles.slideInLeft
+                            ${animate
+                                ? direction === "right"
+                                    ? styles.slideOutLeft
+                                    : styles.slideOutRight
+                                : direction === "right"
+                                    ? styles.slideInRight
+                                    : styles.slideInLeft
                             }
                         `}
                     >
                         <img src={logo} alt="" />
-    
+
                         <h1 className={styles.SignTitle}>
                             Dados do Condomínio
                         </h1>
-    
+
                         {step === 1 ? (
                             <>
                                 <Input
@@ -141,17 +187,17 @@ function SignScreen() {
                                     }}
                                     type="text"
                                 />
-    
+
                                 <Input
                                     placeholder="CNPJ"
                                     value={cnpj}
-                                    onChange={(e) => setCnpj(e.target.value)}
+                                    onChange={(e) => setCnpj(formatCnpj(e.target.value))}
                                     style={{
                                         textAlign: "start"
                                     }}
                                     type="text"
                                 />
-    
+
                                 <div className={styles.condoInfos}>
                                     <Input
                                         value={amountBlocks}
@@ -163,7 +209,7 @@ function SignScreen() {
                                         placeholder="Nº Blocos"
                                         type="number"
                                     />
-    
+
                                     <Input
                                         value={amountApartments}
                                         onChange={(e) => setAmountApartments(e.target.value)}
@@ -175,7 +221,7 @@ function SignScreen() {
                                         type="number"
                                     />
                                 </div>
-    
+
                                 <Input
                                     placeholder="Email"
                                     value={email}
@@ -185,7 +231,7 @@ function SignScreen() {
                                     }}
                                     type="email"
                                 />
-    
+
                                 <Input
                                     placeholder="Senha"
                                     value={password}
@@ -195,7 +241,7 @@ function SignScreen() {
                                     }}
                                     type="password"
                                 />
-    
+
                                 <div className={styles.actionsOptions}>
                                     <button
                                         className={styles.signButton}
@@ -221,13 +267,23 @@ function SignScreen() {
                                 <Input
                                     placeholder="CEP"
                                     value={cep}
-                                    onChange={(e) => setCep(e.target.value)}
+                                    onChange={(e) => {
+                                        const valor = formatCep(e.target.value);
+
+                                        setCep(valor);
+
+                                        const cepLimpo = valor.replace(/\D/g, "");
+
+                                        if (cepLimpo.length === 8) {
+                                            buscarCep(cepLimpo);
+                                        }
+                                    }}
                                     style={{
                                         textAlign: "start"
                                     }}
                                     type="text"
                                 />
-    
+
                                 <Input
                                     placeholder="Logradouro"
                                     value={street}
@@ -237,7 +293,7 @@ function SignScreen() {
                                     }}
                                     type="text"
                                 />
-    
+
                                 <Input
                                     placeholder="Bairro"
                                     value={neighborhood}
@@ -247,7 +303,7 @@ function SignScreen() {
                                     }}
                                     type="text"
                                 />
-    
+
                                 <div className={styles.condoInfos}>
                                     <Input
                                         value={number}
@@ -259,7 +315,7 @@ function SignScreen() {
                                         placeholder="Número"
                                         type="text"
                                     />
-    
+
                                     <Input
                                         value={landmark}
                                         onChange={(e) => setLandmark(e.target.value)}
@@ -271,7 +327,7 @@ function SignScreen() {
                                         type="text"
                                     />
                                 </div>
-    
+
                                 <Input
                                     placeholder="Cidade"
                                     value={city}
@@ -281,7 +337,7 @@ function SignScreen() {
                                     }}
                                     type="text"
                                 />
-    
+
                                 <Input
                                     placeholder="Estado"
                                     value={state}
@@ -291,7 +347,7 @@ function SignScreen() {
                                     }}
                                     type="text"
                                 />
-    
+
                                 <div className={styles.actionsOptions}>
                                     <button
                                         className={styles.backButton}
@@ -316,7 +372,7 @@ function SignScreen() {
                                             />
                                         </svg>
                                     </button>
-    
+
                                     <button
                                         className={styles.sendFormButton}
                                         onClick={handleSubmit}
@@ -326,7 +382,7 @@ function SignScreen() {
                                 </div>
                             </>
                         )}
-    
+
                         <p className={styles.signText}>
                             Já tem uma conta?{" "}
                             <Link to="/">
@@ -336,7 +392,7 @@ function SignScreen() {
                     </div>
                 </motion.div>
             </div>
-    
+
             <div className={styles.rightContent}>
                 <img src={condominio} alt="" />
             </div>

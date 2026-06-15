@@ -1,6 +1,7 @@
 package com.tcc_vizinhanca.vizinhanca.dto.request.object;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tcc_vizinhanca.vizinhanca.enums.StatusObject;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class ObjectCreateRequest {
     private String title;
 
     @NotNull(message = "Prazo de disponibilidade é obrigatório")
-    private LocalDate deadline;
+    private String  deadline;
 
     @NotBlank(message = "Descrição é obrigatória")
     private String description;

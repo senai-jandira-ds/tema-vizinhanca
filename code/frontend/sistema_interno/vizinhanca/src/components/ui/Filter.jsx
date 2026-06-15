@@ -5,7 +5,7 @@ import { getBlocks } from "../../services/blockService";
 import { getCategoryTypes } from "../../services/categoryService";
 
 const DEFAULT_DATA = {
-    Status: ["Aberto", "Pendente", "Em andamento", "Finalizado", "Cancelado"],
+    Status: ["Aberto", "Pendente", "Em andamento", "Concluído", "Cancelado"],
     Tipo: ["Serviço", "Objeto"],
 };
 
