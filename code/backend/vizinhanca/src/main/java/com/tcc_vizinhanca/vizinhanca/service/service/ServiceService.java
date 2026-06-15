@@ -138,20 +138,6 @@ public class ServiceService {
 
         Service saved = serviceRepository.save(service);
 
-        // Notifica todos os moradores do condomínio sobre o novo serviço
-        List<Long> residentIds = condominium.getResidents()
-                .stream()
-                .map(r -> r.getId())
-                .filter(id -> !id.equals(residentId)) // não notifica quem criou
-                .toList();
-
-        notificationService.notifyAllResidents(
-                residentIds,
-                resident.getName() + " solicitou um serviço: " + saved.getTitle(),
-                "SERVICE",
-                saved.getId()
-        );
-
         activityViewService.evictCache(condominiumId);
         return saved;
     }

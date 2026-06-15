@@ -19,7 +19,6 @@ import lombok.Setter;
 @Setter
 public class ServiceCreateRequest {
 
-    @NotBlank(message = "Foto é obrigatória")
     private String photo;
 
     @NotBlank(message = "Título é obrigatório")

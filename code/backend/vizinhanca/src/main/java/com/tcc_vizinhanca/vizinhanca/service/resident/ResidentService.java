@@ -69,7 +69,7 @@ public class ResidentService {
     }
 
     // SELECT BY ID
-    public Resident getSelectResidentById(@NonNull Long id) {
+    public Resident getSelectResidentById( Long id) {
         return residentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Morador não encontrado no Banco de Dados!"));
